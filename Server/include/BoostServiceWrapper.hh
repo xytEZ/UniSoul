@@ -2,11 +2,11 @@
 # define BOOST_SERVICE_WRAPPER_HH_
 
 # include <boost/asio.hpp>
-# include "ILibraryServiceWrapper.hpp"
+# include "IWrapper.hpp"
 
 namespace Wrapper
 {
-  class BoostServiceWrapper : public ILibraryServiceWrapper<boost::asio::io_service>
+  class BoostServiceWrapper : public IWrapper<boost::asio::io_service>
   {
   private :
     static boost::asio::io_service	_ios;

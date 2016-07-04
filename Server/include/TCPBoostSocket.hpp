@@ -1,6 +1,7 @@
 #ifndef TCP_BOOST_SOCKET_HPP_
 # define TCP_BOOST_SOCKET_HPP_
 
+# include <memory>
 # include <boost/asio.hpp>
 # include <boost/array.hpp>
 # include <boost/noncopyable.hpp>
@@ -9,21 +10,32 @@
 # include <boost/date_time/posix_time/posix_time_io.hpp>
 # include "ITCPSocket.hh"
 
+namespace System
+{
+  struct IComplexSystem;
+}
+
 namespace Network
 {
-  template <int N>
+  template <int N = 128, int N2 = 60>
   class TCPBoostSocket : virtual public ITCPSocket,
 			 private boost::noncopyable,
 			 public boost::enable_shared_from_this<TCPBoostSocket<N>>
   {
+  protected :
+    using ComplexSystem = std::shared_ptr<System::IComplexSystem>;
+    
   private :
     boost::asio::ip::tcp::socket	_socket;
     boost::asio::deadline_timer		_timer;
     std::string				_msg;
     boost::array<char, N>		_buffer;
+
+  protected :
+    ComplexSystem			_complexSystem;
     
   public :
-    TCPBoostSocket(boost::asio::io_service&);
+    TCPBoostSocket(boost::asio::io_service&, ComplexSystem&);
     virtual ~TCPBoostSocket();
     virtual bool open(int, int, int);
     virtual bool close();
@@ -36,28 +48,30 @@ namespace Network
     void handleRecv(const boost::system::error_code&);
   };
 
-  template <int N>
-  TCPBoostSocket<N>::TCPBoostSocket(boost::asio::io_service& ios) :
+  template <int N, int N2>
+  TCPBoostSocket<N, N2>::TCPBoostSocket(boost::asio::io_service& ios,
+					ComplexSystem& complexSystem) :
     _socket(ios),
-    _timer(ios, boost::posix_time::seconds(5))
+    _timer(ios, boost::posix_time::seconds(N2)),
+    _complexSystem(complexSystem)
   {
   }
 
-  template <int N>
-  TCPBoostSocket<N>::~TCPBoostSocket() { }
+  template <int N, int N2>
+  TCPBoostSocket<N, N2>::~TCPBoostSocket() { }
 
-  template <int N>
-  bool TCPBoostSocket<N>::open(int, int, int) { return true; }
+  template <int N, int N2>
+  bool TCPBoostSocket<N, N2>::open(int, int, int) { return true; }
 
-  template <int N>
-  bool TCPBoostSocket<N>::close()
+  template <int N, int N2>
+  bool TCPBoostSocket<N, N2>::close()
   {
     _socket.close();
     return true;
   }
 
-  template <int N>
-  bool TCPBoostSocket<N>::send(const std::string& msg)
+  template <int N, int N2>
+  bool TCPBoostSocket<N, N2>::send(const std::string& msg)
   {
     _msg = std::move(msg);
     boost::asio::async_write(_socket,
@@ -68,32 +82,30 @@ namespace Network
     return true;
   }
 
-  template <int N>
-  std::string TCPBoostSocket<N>::recv()
+  template <int N, int N2>
+  std::string TCPBoostSocket<N, N2>::recv()
   {
     boost::asio::async_read(_socket,
 			    boost::asio::buffer(_buffer),
 			    boost::bind(&TCPBoostSocket::handleRecv,
 					this->shared_from_this(),
 					boost::asio::placeholders::error));
-    _timer.expires_from_now(boost::posix_time::seconds(5));
+    _timer.expires_from_now(boost::posix_time::seconds(N2));
     _timer.async_wait(boost::bind(&TCPBoostSocket::close, this->shared_from_this()));
     return "";
   }
 
-  template <int N>
-  boost::asio::ip::tcp::socket& TCPBoostSocket<N>::getSocket()
+  template <int N, int N2>
+  boost::asio::ip::tcp::socket& TCPBoostSocket<N, N2>::getSocket()
   {
     return _socket;
   }
 
-  template <int N>
-  void TCPBoostSocket<N>::handleSend(const boost::system::error_code&)
-  {
-  }
-
-  template <int N>
-  void TCPBoostSocket<N>::handleRecv(const boost::system::error_code& error)
+  template <int N, int N2>
+  void TCPBoostSocket<N, N2>::handleSend(const boost::system::error_code&) { }
+  
+  template <int N, int N2>
+  void TCPBoostSocket<N, N2>::handleRecv(const boost::system::error_code& error)
   {
     if (!error)
       {

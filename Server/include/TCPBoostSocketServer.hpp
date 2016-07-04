@@ -17,7 +17,10 @@ namespace Network
     boost::asio::ip::tcp::endpoint	_endpoint;
     
   public :
-    TCPBoostSocketServer(boost::asio::io_service&, const std::string&, int);
+    TCPBoostSocketServer(boost::asio::io_service&,
+			 typename TCPBoostSocket<N>::ComplexSystem&,
+			 const std::string&,
+			 int);
     virtual ~TCPBoostSocketServer();
     virtual bool open(int, int, int);
     virtual bool close();
@@ -34,9 +37,10 @@ namespace Network
 
   template <int N, typename T>
   TCPBoostSocketServer<N, T>::TCPBoostSocketServer(boost::asio::io_service& ios,
+						   typename TCPBoostSocket<N>::ComplexSystem& complexSystem,
 						   const std::string& hostname,
 						   int port) :
-    TCPBoostSocket<N>(ios),
+    TCPBoostSocket<N>(ios, complexSystem),
     _acceptor(ios),
     _endpoint(boost::asio::ip::address::from_string(std::move(hostname)), port)
   {
