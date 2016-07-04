@@ -1,11 +1,14 @@
 #include <iostream>
 #include <memory>
-#include "UniSoulServer.hh"
+#include <boost/asio.hpp>
+#include "UniSoulServer.hpp"
 
 int main()
 {
+  constexpr char		hostname[] = "aries.kent.ac.uk";
+  constexpr int			port = 4242;
   std::unique_ptr<App::IApp>	server
-    = std::make_unique<App::UniSoulServer>();
+    = std::make_unique<App::UniSoulServer<boost::asio::io_service>>(hostname, port);
 
   try
     {

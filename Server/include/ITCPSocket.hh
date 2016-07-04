@@ -6,12 +6,12 @@
 
 namespace Network
 {
-  class ITCPSocket : ISocket
+  class ITCPSocket : public ISocket
   {
   public :
     virtual ~ITCPSocket() { }
-    virtual bool send(const std::string&) const = 0;
-    virtual std::string recv() const = 0;
+    virtual bool send(const std::string&) = 0;
+    virtual std::string recv() = 0;
   };
 }
 

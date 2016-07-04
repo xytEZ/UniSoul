@@ -6,7 +6,7 @@ namespace Persistence
   class IPersistentDataInteractor
   {
   public :
-    virtual ~IPersistentDataInteractor() { }    
+    virtual ~IPersistentDataInteractor() { };
   };
 }
 

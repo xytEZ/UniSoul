@@ -10,7 +10,7 @@ namespace Network
 {
   using t_sockaddr = struct sockaddr;
   
-  template <typename T>
+  template <typename T = int>
   class ITCPSocketServer : virtual public ITCPSocket
   {
   public :

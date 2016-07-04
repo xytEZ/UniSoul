@@ -6,7 +6,7 @@ namespace Communication
   class IChannelSystem
   {
   public :
-    virtual ~IChannelSystem() { }
+    virtual ~IChannelSystem() { };
   };
 }
 
