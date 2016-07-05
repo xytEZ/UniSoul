@@ -13,6 +13,15 @@ namespace Network
 				 public ITCPSocketServer<T>
   {
   private :
+    template <int M, typename U>
+    struct HandlerAsyncAccept
+    {
+      static void handleAccept(TCPBoostSocketServer<M, U>&,
+			       std::shared_ptr<TCPBoostSocket<M>>&,
+			       const boost::system::error_code&);
+    };
+    
+  private :
     boost::asio::ip::tcp::acceptor	_acceptor;
     boost::asio::ip::tcp::endpoint	_endpoint;
     
@@ -31,6 +40,7 @@ namespace Network
     virtual T accept(t_sockaddr *, int *);
 
   private :
+    template <typename HandlerPolicy>
     void handleAccept(std::shared_ptr<TCPBoostSocket<N>>&,
 		      const boost::system::error_code&);
   };
@@ -95,7 +105,7 @@ namespace Network
     std::shared_ptr<TCPBoostSocket<N>>	socket;
     
     _acceptor.async_accept(socket->getSocket(),
-			   boost::bind(&TCPBoostSocketServer::handleAccept,
+			   boost::bind(&TCPBoostSocketServer::handleAccept<HandlerAsyncAccept<N, T>>,
 				       this,
 				       socket,
 				       boost::asio::placeholders::error));
@@ -103,14 +113,19 @@ namespace Network
   }
 
   template <int N, typename T>
+  template <typename HandlerPolicy>
   void TCPBoostSocketServer<N, T>::handleAccept(std::shared_ptr<TCPBoostSocket<N>>& socket,
 					     const boost::system::error_code& error)
   {
-    if (!error)
-      {
-	socket->send("Welcome to the server");
-	accept(nullptr, nullptr);
-      }
+    HandlerPolicy::handleAccept(*this, socket, error);
+  }
+
+  template <int N, typename T>
+  template <int M, typename U>
+  void TCPBoostSocketServer<N, T>::HandlerAsyncAccept<M, U>::handleAccept(TCPBoostSocketServer<M, U>&,
+									  std::shared_ptr<TCPBoostSocket<M>>&,
+									  const boost::system::error_code&)
+  {
   }
 }
 

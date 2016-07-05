@@ -17,14 +17,14 @@ namespace Command
   class CommandFactory
   { 
   private :
-    std::map<std::string, std::shared_ptr<ICommand<T>>>	_commands;
+    std::map<std::string, std::unique_ptr<ICommand<T>>>	_commands;
 
   public :
     CommandFactory();
     ~CommandFactory();
     void addCommand(const std::string&,
-		    const std::shared_ptr<ICommand<T>>&);
-    std::shared_ptr<Command::ICommand<T>> getCommand(const std::string&);
+		    const std::unique_ptr<ICommand<T>>&);
+    std::unique_ptr<Command::ICommand<T>>& getCommand(const std::string&);
     void listCommands() const;
   };
 
@@ -36,13 +36,13 @@ namespace Command
 
   template <typename T>
   void CommandFactory<T>::addCommand(const std::string& name,
-				     const std::shared_ptr<ICommand<T>>& command)
+				     const std::unique_ptr<ICommand<T>>& command)
   {
     _commands[name] = std::move(command);
   }
 
   template <typename T>
-  std::shared_ptr<ICommand<T>> CommandFactory<T>::getCommand(const std::string& name)
+  std::unique_ptr<ICommand<T>>& CommandFactory<T>::getCommand(const std::string& name)
   {
     return _commands[name];
   }
@@ -52,11 +52,11 @@ namespace Command
   {
     std::cout << "Commands enabled :" << std::endl;
     std::for_each(_commands.cbegin(),
-		 _commands.cend(),
-		  [](const std::pair<std::string, std::shared_ptr<ICommand<T>>>& pair)
-		 {
-		   std::cout << pair.first << std::endl;
-		 });
+		  _commands.cend(),
+		  [](const std::pair<std::string, std::unique_ptr<ICommand<T>>>& pair)
+		  {
+		    std::cout << pair.first << std::endl;
+		  });
   }
 }
 

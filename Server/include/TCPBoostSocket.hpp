@@ -22,6 +22,21 @@ namespace Network
 			 private boost::noncopyable,
 			 public boost::enable_shared_from_this<TCPBoostSocket<N>>
   {
+  private :
+    template <int M, int M2>
+      struct HandlerAsyncRead
+    {
+      static void handleRead(TCPBoostSocket<M, M2>&,
+			     const boost::system::error_code&);
+    };
+    
+    template <int M, int M2>
+      struct HandlerAsyncWrite
+    {
+      static void handleWrite(TCPBoostSocket<M, M2>&,
+			      const boost::system::error_code&);
+    };
+    
   protected :
     using ComplexSystem = std::shared_ptr<System::IComplexSystem>;
     
@@ -44,7 +59,10 @@ namespace Network
     boost::asio::ip::tcp::socket& getSocket();
 
   private :
+    template <typename HandlerPolicy>
     void handleSend(const boost::system::error_code&);
+
+    template <typename HandlerPolicy>
     void handleRecv(const boost::system::error_code&);
   };
 
@@ -76,7 +94,7 @@ namespace Network
     _msg = std::move(msg);
     boost::asio::async_write(_socket,
 			     boost::asio::buffer(_msg),
-			     boost::bind(&TCPBoostSocket::handleSend,
+			     boost::bind(&TCPBoostSocket::handleSend<HandlerAsyncWrite<N, N2>>,
 					 this->shared_from_this(),
 					 boost::asio::placeholders::error));
     return true;
@@ -87,7 +105,7 @@ namespace Network
   {
     boost::asio::async_read(_socket,
 			    boost::asio::buffer(_buffer),
-			    boost::bind(&TCPBoostSocket::handleRecv,
+			    boost::bind(&TCPBoostSocket::handleRecv<HandlerAsyncRead<N, N2>>,
 					this->shared_from_this(),
 					boost::asio::placeholders::error));
     _timer.expires_from_now(boost::posix_time::seconds(N2));
@@ -102,15 +120,31 @@ namespace Network
   }
 
   template <int N, int N2>
-  void TCPBoostSocket<N, N2>::handleSend(const boost::system::error_code&) { }
+  template <typename HandlerPolicy>
+  void TCPBoostSocket<N, N2>::handleSend(const boost::system::error_code& error)
+  {
+    HandlerPolicy::handleWrite(*this, error);
+  }
   
   template <int N, int N2>
+  template <typename HandlerPolicy>
   void TCPBoostSocket<N, N2>::handleRecv(const boost::system::error_code& error)
   {
-    if (!error)
-      {
-	recv();
-      }
+    HandlerPolicy::handleRead(*this, error);
+  }
+
+  template <int N, int N2>
+  template <int M, int M2>
+  void TCPBoostSocket<N, N2>::HandlerAsyncRead<M, M2>::handleRead(TCPBoostSocket<M, M2>&,
+								  const boost::system::error_code&)
+  {
+  }
+
+  template <int N, int N2>
+  template <int M, int M2>
+  void TCPBoostSocket<N, N2>::HandlerAsyncWrite<M, M2>::handleWrite(TCPBoostSocket<M, M2>&,
+								    const boost::system::error_code&)
+  {
   }
 }
 
