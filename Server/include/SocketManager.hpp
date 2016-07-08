@@ -3,6 +3,8 @@
 
 # include <memory>
 # include <list>
+# include <algorithm>
+# include <functional>
 
 namespace Network
 {
@@ -18,6 +20,7 @@ namespace Network
     int size() const;
     void addSocket(const T&);
     void deleteSocket(const T&);
+    void apply(const std::function<void(const T&)>&);
   };
 
   template <typename T>
@@ -39,6 +42,12 @@ namespace Network
   void SocketManager<T>::deleteSocket(const T& socket)
   {
     _sockets.deleteSocket(socket);
+  }
+
+  template <typename T>
+  void SocketManager<T>::apply(const std::function<void(const T&)>& func)
+  {
+    std::for_each(_sockets.begin(), _sockets.end(), func);
   }
 }
 

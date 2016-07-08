@@ -18,15 +18,15 @@
 
 namespace App
 {
-  template <typename T, typename U = System::IComplexSystem, int N = 128>
+  template <typename T, typename U = System::IComplexSystem, int N = 128, int N2 = 60>
   class UniSoulServer : public IApp
   {
   private :
     using LibraryServiceWrapper = std::unique_ptr<Wrapper::IWrapper<T>>;
     using SocketServer = std::unique_ptr<Network::ITCPSocketServer<std::shared_ptr<Network::ITCPSocket>>>;
     using SocketManager = Network::SocketManager<std::unique_ptr<Network::ITCPSocket>>;
-    using ChannelSystem = std::unique_ptr<Communication::IChannelSystem>;
     using PersistentDataInteractor = std::unique_ptr<Persistence::IPersistentDataInteractor>;
+    using ChannelSystem = std::unique_ptr<Communication::IChannelSystem>;
     using CommandFactory = Command::CommandFactory<std::shared_ptr<U>>;
     using CommandExecutor = Command::CommandExecutor<std::shared_ptr<U>>;
 
@@ -35,20 +35,18 @@ namespace App
     {
       SocketServer		_socketServer;
       SocketManager		_socketManager;
-      ChannelSystem		_channelSystem;
       PersistentDataInteractor	_persistentDataInteractor;
+      ChannelSystem		_channelSystem;
       CommandFactory		_commandFactory;
       CommandExecutor		_commandExecutor;
 
-      UniSoulSystem(SocketServer&& socketServer,
-		    ChannelSystem&& channelSystem,
-		    PersistentDataInteractor&& persistentDataInteractor);
+      UniSoulSystem(SocketServer&&, PersistentDataInteractor&&, ChannelSystem&&);
       virtual ~UniSoulSystem();
       virtual void toString() const;
     };
 
   private :
-    using ComplexSystem = std::shared_ptr<System::IComplexSystem>;
+    using ComplexSystem = std::unique_ptr<System::IComplexSystem>;
 
   private :
     LibraryServiceWrapper	_libraryServiceWrapper;
@@ -64,21 +62,21 @@ namespace App
     virtual bool close();
   };
 
-  template <typename T, typename U, int N>
-  UniSoulServer<T, U, N>::UniSoulSystem::UniSoulSystem(SocketServer&& socketServer,
-						       ChannelSystem&& channelSystem,
-						       PersistentDataInteractor&& persistentDataInteractor) :
+  template <typename T, typename U, int N, int N2>
+  UniSoulServer<T, U, N, N2>::UniSoulSystem::UniSoulSystem(SocketServer&& socketServer,
+						       PersistentDataInteractor&& persistentDataInteractor,
+						       ChannelSystem&& channelSystem) :
     _socketServer(std::move(socketServer)),
-    _channelSystem(std::move(channelSystem)),
-    _persistentDataInteractor(std::move(persistentDataInteractor))
+    _persistentDataInteractor(std::move(persistentDataInteractor)),
+    _channelSystem(std::move(channelSystem))
   {
   }
 
-  template <typename T, typename U, int N>
-  UniSoulServer<T, U, N>::UniSoulSystem::~UniSoulSystem() { }
+  template <typename T, typename U, int N, int N2>
+  UniSoulServer<T, U, N, N2>::UniSoulSystem::~UniSoulSystem() { }
 
-  template <typename T, typename U, int N>
-  void UniSoulServer<T, U, N>::UniSoulSystem::toString() const
+  template <typename T, typename U, int N, int N2>
+  void UniSoulServer<T, U, N, N2>::UniSoulSystem::toString() const
   {
     std::cout << VAR_NAME(_socketServer) << " : " << typeid(_socketServer).name() << std::endl
 	      << VAR_NAME(_socketManager) << " : " << typeid(_socketManager).name() << std::endl
@@ -88,51 +86,50 @@ namespace App
 	      << VAR_NAME(_commandExecutor) << " : " << typeid(_commandExecutor).name() << std::endl;
   }
   
-  template <typename T, typename U, int N>
-  UniSoulServer<T, U, N>::UniSoulServer(const std::string& hostname,
+  template <typename T, typename U, int N, int N2>
+  UniSoulServer<T, U, N, N2>::UniSoulServer(const std::string& hostname,
 					int port) :
     _libraryServiceWrapper(std::make_unique<Wrapper::BoostServiceWrapper>()),
-    _complexSystem(std::make_shared<UniSoulSystem>(
-						   std::make_unique<Network::TCPBoostSocketServer<N, std::shared_ptr<Network::ITCPSocket>>>(_libraryServiceWrapper->getContent(),
-																	    _complexSystem,
-																	    hostname,
-																	    port),
-						   std::make_unique<Communication::UniSoulChannelSystem>(),
-						   std::make_unique<Persistence::PersistentDataFileInteractor>()
+    _complexSystem(std::make_unique<UniSoulSystem>(
+						   std::make_unique<Network::TCPBoostSocketServer<N, N2, std::shared_ptr<Network::ITCPSocket>>>(_libraryServiceWrapper->getContent(),
+																		_complexSystem,
+																		hostname,
+																		port),
+						   std::make_unique<Persistence::PersistentDataFileInteractor>(),
+						   std::make_unique<Communication::UniSoulChannelSystem>()
 						   )),
     _hostname(hostname),
     _port(port)
   {
   }
 
-  template <typename T, typename U, int N>
-  UniSoulServer<T, U, N>::~UniSoulServer() { }
+  template <typename T, typename U, int N, int N2>
+  UniSoulServer<T, U, N, N2>::~UniSoulServer() { }
 
-  template <typename T, typename U, int N>
-  bool UniSoulServer<T, U, N>::init()
+  template <typename T, typename U, int N, int N2>
+  bool UniSoulServer<T, U, N, N2>::init()
   {
-    std::static_pointer_cast<UniSoulSystem>(_complexSystem)->_socketServer->open(0, 0, 0);
+    static_cast<UniSoulSystem *>(_complexSystem.get())->_socketServer->open(0, 0, 0);
     return true;
   }
 
-  template <typename T, typename U, int N>
-  bool UniSoulServer<T, U, N>::run()
+  template <typename T, typename U, int N, int N2>
+  bool UniSoulServer<T, U, N, N2>::run()
   {
-    bool	libraryServiceIsExisting = _libraryServiceWrapper;
-
-    do
-      {
-	std::static_pointer_cast<UniSoulSystem>(_complexSystem)->_socketServer->accept(nullptr, nullptr);
-      } while (!libraryServiceIsExisting);
-    if (libraryServiceIsExisting)
-      _libraryServiceWrapper->getContent().run();
+    static_cast<UniSoulSystem *>(_complexSystem.get())->_socketServer->accept(nullptr, nullptr);
+    _libraryServiceWrapper->getContent().run();
     return true;
   }
 
-  template <typename T, typename U, int N>
-  bool UniSoulServer<T, U, N>::close()
+  template <typename T, typename U, int N, int N2>
+  bool UniSoulServer<T, U, N, N2>::close()
   {
-    std::static_pointer_cast<UniSoulSystem>(_complexSystem)->_socketServer->close();
+    static_cast<UniSoulSystem *>(_complexSystem.get())->_socketServer->close();
+    static_cast<UniSoulSystem *>(_complexSystem.get())
+      ->_socketManager.apply([](const std::unique_ptr<Network::ITCPSocket>& socket)
+			     {
+			       dynamic_cast<Network::TCPBoostSocket<N, N2> *>(socket.get())->close();
+			     });
     return true;
   }
 }

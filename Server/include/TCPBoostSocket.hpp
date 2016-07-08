@@ -17,10 +17,10 @@ namespace System
 
 namespace Network
 {
-  template <int N = 128, int N2 = 60>
+  template <int N, int N2>
   class TCPBoostSocket : virtual public ITCPSocket,
 			 private boost::noncopyable,
-			 public boost::enable_shared_from_this<TCPBoostSocket<N>>
+			 public boost::enable_shared_from_this<TCPBoostSocket<N, N2>>
   {
   private :
     template <int M, int M2>
@@ -38,7 +38,7 @@ namespace Network
     };
     
   protected :
-    using ComplexSystem = std::shared_ptr<System::IComplexSystem>;
+    using ComplexSystem = std::unique_ptr<System::IComplexSystem>;
     
   private :
     boost::asio::ip::tcp::socket	_socket;
@@ -47,7 +47,7 @@ namespace Network
     boost::array<char, N>		_buffer;
 
   protected :
-    ComplexSystem			_complexSystem;
+    ComplexSystem&			_complexSystem;
     
   public :
     TCPBoostSocket(boost::asio::io_service&, ComplexSystem&);
