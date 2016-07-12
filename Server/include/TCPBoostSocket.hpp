@@ -23,7 +23,7 @@ namespace Network
   template <int N, int N2>
   class TCPBoostSocket : virtual public ITCPSocket,
 			 private boost::noncopyable,
-			 public boost
+			 public std
     ::enable_shared_from_this<TCPBoostSocket<N, N2>>
   {
   private :

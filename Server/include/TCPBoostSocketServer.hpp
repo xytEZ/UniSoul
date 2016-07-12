@@ -138,7 +138,7 @@ namespace Network
     std::shared_ptr<TCPBoostSocket<N, N2>>	socket =
       TCPBoostSocket<N, N2>
       ::template create<N, N2>(this->_ios, this->_systemWrapperPtrRef);
-    
+
     _acceptor.async_accept(socket->getSocket(),
 			   boost
 			   ::bind(&TCPBoostSocketServer
@@ -167,7 +167,8 @@ namespace Network
   {
     if (!error)
       {
-	socket->send("Welcome to the server");
+	socket->send("Welcome to the server\n");
+	socket->recv();
 	boost::any_cast
 	  <typename UniSoulSystemWrapper::SocketManager>
 	  (socketServer._systemWrapperPtrRef
