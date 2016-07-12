@@ -7,10 +7,10 @@ namespace Wrapper
 {
   namespace System
   {
-    UniSoulSystemWrapper::UniSoulSystemWrapper(const SocketServer&& socketServer) :
+    UniSoulSystemWrapper::UniSoulSystemWrapper(const SocketServerPtr&& socketServerPtr) :
       _components
     {
-      { "SocketServer", std::move(socketServer) },
+      { "SocketServer", std::move(socketServerPtr) },
 	{ "SocketManager", SocketManager() },
 	  { "PersistentDataInteractor", std::make_shared
 	      <Persistence::PersistentDataFileInteractor>() },

@@ -32,12 +32,12 @@ namespace Wrapper
     class UniSoulSystemWrapper : public ISystemWrapper
     { 
     public :
-      using SocketServer = std::shared_ptr
+      using SocketServerPtr = std::shared_ptr
 	<Network::ITCPSocketServer
 	 <std::shared_ptr<Network::ITCPSocket>>>;
       using SocketManager = Network::SocketManager
 	<std::shared_ptr<Network::ITCPSocket>>;
-      using PersistentDataInteractor = std::shared_ptr
+      using PersistentDataInteractorPtr = std::shared_ptr
 	<Persistence::IPersistentDataInteractor>;
       using ChannelSystem = std::shared_ptr
 	<Communication::IChannelSystem>;
@@ -50,7 +50,7 @@ namespace Wrapper
       VariantMap	_components;
       
     public :
-      UniSoulSystemWrapper(const SocketServer&&);
+      UniSoulSystemWrapper(const SocketServerPtr&&);
       virtual ~UniSoulSystemWrapper();
       virtual VariantMap& getContent();
     };

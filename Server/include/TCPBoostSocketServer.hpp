@@ -25,13 +25,24 @@ namespace Network
   private :
     boost::asio::ip::tcp::acceptor	_acceptor;
     boost::asio::ip::tcp::endpoint	_endpoint;
-    
+
   public :
+    template <int M, int M2, typename U>
+    static std::shared_ptr<TCPBoostSocketServer<M, M2, U>>
+      create(boost::asio::io_service&,
+	     typename TCPBoostSocket<M, M2>
+	     ::SystemWrapperPtrRef,
+	     const std::string&,
+	     int);
+    
+  protected :
     TCPBoostSocketServer(boost::asio::io_service&,
 			 typename TCPBoostSocket<N, N2>
-			 ::SystemWrapperRef,
+			 ::SystemWrapperPtrRef,
 			 const std::string&,
 			 int);
+
+  public :
     virtual ~TCPBoostSocketServer();
     virtual bool open(int, int, int);
     virtual bool close();
@@ -48,13 +59,31 @@ namespace Network
   };
 
   template <int N, int N2, typename T>
+  template <int M, int M2, typename U>
+  std::shared_ptr<TCPBoostSocketServer<M, M2, U>>
+    TCPBoostSocketServer<N, N2, T>
+    ::create(boost::asio::io_service& ios,
+	     typename TCPBoostSocket<M, M2>
+	     ::SystemWrapperPtrRef systemWrapperPtrRef,
+	     const std::string& hostname,
+	     int port)
+  {
+    return std::shared_ptr
+      <TCPBoostSocketServer<M, M2, U>>
+       (new TCPBoostSocketServer<M, M2, U>(ios,
+					   systemWrapperPtrRef,
+					   hostname,
+					   port));
+  }
+  
+  template <int N, int N2, typename T>
   TCPBoostSocketServer<N, N2, T>
   ::TCPBoostSocketServer(boost::asio::io_service& ios,
 			 typename TCPBoostSocket<N, N2>
-			 ::SystemWrapperRef systemWrapperRef,
+			 ::SystemWrapperPtrRef systemWrapperPtrRef,
 			 const std::string& hostname,
 			 int port) :
-    TCPBoostSocket<N, N2>(ios, systemWrapperRef),
+    TCPBoostSocket<N, N2>(ios, systemWrapperPtrRef),
     _acceptor(ios),
     _endpoint(boost::asio::ip::address::from_string(hostname), port)
   {
@@ -107,9 +136,9 @@ namespace Network
   T TCPBoostSocketServer<N, N2, T>::accept(t_sockaddr *, int *)
   {
     std::shared_ptr<TCPBoostSocket<N, N2>>	socket =
-      std::make_unique<TCPBoostSocket<N, N2>>(this->_ios,
-					      this->_systemWrapperRef);
-
+      TCPBoostSocket<N, N2>
+      ::template create<N, N2>(this->_ios, this->_systemWrapperPtrRef);
+    
     _acceptor.async_accept(socket->getSocket(),
 			   boost
 			   ::bind(&TCPBoostSocketServer
@@ -141,7 +170,7 @@ namespace Network
 	socket->send("Welcome to the server");
 	boost::any_cast
 	  <typename UniSoulSystemWrapper::SocketManager>
-	  (socketServer._systemWrapperRef
+	  (socketServer._systemWrapperPtrRef
 	   ->getContent()["SocketManager"])
 	  .addSocket(socket);
 	socketServer.accept(nullptr, nullptr);

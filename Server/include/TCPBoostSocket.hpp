@@ -42,7 +42,7 @@ namespace Network
     };
     
   protected :
-    using SystemWrapperRef = std::unique_ptr
+    using SystemWrapperPtrRef = std::unique_ptr
       <Wrapper::System::ISystemWrapper>&;
     
   private :
@@ -53,10 +53,18 @@ namespace Network
 
   protected :
     boost::asio::io_service&		_ios;
-    SystemWrapperRef			_systemWrapperRef;
+    SystemWrapperPtrRef			_systemWrapperPtrRef;
+
+  public :
+    template <int M, int M2>
+      static std::shared_ptr<TCPBoostSocket<M, M2>>
+      create(boost::asio::io_service&,
+	     SystemWrapperPtrRef&);
+    
+  protected :
+    TCPBoostSocket(boost::asio::io_service&, SystemWrapperPtrRef&);
     
   public :
-    TCPBoostSocket(boost::asio::io_service&, SystemWrapperRef&);
     virtual ~TCPBoostSocket();
     virtual bool open(int, int, int);
     virtual bool close();
@@ -73,12 +81,22 @@ namespace Network
   };
 
   template <int N, int N2>
+  template <int M, int M2>
+  std::shared_ptr<TCPBoostSocket<M, M2>> TCPBoostSocket<N, N2>
+    ::create(boost::asio::io_service& ios,
+	     SystemWrapperPtrRef systemWrapperPtrRef)
+  {
+    return std::shared_ptr
+      <TCPBoostSocket<M, M2>>(new TCPBoostSocket<M, M2>(ios, systemWrapperPtrRef));
+  }
+  
+  template <int N, int N2>
   TCPBoostSocket<N, N2>::TCPBoostSocket(boost::asio::io_service& ios,
-					SystemWrapperRef systemWrapperRef) :
+					SystemWrapperPtrRef systemWrapperPtrRef) :
     _socket(ios),
     _timer(ios, boost::posix_time::seconds(N2)),
     _ios(ios),
-    _systemWrapperRef(systemWrapperRef)
+    _systemWrapperPtrRef(systemWrapperPtrRef)
   {
   }
 
