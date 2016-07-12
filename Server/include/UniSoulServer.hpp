@@ -53,9 +53,15 @@ namespace App
     boost::any_cast
       <typename UniSoulSystemWrapper::SocketServer>
       (_systemWrapper->getContent()["SocketServer"])->open(0, 0, 0);
+    boost::any_cast
+      <typename UniSoulSystemWrapper::SocketServer>
+      (_systemWrapper->getContent()["SocketServer"])->bind(nullptr, 0);
+    boost::any_cast
+      <typename UniSoulSystemWrapper::SocketServer>
+      (_systemWrapper->getContent()["SocketServer"])->listen(0);
     return true;
   }
-
+  
   template <typename T, int N, int N2>
   bool UniSoulServer<T, N, N2>::run()
   {
@@ -78,7 +84,7 @@ namespace App
       .apply([](const std::shared_ptr<Network::ITCPSocket>& socket)
 	     {
 		socket->close();
-	      });
+	     });
     return true;
   }
 }

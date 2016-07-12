@@ -22,9 +22,9 @@ namespace Command
   public :
     CommandFactory();
     ~CommandFactory();
-    void addCommand(const std::string&&,
-		    const std::shared_ptr<ICommand<T>>&&);
-    std::shared_ptr<Command::ICommand<T>>& getCommand(const std::string&&);
+    void addCommand(const std::string&,
+		    const std::shared_ptr<ICommand<T>>&);
+    std::shared_ptr<Command::ICommand<T>>& getCommand(const std::string&);
     void listCommands() const;
   };
 
@@ -35,14 +35,14 @@ namespace Command
   CommandFactory<T>::~CommandFactory() { }
 
   template <typename T>
-  void CommandFactory<T>::addCommand(const std::string&& name,
-				     const std::shared_ptr<ICommand<T>>&& command)
+  void CommandFactory<T>::addCommand(const std::string& name,
+				     const std::shared_ptr<ICommand<T>>& command)
   {
     _commands[std::move(name)] = std::move(command);
   }
 
   template <typename T>
-  std::shared_ptr<ICommand<T>>& CommandFactory<T>::getCommand(const std::string&& name)
+  std::shared_ptr<ICommand<T>>& CommandFactory<T>::getCommand(const std::string& name)
   {
     return _commands[std::move(name)];
   }

@@ -52,6 +52,7 @@ namespace Network
     boost::array<char, N>		_buffer;
 
   protected :
+    boost::asio::io_service&		_ios;
     SystemWrapperRef			_systemWrapperRef;
     
   public :
@@ -76,6 +77,7 @@ namespace Network
 					SystemWrapperRef systemWrapperRef) :
     _socket(ios),
     _timer(ios, boost::posix_time::seconds(N2)),
+    _ios(ios),
     _systemWrapperRef(systemWrapperRef)
   {
   }

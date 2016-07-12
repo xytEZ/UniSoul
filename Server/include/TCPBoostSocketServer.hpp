@@ -56,7 +56,7 @@ namespace Network
 			 int port) :
     TCPBoostSocket<N, N2>(ios, systemWrapperRef),
     _acceptor(ios),
-    _endpoint(boost::asio::ip::address::from_string(std::move(hostname)), port)
+    _endpoint(boost::asio::ip::address::from_string(hostname), port)
   {
   }
 
@@ -106,8 +106,10 @@ namespace Network
   template <int N, int N2, typename T>
   T TCPBoostSocketServer<N, N2, T>::accept(t_sockaddr *, int *)
   {
-    std::shared_ptr<TCPBoostSocket<N, N2>>	socket;
-    
+    std::shared_ptr<TCPBoostSocket<N, N2>>	socket =
+      std::make_unique<TCPBoostSocket<N, N2>>(this->_ios,
+					      this->_systemWrapperRef);
+
     _acceptor.async_accept(socket->getSocket(),
 			   boost
 			   ::bind(&TCPBoostSocketServer
@@ -137,6 +139,11 @@ namespace Network
     if (!error)
       {
 	socket->send("Welcome to the server");
+	boost::any_cast
+	  <typename UniSoulSystemWrapper::SocketManager>
+	  (socketServer._systemWrapperRef
+	   ->getContent()["SocketManager"])
+	  .addSocket(socket);
 	socketServer.accept(nullptr, nullptr);
       }
   }
