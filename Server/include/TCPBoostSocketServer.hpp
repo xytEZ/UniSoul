@@ -27,7 +27,8 @@ namespace Network
     
   public :
     TCPBoostSocketServer(boost::asio::io_service&,
-			 typename TCPBoostSocket<N, N2>::ComplexSystem&,
+			 typename TCPBoostSocket<N, N2>
+			 ::SystemWrapperRef,
 			 const std::string&,
 			 int);
     virtual ~TCPBoostSocketServer();
@@ -46,11 +47,13 @@ namespace Network
   };
 
   template <int N, int N2, typename T>
-  TCPBoostSocketServer<N, N2, T>::TCPBoostSocketServer(boost::asio::io_service& ios,
-						       typename TCPBoostSocket<N, N2>::ComplexSystem& complexSystem,
-						       const std::string& hostname,
-						       int port) :
-    TCPBoostSocket<N, N2>(ios, complexSystem),
+  TCPBoostSocketServer<N, N2, T>
+  ::TCPBoostSocketServer(boost::asio::io_service& ios,
+			 typename TCPBoostSocket<N, N2>
+			 ::SystemWrapperRef systemWrapperRef,
+			 const std::string& hostname,
+			 int port) :
+    TCPBoostSocket<N, N2>(ios, systemWrapperRef),
     _acceptor(ios),
     _endpoint(boost::asio::ip::address::from_string(std::move(hostname)), port)
   {
@@ -105,26 +108,30 @@ namespace Network
     std::shared_ptr<TCPBoostSocket<N, N2>>	socket;
     
     _acceptor.async_accept(socket->getSocket(),
-			   boost::bind(&TCPBoostSocketServer::handleAccept<HandlerAsyncAccept<N, N2, T>>,
-				       this,
-				       socket,
-				       boost::asio::placeholders::error));
+			   boost
+			   ::bind(&TCPBoostSocketServer
+				  ::handleAccept<HandlerAsyncAccept<N, N2, T>>,
+				  this,
+				  socket,
+				  boost::asio::placeholders::error));
     return socket;
   }
 
   template <int N, int N2, typename T>
   template <typename HandlerPolicy>
-  void TCPBoostSocketServer<N, N2, T>::handleAccept(std::shared_ptr<TCPBoostSocket<N, N2>>& socket,
-					     const boost::system::error_code& error)
+  void TCPBoostSocketServer<N, N2, T>
+  ::handleAccept(std::shared_ptr<TCPBoostSocket<N, N2>>& socket,
+		 const boost::system::error_code& error)
   {
     HandlerPolicy::handleAccept(*this, socket, error);
   }
 
   template <int N, int N2, typename T>
   template <int M, int M2, typename U>
-  void TCPBoostSocketServer<N, N2, T>::HandlerAsyncAccept<M, M2, U>::handleAccept(TCPBoostSocketServer<M, M2, U>&,
-										  std::shared_ptr<TCPBoostSocket<M, M2>>&,
-										  const boost::system::error_code&)
+  void TCPBoostSocketServer<N, N2, T>::HandlerAsyncAccept<M, M2, U>
+  ::handleAccept(TCPBoostSocketServer<M, M2, U>&,
+		 std::shared_ptr<TCPBoostSocket<M, M2>>&,
+		 const boost::system::error_code&)
   {
   }
 }

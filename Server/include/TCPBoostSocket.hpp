@@ -10,9 +10,12 @@
 # include <boost/date_time/posix_time/posix_time_io.hpp>
 # include "ITCPSocket.hh"
 
-namespace System
+namespace Wrapper
 {
-  struct IComplexSystem;
+  namespace System
+  {
+    class ISystemWrapper;
+  }
 }
 
 namespace Network
@@ -20,7 +23,8 @@ namespace Network
   template <int N, int N2>
   class TCPBoostSocket : virtual public ITCPSocket,
 			 private boost::noncopyable,
-			 public boost::enable_shared_from_this<TCPBoostSocket<N, N2>>
+			 public boost
+    ::enable_shared_from_this<TCPBoostSocket<N, N2>>
   {
   private :
     template <int M, int M2>
@@ -38,7 +42,8 @@ namespace Network
     };
     
   protected :
-    using ComplexSystem = std::unique_ptr<System::IComplexSystem>;
+    using SystemWrapperRef = std::unique_ptr
+      <Wrapper::System::ISystemWrapper>&;
     
   private :
     boost::asio::ip::tcp::socket	_socket;
@@ -47,10 +52,10 @@ namespace Network
     boost::array<char, N>		_buffer;
 
   protected :
-    ComplexSystem&			_complexSystem;
+    SystemWrapperRef			_systemWrapperRef;
     
   public :
-    TCPBoostSocket(boost::asio::io_service&, ComplexSystem&);
+    TCPBoostSocket(boost::asio::io_service&, SystemWrapperRef&);
     virtual ~TCPBoostSocket();
     virtual bool open(int, int, int);
     virtual bool close();
@@ -68,10 +73,10 @@ namespace Network
 
   template <int N, int N2>
   TCPBoostSocket<N, N2>::TCPBoostSocket(boost::asio::io_service& ios,
-					ComplexSystem& complexSystem) :
+					SystemWrapperRef systemWrapperRef) :
     _socket(ios),
     _timer(ios, boost::posix_time::seconds(N2)),
-    _complexSystem(complexSystem)
+    _systemWrapperRef(systemWrapperRef)
   {
   }
 
@@ -94,9 +99,11 @@ namespace Network
     _msg = std::move(msg);
     boost::asio::async_write(_socket,
 			     boost::asio::buffer(_msg),
-			     boost::bind(&TCPBoostSocket::handleSend<HandlerAsyncWrite<N, N2>>,
-					 this->shared_from_this(),
-					 boost::asio::placeholders::error));
+			     boost
+			     ::bind(&TCPBoostSocket
+				    ::handleSend<HandlerAsyncWrite<N, N2>>,
+				    this->shared_from_this(),
+				    boost::asio::placeholders::error));
     return true;
   }
 
@@ -105,11 +112,14 @@ namespace Network
   {
     boost::asio::async_read(_socket,
 			    boost::asio::buffer(_buffer),
-			    boost::bind(&TCPBoostSocket::handleRecv<HandlerAsyncRead<N, N2>>,
-					this->shared_from_this(),
-					boost::asio::placeholders::error));
+			    boost
+			    ::bind(&TCPBoostSocket
+				   ::handleRecv<HandlerAsyncRead<N, N2>>,
+				   this->shared_from_this(),
+				   boost::asio::placeholders::error));
     _timer.expires_from_now(boost::posix_time::seconds(N2));
-    _timer.async_wait(boost::bind(&TCPBoostSocket::close, this->shared_from_this()));
+    _timer.async_wait(boost::bind(&TCPBoostSocket::close,
+				  this->shared_from_this()));
     return "";
   }
 
@@ -135,15 +145,17 @@ namespace Network
 
   template <int N, int N2>
   template <int M, int M2>
-  void TCPBoostSocket<N, N2>::HandlerAsyncRead<M, M2>::handleRead(TCPBoostSocket<M, M2>&,
-								  const boost::system::error_code&)
+  void TCPBoostSocket<N, N2>::HandlerAsyncRead<M, M2>
+  ::handleRead(TCPBoostSocket<M, M2>&,
+	       const boost::system::error_code&)
   {
   }
 
   template <int N, int N2>
   template <int M, int M2>
-  void TCPBoostSocket<N, N2>::HandlerAsyncWrite<M, M2>::handleWrite(TCPBoostSocket<M, M2>&,
-								    const boost::system::error_code&)
+  void TCPBoostSocket<N, N2>::HandlerAsyncWrite<M, M2>
+  ::handleWrite(TCPBoostSocket<M, M2>&,
+		const boost::system::error_code&)
   {
   }
 }
