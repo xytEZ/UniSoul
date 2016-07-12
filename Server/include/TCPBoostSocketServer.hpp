@@ -5,6 +5,7 @@
 # include <boost/bind.hpp>
 # include "TCPBoostSocket.hpp"
 # include "ITCPSocketServer.hpp"
+# include "UniSoulSystemWrapper.hh"
 
 namespace Network
 {
@@ -129,10 +130,15 @@ namespace Network
   template <int N, int N2, typename T>
   template <int M, int M2, typename U>
   void TCPBoostSocketServer<N, N2, T>::HandlerAsyncAccept<M, M2, U>
-  ::handleAccept(TCPBoostSocketServer<M, M2, U>&,
-		 std::shared_ptr<TCPBoostSocket<M, M2>>&,
-		 const boost::system::error_code&)
+  ::handleAccept(TCPBoostSocketServer<M, M2, U>& socketServer,
+		 std::shared_ptr<TCPBoostSocket<M, M2>>& socket,
+		 const boost::system::error_code& error)
   {
+    if (!error)
+      {
+	socket->send("Welcome to the server");
+	socketServer.accept(nullptr, nullptr);
+      }
   }
 }
 

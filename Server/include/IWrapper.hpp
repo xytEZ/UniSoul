@@ -12,4 +12,4 @@ namespace Wrapper
   };
 }
 
-#endif /* !IWRAPPER_HPP__ */
+#endif /* !IWRAPPER_HPP_ */
