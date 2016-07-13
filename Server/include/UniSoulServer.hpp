@@ -5,7 +5,6 @@
 # include "IApp.hh"
 # include "BoostServiceWrapper.hh"
 # include "TCPBoostSocketServer.hpp"
-# include "UniSoulSystemWrapper.hh"
 
 namespace App
 {

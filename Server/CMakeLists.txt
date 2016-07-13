@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 project(Server)
 
-include_directories(include/)
+include_directories(include/ ../protocol/)
 
 add_definitions(-W -Wall -Wextra -std=c++14)
 

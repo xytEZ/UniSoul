@@ -4,10 +4,11 @@
 # include <sys/socket.h>
 # include <netinet/in.h>
 # include <netinet/ip.h>
-# include "ITCPSocket.hh"
 
 namespace Network
 {
+  class ITCPSocket;
+  
   using t_sockaddr = struct sockaddr;
   
   template <typename T = int>

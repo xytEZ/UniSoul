@@ -11,15 +11,8 @@
 # include <boost/any.hpp>
 # include <boost/bind.hpp>
 # include "ITCPSocket.hh"
-# include "UniSoulSystemWrapper.hh"
-
-namespace Wrapper
-{
-  namespace System
-  {
-    class ISystemWrapper;
-  }
-}
+# include "HandlerAsyncRead.hpp"
+# include "HandlerAsyncWrite.hpp"
 
 namespace Network
 {
@@ -28,22 +21,7 @@ namespace Network
 			 private boost::noncopyable,
 			 public std::enable_shared_from_this
     <TCPBoostSocket<N, N2>>
-  {
-  private :
-    template <int M, int M2>
-      struct HandlerAsyncWrite
-    {
-      static void handleWrite(std::shared_ptr<TCPBoostSocket<M, M2>>&,
-			      const boost::system::error_code&);
-    };
-    
-    template <int M, int M2>
-      struct HandlerAsyncRead
-    {
-      static void handleRead(std::shared_ptr<TCPBoostSocket<M, M2>>&,
-			     const boost::system::error_code&);
-    };
-    
+  { 
   protected :
     using SystemWrapperPtrRef = std::unique_ptr
       <Wrapper::System::ISystemWrapper>&;
@@ -74,6 +52,7 @@ namespace Network
     virtual bool send(const std::string&);
     virtual std::string recv();
     boost::asio::ip::tcp::socket& getSocket();
+    SystemWrapperPtrRef getSystemWrapperPtrRef();
 
   private :
     template <typename HandlerPolicy>
@@ -126,7 +105,8 @@ namespace Network
 			     boost::asio::buffer(_msg),
 			     boost
 			     ::bind(&TCPBoostSocket
-				    ::handleSend<HandlerAsyncWrite<N, N2>>,
+				    ::handleSend
+				    <Handler::HandlerAsyncWrite<N, N2>>,
 				    this->shared_from_this(),
 				    this->shared_from_this(),
 				    boost::asio::placeholders::error));
@@ -140,7 +120,8 @@ namespace Network
 			    boost::asio::buffer(_buffer),
 			    boost
 			    ::bind(&TCPBoostSocket
-				   ::handleRecv<HandlerAsyncRead<N, N2>>,
+				   ::handleRecv
+				   <Handler::HandlerAsyncRead<N, N2>>,
 				   this->shared_from_this(),
 				   this->shared_from_this(),
 				   boost::asio::placeholders::error));
@@ -154,6 +135,13 @@ namespace Network
   boost::asio::ip::tcp::socket& TCPBoostSocket<N, N2>::getSocket()
   {
     return _socket;
+  }
+
+  template <int N, int N2>
+  typename TCPBoostSocket<N, N2>::SystemWrapperPtrRef
+  TCPBoostSocket<N, N2>::getSystemWrapperPtrRef()
+  {
+    return _systemWrapperPtrRef;
   }
   
   template <int N, int N2>
@@ -170,38 +158,6 @@ namespace Network
 					 const boost::system::error_code& error)
   {
     HandlerPolicy::handleRead(socket, error);
-  }
-
-  template <int N, int N2>
-  template <int M, int M2>
-  void TCPBoostSocket<N, N2>::HandlerAsyncWrite<M, M2>
-  ::handleWrite(std::shared_ptr<TCPBoostSocket<M, M2>>& socket,
-		const boost::system::error_code& error)
-  {
-    if (error)
-      {
-	boost::any_cast
-	  <typename UniSoulSystemWrapper::SocketManager>
-	  (socket->_systemWrapperPtrRef->getContent()["SocketManager"])
-	  .deleteSocket(socket);
-	socket->close();
-      }
-  }
-  
-  template <int N, int N2>
-  template <int M, int M2>
-  void TCPBoostSocket<N, N2>::HandlerAsyncRead<M, M2>
-  ::handleRead(std::shared_ptr<TCPBoostSocket<M, M2>>& socket,
-	       const boost::system::error_code& error)
-  {
-    if (error)
-      {
-	boost::any_cast
-	  <typename UniSoulSystemWrapper::SocketManager>
-	  (socket->_systemWrapperPtrRef->getContent()["SocketManager"])
-	  .deleteSocket(socket);
-	socket->close();
-      }
   }
 }
 

@@ -2,10 +2,12 @@
 # define COMMAND_EXECUTOR_HPP_
 
 # include <memory>
-# include "ICommand.hpp"
 
 namespace Command
 {
+  template <typename T>
+  class ICommand;
+  
   template <typename T>
   class CommandExecutor
   {

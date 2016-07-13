@@ -3,22 +3,14 @@
 
 # include "TCPBoostSocket.hpp"
 # include "ITCPSocketServer.hpp"
+# include "HandlerAsyncAccept.hpp"
 
 namespace Network
-{
+{ 
   template <int N, int N2, typename T = TCPBoostSocket<N, N2>>
     class TCPBoostSocketServer : public TCPBoostSocket<N, N2>,
 				 public ITCPSocketServer<T>
-  {
-  private :
-    template <int M, int M2, typename U>
-    struct HandlerAsyncAccept
-    {
-      static void handleAccept(std::shared_ptr<TCPBoostSocketServer<M, M2, U>>&,
-			       std::shared_ptr<TCPBoostSocket<M, M2>>&,
-			       const boost::system::error_code&);
-    };
-    
+  { 
   private :
     boost::asio::ip::tcp::acceptor	_acceptor;
     boost::asio::ip::tcp::endpoint	_endpoint;
@@ -140,7 +132,8 @@ namespace Network
     _acceptor.async_accept(socket->getSocket(),
 			   boost
 			   ::bind(&TCPBoostSocketServer
-				  ::handleAccept<HandlerAsyncAccept<N, N2, T>>,
+				  ::handleAccept
+				  <Handler::HandlerAsyncAccept<N, N2, T>>,
 				  this,
 				  std::static_pointer_cast
 				  <TCPBoostSocketServer<N, N2, T>>
@@ -158,26 +151,6 @@ namespace Network
 		 const boost::system::error_code& error)
   {
     HandlerPolicy::handleAccept(socketServer, socket, error);
-  }
-
-  template <int N, int N2, typename T>
-  template <int M, int M2, typename U>
-  void TCPBoostSocketServer<N, N2, T>::HandlerAsyncAccept<M, M2, U>
-  ::handleAccept(std::shared_ptr<TCPBoostSocketServer<M, M2, U>>& socketServer,
-		 std::shared_ptr<TCPBoostSocket<M, M2>>& socket,
-		 const boost::system::error_code& error)
-  {
-    if (!error)
-      {
-	socket->send("Welcome to the server\n");
-	socket->recv();
-	boost::any_cast
-	  <typename UniSoulSystemWrapper::SocketManager>
-	  (socketServer->_systemWrapperPtrRef
-	   ->getContent()["SocketManager"])
-	  .addSocket(socket);
-	socketServer->accept(nullptr, nullptr);
-      }
   }
 }
 
