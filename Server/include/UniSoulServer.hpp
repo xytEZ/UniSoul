@@ -36,9 +36,7 @@ namespace App
 		      <Wrapper::System::UniSoulSystemWrapper>
 		      (Network::TCPBoostSocketServer
 		       <N, N2, std::shared_ptr<Network::ITCPSocket>>
-		       ::template create
-		       <N, N2,
-		       std::shared_ptr
+		       ::template create<N, N2, std::shared_ptr
 		       <Network::ITCPSocket>>(_libraryServiceWrapperPtr->getContent(),
 					      _systemWrapperPtr,
 					      hostname,
@@ -85,7 +83,7 @@ namespace App
       (_systemWrapperPtr->getContent()["SocketManager"])
       .apply([](const std::shared_ptr<Network::ITCPSocket>& socket)
 	     {
-		socket->close();
+	       socket->close();
 	     });
     return true;
   }

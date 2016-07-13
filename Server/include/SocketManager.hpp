@@ -38,10 +38,11 @@ namespace Network
     _sockets.push_back(socket);
   }
 
+  
   template <typename T>
   void SocketManager<T>::deleteSocket(const T& socket)
   {
-    _sockets.deleteSocket(socket);
+    _sockets.remove(socket);
   }
 
   template <typename T>
