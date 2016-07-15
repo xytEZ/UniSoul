@@ -1,6 +1,7 @@
 #ifndef UNI_SOUL_SERVER_HPP_
 # define UNI_SOUL_SERVER_HPP_
 
+# include <cstddef>
 # include <memory>
 # include "IApp.hh"
 # include "BoostServiceWrapper.hh"
@@ -8,7 +9,7 @@
 
 namespace App
 {
-  template <typename T, int N = 128, int N2 = 60>
+  template <typename T, std::size_t N = 128, std::size_t N2 = 60>
   class UniSoulServer : public IApp
   {    
   private :
@@ -27,7 +28,7 @@ namespace App
     virtual bool close();
   };
 
-  template <typename T, int N, int N2>
+  template <typename T, std::size_t N, std::size_t N2>
   UniSoulServer<T, N, N2>::UniSoulServer(const std::string& hostname,
 					 int port) :
     _libraryServiceWrapperPtr(std::make_unique<Wrapper::BoostServiceWrapper>()),
@@ -43,10 +44,10 @@ namespace App
   {
   }
   
-  template <typename T, int N, int N2>
+  template <typename T, std::size_t N, std::size_t N2>
   UniSoulServer<T, N, N2>::~UniSoulServer() { }
   
-  template <typename T, int N, int N2>
+  template <typename T, std::size_t N, std::size_t N2>
   bool UniSoulServer<T, N, N2>::init()
   {
     boost::any_cast
@@ -61,7 +62,7 @@ namespace App
     return true;
   }
   
-  template <typename T, int N, int N2>
+  template <typename T, std::size_t N, std::size_t N2>
   bool UniSoulServer<T, N, N2>::run()
   {
     boost::any_cast
@@ -71,7 +72,7 @@ namespace App
     return true;
   }
 
-  template <typename T, int N, int N2>
+  template <typename T, std::size_t N, std::size_t N2>
   bool UniSoulServer<T, N, N2>::close()
   {
     boost::any_cast

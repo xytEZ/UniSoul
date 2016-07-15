@@ -1,22 +1,23 @@
 #ifndef HANDLER_ASYNC_ACCEPT_HPP_
 # define HANDLER_ASYNC_ACCEPT_HPP_
 
+# include <cstddef>
 # include <memory>
 # include <boost/system/error_code.hpp>
 # include "UniSoulSystemWrapper.hh"
 
 namespace Network
 {
-  template <int N, int N2, typename T>
+  template <std::size_t N, std::size_t N2, typename T>
   class TCPBoostSocketServer;
 
-  template <int N, int N2>
+  template <std::size_t N, std::size_t N2>
   class TCPBoostSocket;
 }
 
 namespace Handler
 {
-  template <int N, int N2, typename T>
+  template <std::size_t N, std::size_t N2, typename T>
   struct HandlerAsyncAccept
   {
     static void handleAccept(std::shared_ptr
@@ -25,7 +26,7 @@ namespace Handler
 			     const boost::system::error_code&);
   };
   
-  template <int N, int N2, typename T>
+  template <std::size_t N, std::size_t N2, typename T>
   void HandlerAsyncAccept<N, N2, T>
   ::handleAccept(std::shared_ptr
 		 <Network::TCPBoostSocketServer<N, N2, T>>& socketServer,

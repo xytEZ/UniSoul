@@ -6,6 +6,8 @@
 # include "SocketManager.hpp"
 # include "CommandFactory.hpp"
 # include "CommandExecutor.hpp"
+# include "UniSoulChannelSystem.hh"
+# include "UserCheckerManager.hh"
 
 namespace Network
 {
@@ -13,16 +15,6 @@ namespace Network
   class ITCPSocketServer;
 
   class ITCPSocket;
-}
-
-namespace Persistence
-{
-  class IPersistentDataInteractor;
-}
-
-namespace Communication
-{
-  class IChannelSystem;
 }
 
 namespace Wrapper
@@ -35,12 +27,10 @@ namespace Wrapper
       using SocketServerPtr = std::shared_ptr
 	<Network::ITCPSocketServer
 	 <std::shared_ptr<Network::ITCPSocket>>>;
-      using SocketManager = Network::SocketManager
+      using SocketManager = Network::Manager::SocketManager
 	<std::shared_ptr<Network::ITCPSocket>>;
-      using PersistentDataInteractorPtr = std::shared_ptr
-	<Persistence::IPersistentDataInteractor>;
-      using ChannelSystem = std::shared_ptr
-	<Communication::IChannelSystem>;
+      using UserCheckerManager = Persistence::Manager::UserCheckerManager;
+      using ChannelSystem = Communication::Channel::UniSoulChannelSystem;
       using CommandFactory = Command
 	::CommandFactory<UniSoulSystemWrapper>;
       using CommandExecutor = Command
@@ -50,7 +40,7 @@ namespace Wrapper
       VariantMap	_components;
       
     public :
-      UniSoulSystemWrapper(const SocketServerPtr&&);
+      UniSoulSystemWrapper(SocketServerPtr&&);
       virtual ~UniSoulSystemWrapper();
       virtual VariantMap& getContent();
     };

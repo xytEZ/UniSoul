@@ -1,21 +1,19 @@
+#include <utility>
+#include "PersistentDataFileInteractor.hpp"
+#include "File.hpp"
 #include "UniSoulSystemWrapper.hh"
-#include "PersistentDataFileInteractor.hh"
-#include "UniSoulChannelSystem.hh"
-#include "TCPBoostSocketServer.hpp"
 
 namespace Wrapper
 {
   namespace System
   {
-    UniSoulSystemWrapper::UniSoulSystemWrapper(const SocketServerPtr&& socketServerPtr) :
+    UniSoulSystemWrapper::UniSoulSystemWrapper(SocketServerPtr&& socketServerPtr) :
       _components
     {
       { "SocketServer", std::move(socketServerPtr) },
 	{ "SocketManager", SocketManager() },
-	  { "PersistentDataInteractor", std::make_shared
-	      <Persistence::PersistentDataFileInteractor>() },
-	    { "ChannelSystem", std::make_shared
-		<Communication::UniSoulChannelSystem>() },
+	  { "UserCheckerManager", UserCheckerManager(std::make_unique<Persistence::File::PersistentDataFileInteractor<bool>>(std::make_unique<Persistence::File::File<bool>>(""))) },
+	    { "ChannelSystem", ChannelSystem() },
 	      { "CommandFactory", CommandFactory() },
 		{ "CommandExecutor", CommandExecutor() }
     }
