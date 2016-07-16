@@ -43,7 +43,7 @@ namespace Wrapper
     VariantMap	_components;
       
   public :
-    UniSoulSystemWrapper(ServerSocketPtr&&);
+    UniSoulSystemWrapper(const ServerSocketPtr&);
     virtual ~UniSoulSystemWrapper();
     virtual VariantMap& getContent();
   };

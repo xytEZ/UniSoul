@@ -19,13 +19,15 @@ namespace Handler
   template <std::size_t N, std::size_t N2>
   struct HandlerAsyncRead
   {
-    static void handleRead(std::shared_ptr<Network::TCPBoostSocket<N, N2>>&,
+    static void handleRead(const std::shared_ptr
+			   <Network::TCPBoostSocket<N, N2>>&,
 			   const boost::system::error_code&);
   };
   
   template <std::size_t N, std::size_t N2>
   void HandlerAsyncRead<N, N2>
-  ::handleRead(std::shared_ptr<Network::TCPBoostSocket<N, N2>>& socketPtr,
+  ::handleRead(const std::shared_ptr
+	       <Network::TCPBoostSocket<N, N2>>& socketPtr,
 	       const boost::system::error_code& error)
   {
     if (error)

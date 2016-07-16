@@ -35,14 +35,16 @@ namespace Command
   CommandFactory<T>::~CommandFactory() { }
 
   template <typename T>
-  void CommandFactory<T>::addCommand(const std::string& name,
-				     const std::shared_ptr<ICommand<T>>& commandPtr)
+  void CommandFactory<T>
+  ::addCommand(const std::string& name,
+	       const std::shared_ptr<ICommand<T>>& commandPtr)
   {
     _commands[std::move(name)] = std::move(commandPtr);
   }
 
   template <typename T>
-  std::shared_ptr<ICommand<T>>& CommandFactory<T>::getCommand(const std::string& name)
+  std::shared_ptr<ICommand<T>>& CommandFactory<T>
+  ::getCommand(const std::string& name)
   {
     return _commands[std::move(name)];
   }
@@ -53,7 +55,8 @@ namespace Command
     std::cout << "Commands enabled :" << std::endl;
     std::for_each(_commands.cbegin(),
 		  _commands.cend(),
-		  [](const std::pair<std::string, std::shared_ptr<ICommand<T>>>& pair)
+		  [](const std::pair
+		     <std::string,std::shared_ptr<ICommand<T>>>& pair)
 		  {
 		    std::cout << pair.first << std::endl;
 		  });

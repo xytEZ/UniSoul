@@ -23,17 +23,19 @@ namespace Handler
   template <std::size_t N, std::size_t N2, typename T>
   struct HandlerAsyncAccept
   {
-    static void handleAccept(std::shared_ptr
+    static void handleAccept(const std::shared_ptr
 			     <Network::TCPBoostSocketServer<N, N2, T>>&,
-			     std::shared_ptr<Network::TCPBoostSocket<N, N2>>&,
+			     const std::shared_ptr
+			     <Network::TCPBoostSocket<N, N2>>&,
 			     const boost::system::error_code&);
   };
   
   template <std::size_t N, std::size_t N2, typename T>
   void HandlerAsyncAccept<N, N2, T>
-  ::handleAccept(std::shared_ptr
+  ::handleAccept(const std::shared_ptr
 		 <Network::TCPBoostSocketServer<N, N2, T>>& serverSocketPtr,
-		 std::shared_ptr<Network::TCPBoostSocket<N, N2>>& socketPtr,
+		 const std::shared_ptr
+		 <Network::TCPBoostSocket<N, N2>>& socketPtr,
 		 const boost::system::error_code& error)
   {
     if (!error)
@@ -50,11 +52,6 @@ namespace Handler
 	  (serverSocketPtr->getSystemWrapperPtrRef()
 	   ->getContent()["ConnectionManager"])
 	  .addConnection(connectionPtr);
-	std::cout << boost::any_cast
-	  <typename UniSoulSystemWrapper::ConnectionManager&>
-	  (serverSocketPtr->getSystemWrapperPtrRef()
-	   ->getContent()["ConnectionManager"])
-	   .size() << std::endl;
 	serverSocketPtr->accept(nullptr, nullptr);
       }
   }

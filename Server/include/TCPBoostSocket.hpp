@@ -58,11 +58,11 @@ namespace Network
 
   private :
     template <typename HandlerPolicy>
-      void handleSend(std::shared_ptr<TCPBoostSocket<N, N2>>,
+      void handleSend(const std::shared_ptr<TCPBoostSocket<N, N2>>&,
 		      const boost::system::error_code&);
     
     template <typename HandlerPolicy>
-      void handleRecv(std::shared_ptr<TCPBoostSocket<N, N2>>,
+      void handleRecv(const std::shared_ptr<TCPBoostSocket<N, N2>>&,
 		      const boost::system::error_code&);
   };
 
@@ -73,12 +73,14 @@ namespace Network
 	     SystemWrapperPtrRef systemWrapperPtrRef)
   {
     return std::shared_ptr
-      <TCPBoostSocket<M, M2>>(new TCPBoostSocket<M, M2>(ios, systemWrapperPtrRef));
+      <TCPBoostSocket<M, M2>>(new TCPBoostSocket
+			      <M, M2>(ios, systemWrapperPtrRef));
   }
   
   template <std::size_t N, std::size_t N2>
-  TCPBoostSocket<N, N2>::TCPBoostSocket(boost::asio::io_service& ios,
-					SystemWrapperPtrRef systemWrapperPtrRef) :
+  TCPBoostSocket<N, N2>
+  ::TCPBoostSocket(boost::asio::io_service& ios,
+		   SystemWrapperPtrRef systemWrapperPtrRef) :
     _socket(ios),
     _timer(ios, boost::posix_time::seconds(N2)),
     _ios(ios),
@@ -148,7 +150,8 @@ namespace Network
   
   template <std::size_t N, std::size_t N2>
   template <typename HandlerPolicy>
-  void TCPBoostSocket<N, N2>::handleSend(std::shared_ptr<TCPBoostSocket<N, N2>> socketPtr,
+  void TCPBoostSocket<N, N2>::handleSend(const std::shared_ptr
+					 <TCPBoostSocket<N, N2>>& socketPtr,
 					 const boost::system::error_code& error)
   {
     HandlerPolicy::handleWrite(socketPtr, error);
@@ -156,7 +159,8 @@ namespace Network
   
   template <std::size_t N, std::size_t N2>
   template <typename HandlerPolicy>
-  void TCPBoostSocket<N, N2>::handleRecv(std::shared_ptr<TCPBoostSocket<N, N2>> socketPtr,
+  void TCPBoostSocket<N, N2>::handleRecv(const std::shared_ptr
+					 <TCPBoostSocket<N, N2>>& socketPtr,
 					 const boost::system::error_code& error)
   {
     HandlerPolicy::handleRead(socketPtr, error);

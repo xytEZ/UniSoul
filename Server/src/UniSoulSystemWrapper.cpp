@@ -5,7 +5,7 @@
 
 namespace Wrapper
 {
-  UniSoulSystemWrapper::UniSoulSystemWrapper(ServerSocketPtr&& serverSocketPtr) :
+  UniSoulSystemWrapper::UniSoulSystemWrapper(const ServerSocketPtr& serverSocketPtr) :
     _components
   {
     { "ServerSocket", std::move(serverSocketPtr) },

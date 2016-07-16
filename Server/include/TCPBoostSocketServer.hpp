@@ -43,8 +43,8 @@ namespace Network
 
     private :
       template <typename HandlerPolicy>
-      void handleAccept(std::shared_ptr<TCPBoostSocketServer<N, N2, T>>,
-			std::shared_ptr<TCPBoostSocket<N, N2>>&,
+      void handleAccept(const std::shared_ptr<TCPBoostSocketServer<N, N2, T>>&,
+			const std::shared_ptr<TCPBoostSocket<N, N2>>&,
 			const boost::system::error_code&);
     };
 
@@ -146,9 +146,9 @@ namespace Network
   template <std::size_t N, std::size_t N2, typename T>
   template <typename HandlerPolicy>
   void TCPBoostSocketServer<N, N2, T>
-  ::handleAccept(std::shared_ptr
-		 <TCPBoostSocketServer<N, N2, T>> serverSocketPtr,
-		 std::shared_ptr<TCPBoostSocket<N, N2>>& socketPtr,
+  ::handleAccept(const std::shared_ptr
+		 <TCPBoostSocketServer<N, N2, T>>& serverSocketPtr,
+		 const std::shared_ptr<TCPBoostSocket<N, N2>>& socketPtr,
 		 const boost::system::error_code& error)
   {
     HandlerPolicy::handleAccept(serverSocketPtr, socketPtr, error);

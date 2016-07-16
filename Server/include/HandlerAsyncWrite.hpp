@@ -18,13 +18,15 @@ namespace Handler
   template <std::size_t N, std::size_t N2>
   struct HandlerAsyncWrite
   {
-    static void handleWrite(std::shared_ptr<Network::TCPBoostSocket<N, N2>>&,
+    static void handleWrite(const std::shared_ptr
+			    <Network::TCPBoostSocket<N, N2>>&,
 			    const boost::system::error_code&);
   };
 
   template <std::size_t N, std::size_t N2>
   void HandlerAsyncWrite<N, N2>
-  ::handleWrite(std::shared_ptr<Network::TCPBoostSocket<N, N2>>& socketPtr,
+  ::handleWrite(const std::shared_ptr
+		<Network::TCPBoostSocket<N, N2>>& socketPtr,
 		const boost::system::error_code& error)
   {
     if (error)
