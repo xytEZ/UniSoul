@@ -12,31 +12,31 @@ namespace Command
   class CommandExecutor
   {
   private :
-    std::shared_ptr<ICommand<T>>	_command;
+    std::shared_ptr<ICommand<T>>	_commandPtr;
 
   public :
     CommandExecutor();
     ~CommandExecutor();
-    void setCommand(const std::shared_ptr<ICommand<T>>&);
+    void setCommandPtr(const std::shared_ptr<ICommand<T>>&);
     bool execute(T&) const;
   };
 
   template <typename T>
-  CommandExecutor<T>::CommandExecutor() : _command(nullptr) { }
+  CommandExecutor<T>::CommandExecutor() : _commandPtr(nullptr) { }
 
   template <typename T>
   CommandExecutor<T>::~CommandExecutor() { }
 
   template <typename T>
-  void CommandExecutor<T>::setCommand(const std::shared_ptr<ICommand<T>>& command)
+  void CommandExecutor<T>::setCommandPtr(const std::shared_ptr<ICommand<T>>& commandPtr)
   {
-    _command = command;
+    _commandPtr = commandPtr;
   }
 
   template <typename T>
   bool CommandExecutor<T>::execute(T& value) const
   {
-    return _command->execute(value);
+    return _commandPtr->execute(value);
   }
 }
 

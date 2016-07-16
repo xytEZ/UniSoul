@@ -1,5 +1,5 @@
-#ifndef USER_CHECKER_MANAGER_HH_
-# define USER_CHECKER_MANAGER_HH_
+#ifndef CLIENT_CHECKER_MANAGER_HH_
+# define CLIENT_CHECKER_MANAGER_HH_
 
 # include <memory>
 # include <string>
@@ -9,7 +9,7 @@ namespace Persistence
 {
   namespace Manager
   {
-    class UserCheckerManager
+    class ClientCheckerManager
     {
     private :
       using PersistentDataInteractorPtr =
@@ -19,12 +19,12 @@ namespace Persistence
       PersistentDataInteractorPtr	_persistentDataInteractorPtr;
 
     public :
-      UserCheckerManager(const PersistentDataInteractorPtr&);
-      ~UserCheckerManager();
+      ClientCheckerManager(const PersistentDataInteractorPtr&);
+      ~ClientCheckerManager();
       void setPersistentDataInteractorPtr(const PersistentDataInteractorPtr&);
     
       template <typename... Args>
-      bool userChecker(const char, const Args&...) const;
+      bool clientChecker(const char, const Args&...) const;
 
     private :
       template <typename T, typename... Args>

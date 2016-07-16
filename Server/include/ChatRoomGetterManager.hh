@@ -1,5 +1,5 @@
-#ifndef CHANNEL_GETTER_MANAGER_HH_
-# define CHANNEL_GETTER_MANAGER_HH_
+#ifndef CHAT_ROOM_GETTER_MANAGER_HH_
+# define CHAT_ROOM_GETTER_MANAGER_HH_
 
 # include <memory>
 # include <list>
@@ -7,11 +7,11 @@
 
 namespace Communication
 {
-  namespace Channel
+  namespace Chat
   {
     namespace Manager
     {
-      class ChannelGetterManager
+      class ChatRoomGetterManager
       {
       private :
 	using StringList = std::list<std::string>;
@@ -20,14 +20,13 @@ namespace Communication
 
       private :
 	PersistentDataInteractorPtr	_persistentDataInteractorPtr;
-	
-	
+		
       public :
-	ChannelGetterManager(const PersistentDataInteractorPtr&);
-	~ChannelGetterManager();
+	ChatRoomGetterManager(const PersistentDataInteractorPtr&);
+	~ChatRoomGetterManager();
       };
     }
   }
 }
 
-#endid /* !CHANNEL_GETTER_MANAGER_HH_ */
+#endid /* !CHAT_ROOM_GETTER_MANAGER_HH_ */

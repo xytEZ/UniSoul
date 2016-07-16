@@ -3,6 +3,7 @@
 
 # include <cstddef>
 # include <memory>
+# include <map>
 # include <boost/asio.hpp>
 # include <boost/array.hpp>
 # include <boost/noncopyable.hpp>
@@ -25,7 +26,7 @@ namespace Network
   { 
   protected :
     using SystemWrapperPtrRef = std::unique_ptr
-      <Wrapper::System::ISystemWrapper>&;
+      <Wrapper::IWrapper<std::map<std::string, boost::any>>>&;
     
   private :
     boost::asio::ip::tcp::socket	_socket;
@@ -147,18 +148,18 @@ namespace Network
   
   template <std::size_t N, std::size_t N2>
   template <typename HandlerPolicy>
-  void TCPBoostSocket<N, N2>::handleSend(std::shared_ptr<TCPBoostSocket<N, N2>> socket,
+  void TCPBoostSocket<N, N2>::handleSend(std::shared_ptr<TCPBoostSocket<N, N2>> socketPtr,
 					 const boost::system::error_code& error)
   {
-    HandlerPolicy::handleWrite(socket, error);
+    HandlerPolicy::handleWrite(socketPtr, error);
   }
   
   template <std::size_t N, std::size_t N2>
   template <typename HandlerPolicy>
-  void TCPBoostSocket<N, N2>::handleRecv(std::shared_ptr<TCPBoostSocket<N, N2>> socket,
+  void TCPBoostSocket<N, N2>::handleRecv(std::shared_ptr<TCPBoostSocket<N, N2>> socketPtr,
 					 const boost::system::error_code& error)
   {
-    HandlerPolicy::handleRead(socket, error);
+    HandlerPolicy::handleRead(socketPtr, error);
   }
 }
 

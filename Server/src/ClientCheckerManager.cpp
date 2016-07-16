@@ -1,43 +1,43 @@
 #include <sstream>
-#include "UserCheckerManager.hh"
+#include "ClientCheckerManager.hh"
 
 namespace Persistence
 {
   namespace Manager
   {
-    UserCheckerManager
-    ::UserCheckerManager(const PersistentDataInteractorPtr& persistentDataInteractorPtr) :
+    ClientCheckerManager
+    ::ClientCheckerManager(const PersistentDataInteractorPtr& persistentDataInteractorPtr) :
       _persistentDataInteractorPtr(std::move(persistentDataInteractorPtr))
     {
     }
 
-    UserCheckerManager::~UserCheckerManager() { }
+    ClientCheckerManager::~ClientCheckerManager() { }
 
-    void UserCheckerManager
+    void ClientCheckerManager
     ::setPersistentDataInteractorPtr(const PersistentDataInteractorPtr& persistentDataInteractorPtr)
     {
       _persistentDataInteractorPtr = std::move(persistentDataInteractorPtr);
     }
 
     template <typename... Args>
-    bool UserCheckerManager::userChecker(const char separator,
-					 const Args&... args) const
+    bool ClientCheckerManager::clientChecker(const char separator,
+					     const Args&... args) const
     {
       return _persistentDataInteractorPtr
 	->find(concatArguments(separator, args...));
     }
 
     template <typename T, typename... Args>
-    std::string UserCheckerManager::concatArguments(const char separator,
-						    const T& value,
-						    const Args&... args)
+    std::string ClientCheckerManager::concatArguments(const char separator,
+						      const T& value,
+						      const Args&... args)
     {
       return concatArguments(separator, value);
     }
 
     template <typename T>
-    std::string UserCheckerManager::concatArguments(const char separator,
-						    const T& value)
+    std::string ClientCheckerManager::concatArguments(const char separator,
+						      const T& value)
     {
       std::ostringstream        oss;
 

@@ -4,6 +4,8 @@
 # include <memory>
 # include <boost/system/error_code.hpp>
 # include "UniSoulSystemWrapper.hh"
+# include "ClientInfo.hh"
+# include "TCPConnection.hpp"
 
 namespace Network
 {
@@ -22,16 +24,22 @@ namespace Handler
 
   template <std::size_t N, std::size_t N2>
   void HandlerAsyncWrite<N, N2>
-  ::handleWrite(std::shared_ptr<Network::TCPBoostSocket<N, N2>>& socket,
+  ::handleWrite(std::shared_ptr<Network::TCPBoostSocket<N, N2>>& socketPtr,
 		const boost::system::error_code& error)
   {
     if (error)
       {
 	boost::any_cast
-	  <typename UniSoulSystemWrapper::SocketManager>
-	  (socket->getSystemWrapperPtrRef()->getContent()["SocketManager"])
-	  .deleteSocket(socket);
-	socket->close();
+	  <typename UniSoulSystemWrapper::ConnectionManager&>
+	  (socketPtr->getSystemWrapperPtrRef()
+	   ->getContent()["ConnectionManager"])
+	  .deleteConnectionIf
+	  ([&socketPtr](const std::shared_ptr
+			<Network::TCPConnection
+			<Info::ClientInfo>>& connectionPtr) -> bool
+	   {
+	     return connectionPtr->getSocketPtr() == socketPtr;
+	   });
       }
   }
 }

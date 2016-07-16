@@ -5,22 +5,19 @@
 
 namespace Wrapper
 {
-  namespace System
+  UniSoulSystemWrapper::UniSoulSystemWrapper(ServerSocketPtr&& serverSocketPtr) :
+    _components
   {
-    UniSoulSystemWrapper::UniSoulSystemWrapper(SocketServerPtr&& socketServerPtr) :
-      _components
-    {
-      { "SocketServer", std::move(socketServerPtr) },
-	{ "SocketManager", SocketManager() },
-	  { "UserCheckerManager", UserCheckerManager(std::make_unique<Persistence::File::PersistentDataFileInteractor<bool>>(std::make_unique<Persistence::File::File<bool>>(""))) },
-	    { "ChannelSystem", ChannelSystem() },
-	      { "CommandFactory", CommandFactory() },
-		{ "CommandExecutor", CommandExecutor() }
-    }
+    { "ServerSocket", std::move(serverSocketPtr) },
+      { "ConnectionManager", ConnectionManager() },
+	{ "ClientCheckerManager", ClientCheckerManager(std::make_unique<Persistence::File::PersistentDataFileInteractor<bool>>(std::make_unique<Persistence::File::File<bool>>(""))) },
+	  { "ChatRoomManager", ChatRoomManager() },
+	    { "CommandFactory", CommandFactory() },
+	      { "CommandExecutor", CommandExecutor() }
+  }
     {
     }
 
-    UniSoulSystemWrapper::~UniSoulSystemWrapper() { }
-    VariantMap& UniSoulSystemWrapper::getContent() { return _components; }
-  }
+  UniSoulSystemWrapper::~UniSoulSystemWrapper() { }
+  VariantMap& UniSoulSystemWrapper::getContent() { return _components; }
 }

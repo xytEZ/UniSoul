@@ -2,12 +2,17 @@
 # define UNI_SOUL_SYSTEM_WRAPPER_HH_
 
 # include <memory>
-# include "ISystemWrapper.hh"
-# include "SocketManager.hpp"
+# include <map>
+# include <string>
+# include <boost/any.hpp>
+# include "IWrapper.hpp"
+# include "ConnectionManager.hpp"
 # include "CommandFactory.hpp"
 # include "CommandExecutor.hpp"
-# include "UniSoulChannelSystem.hh"
-# include "UserCheckerManager.hh"
+# include "ChatRoomManager.hh"
+# include "ClientCheckerManager.hh"
+# include "ClientInfo.hh"
+# include "TCPConnection.hpp"
 
 namespace Network
 {
@@ -19,34 +24,31 @@ namespace Network
 
 namespace Wrapper
 {
-  namespace System
-  {
-    class UniSoulSystemWrapper : public ISystemWrapper
-    { 
-    public :
-      using SocketServerPtr = std::shared_ptr
-	<Network::ITCPSocketServer
-	 <std::shared_ptr<Network::ITCPSocket>>>;
-      using SocketManager = Network::Manager::SocketManager
-	<std::shared_ptr<Network::ITCPSocket>>;
-      using UserCheckerManager = Persistence::Manager::UserCheckerManager;
-      using ChannelSystem = Communication::Channel::UniSoulChannelSystem;
-      using CommandFactory = Command
-	::CommandFactory<UniSoulSystemWrapper>;
-      using CommandExecutor = Command
-	::CommandExecutor<UniSoulSystemWrapper>;
+  using VariantMap = std::map<std::string, boost::any>;
+    
+  class UniSoulSystemWrapper : public IWrapper<VariantMap>
+  { 
+  public :
+    using ServerSocketPtr = std::shared_ptr
+      <Network::ITCPSocketServer
+       <std::shared_ptr<Network::ITCPSocket>>>;
+    using ConnectionManager = Network::Manager::ConnectionManager
+      <std::shared_ptr<Network::TCPConnection<Info::ClientInfo>>>;
+    using ClientCheckerManager = Persistence::Manager::ClientCheckerManager;
+    using ChatRoomManager = Communication::Chat::ChatRoomManager;
+    using CommandFactory = Command::CommandFactory<UniSoulSystemWrapper>;
+    using CommandExecutor = Command::CommandExecutor<UniSoulSystemWrapper>;
+    
+  private :
+    VariantMap	_components;
       
-    private :
-      VariantMap	_components;
-      
-    public :
-      UniSoulSystemWrapper(SocketServerPtr&&);
-      virtual ~UniSoulSystemWrapper();
-      virtual VariantMap& getContent();
-    };
-  }
+  public :
+    UniSoulSystemWrapper(ServerSocketPtr&&);
+    virtual ~UniSoulSystemWrapper();
+    virtual VariantMap& getContent();
+  };
 }
 
-using UniSoulSystemWrapper = Wrapper::System::UniSoulSystemWrapper;
+using UniSoulSystemWrapper = Wrapper::UniSoulSystemWrapper;
 
 #endif /* !UNI_SOUL_SYSTEM_WRAPPER_HH_ */

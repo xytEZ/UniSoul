@@ -125,11 +125,11 @@ namespace Network
   template <std::size_t N, std::size_t N2, typename T>
   T TCPBoostSocketServer<N, N2, T>::accept(t_sockaddr *, int *)
   {
-    std::shared_ptr<TCPBoostSocket<N, N2>>	socket =
+    std::shared_ptr<TCPBoostSocket<N, N2>>	socketPtr =
       TCPBoostSocket<N, N2>
       ::template create<N, N2>(this->_ios, this->_systemWrapperPtrRef);
 
-    _acceptor.async_accept(socket->getSocket(),
+    _acceptor.async_accept(socketPtr->getSocket(),
 			   boost
 			   ::bind(&TCPBoostSocketServer
 				  ::handleAccept
@@ -138,19 +138,20 @@ namespace Network
 				  std::static_pointer_cast
 				  <TCPBoostSocketServer<N, N2, T>>
 				  (this->shared_from_this()),
-				  socket,
+				  socketPtr,
 				  boost::asio::placeholders::error));
-    return socket;
+    return socketPtr;
   }
 
   template <std::size_t N, std::size_t N2, typename T>
   template <typename HandlerPolicy>
   void TCPBoostSocketServer<N, N2, T>
-  ::handleAccept(std::shared_ptr<TCPBoostSocketServer<N, N2, T>> socketServer,
-		 std::shared_ptr<TCPBoostSocket<N, N2>>& socket,
+  ::handleAccept(std::shared_ptr
+		 <TCPBoostSocketServer<N, N2, T>> serverSocketPtr,
+		 std::shared_ptr<TCPBoostSocket<N, N2>>& socketPtr,
 		 const boost::system::error_code& error)
   {
-    HandlerPolicy::handleAccept(socketServer, socket, error);
+    HandlerPolicy::handleAccept(serverSocketPtr, socketPtr, error);
   }
 }
 

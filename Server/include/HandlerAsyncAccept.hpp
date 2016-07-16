@@ -5,6 +5,9 @@
 # include <memory>
 # include <boost/system/error_code.hpp>
 # include "UniSoulSystemWrapper.hh"
+# include "ClientInfo.hh"
+# include "TCPConnection.hpp"
+# include "ConnectionManager.hpp"
 
 namespace Network
 {
@@ -29,20 +32,30 @@ namespace Handler
   template <std::size_t N, std::size_t N2, typename T>
   void HandlerAsyncAccept<N, N2, T>
   ::handleAccept(std::shared_ptr
-		 <Network::TCPBoostSocketServer<N, N2, T>>& socketServer,
-		 std::shared_ptr<Network::TCPBoostSocket<N, N2>>& socket,
+		 <Network::TCPBoostSocketServer<N, N2, T>>& serverSocketPtr,
+		 std::shared_ptr<Network::TCPBoostSocket<N, N2>>& socketPtr,
 		 const boost::system::error_code& error)
   {
     if (!error)
       {
-	socket->send("Welcome to the server\n");
-	socket->recv();
+	std::shared_ptr
+	  <Network::TCPConnection<Info::ClientInfo>> connectionPtr =
+	  std::make_shared<Network::TCPConnection
+			   <Info::ClientInfo>>(socketPtr);
+
+	connectionPtr->send("Welcome to the server\n");
+	connectionPtr->recv();
 	boost::any_cast
-	  <typename UniSoulSystemWrapper::SocketManager>
-	  (socketServer->getSystemWrapperPtrRef()
-	   ->getContent()["SocketManager"])
-	  .addSocket(socket);
-	socketServer->accept(nullptr, nullptr);
+	  <typename UniSoulSystemWrapper::ConnectionManager&>
+	  (serverSocketPtr->getSystemWrapperPtrRef()
+	   ->getContent()["ConnectionManager"])
+	  .addConnection(connectionPtr);
+	std::cout << boost::any_cast
+	  <typename UniSoulSystemWrapper::ConnectionManager&>
+	  (serverSocketPtr->getSystemWrapperPtrRef()
+	   ->getContent()["ConnectionManager"])
+	   .size() << std::endl;
+	serverSocketPtr->accept(nullptr, nullptr);
       }
   }
 }

@@ -61,7 +61,7 @@ namespace Persistence
 			      {
 				return false;
 			      }
-			  }) != _filesPtr.end();
+			  }) != _filesPtr.cend();
     }
     
     void Directory<bool>::addAbstractFile(const FilePtr<bool>& filePtr)
@@ -80,7 +80,6 @@ namespace Persistence
     {
       StringList	datas;
       
-
       std::for_each(_filesPtr.cbegin(),
 		    _filesPtr.cend(),
 		    [&datas](const FilePtr<StringList>& filePtr) -> void

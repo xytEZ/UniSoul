@@ -36,9 +36,9 @@ namespace Command
 
   template <typename T>
   void CommandFactory<T>::addCommand(const std::string& name,
-				     const std::shared_ptr<ICommand<T>>& command)
+				     const std::shared_ptr<ICommand<T>>& commandPtr)
   {
-    _commands[std::move(name)] = std::move(command);
+    _commands[std::move(name)] = std::move(commandPtr);
   }
 
   template <typename T>

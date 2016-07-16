@@ -3,6 +3,9 @@
 
 # include <cstddef>
 # include <memory>
+# include <map>
+# include <string>
+# include <boost/any.hpp>
 # include "IApp.hh"
 # include "BoostServiceWrapper.hh"
 # include "TCPBoostSocketServer.hpp"
@@ -14,7 +17,8 @@ namespace App
   {    
   private :
     using LibraryServiceWrapperPtr = std::unique_ptr<Wrapper::IWrapper<T>>;
-    using SystemWrapperPtr = std::unique_ptr<Wrapper::System::ISystemWrapper>;
+    using SystemWrapperPtr =
+      std::unique_ptr<Wrapper::IWrapper<std::map<std::string, boost::any>>>;
 
   private :
     LibraryServiceWrapperPtr	_libraryServiceWrapperPtr;
@@ -31,16 +35,18 @@ namespace App
   template <typename T, std::size_t N, std::size_t N2>
   UniSoulServer<T, N, N2>::UniSoulServer(const std::string& hostname,
 					 int port) :
-    _libraryServiceWrapperPtr(std::make_unique<Wrapper::BoostServiceWrapper>()),
+    _libraryServiceWrapperPtr(std::make_unique
+			      <Wrapper::BoostServiceWrapper>()),
     _systemWrapperPtr(std::make_unique
-		      <Wrapper::System::UniSoulSystemWrapper>
+		      <Wrapper::UniSoulSystemWrapper>
 		      (Network::TCPBoostSocketServer
 		       <N, N2, std::shared_ptr<Network::ITCPSocket>>
 		       ::template create<N, N2, std::shared_ptr
-		       <Network::ITCPSocket>>(_libraryServiceWrapperPtr->getContent(),
-					      _systemWrapperPtr,
-					      hostname,
-					      port)))
+		       <Network::ITCPSocket>>
+		       (_libraryServiceWrapperPtr->getContent(),
+			_systemWrapperPtr,
+			hostname,
+			port)))
   {
   }
   
@@ -51,14 +57,14 @@ namespace App
   bool UniSoulServer<T, N, N2>::init()
   {
     boost::any_cast
-      <typename UniSoulSystemWrapper::SocketServerPtr>
-      (_systemWrapperPtr->getContent()["SocketServer"])->open(0, 0, 0);
+      <typename UniSoulSystemWrapper::ServerSocketPtr&>
+      (_systemWrapperPtr->getContent()["ServerSocket"])->open(0, 0, 0);
     boost::any_cast
-      <typename UniSoulSystemWrapper::SocketServerPtr>
-      (_systemWrapperPtr->getContent()["SocketServer"])->bind(nullptr, 0);
+      <typename UniSoulSystemWrapper::ServerSocketPtr&>
+      (_systemWrapperPtr->getContent()["ServerSocket"])->bind(nullptr, 0);
     boost::any_cast
-      <typename UniSoulSystemWrapper::SocketServerPtr>
-      (_systemWrapperPtr->getContent()["SocketServer"])->listen(0);
+      <typename UniSoulSystemWrapper::ServerSocketPtr&>
+      (_systemWrapperPtr->getContent()["ServerSocket"])->listen(0);
     return true;
   }
   
@@ -66,8 +72,9 @@ namespace App
   bool UniSoulServer<T, N, N2>::run()
   {
     boost::any_cast
-      <typename UniSoulSystemWrapper::SocketServerPtr>
-      (_systemWrapperPtr->getContent()["SocketServer"])->accept(nullptr, nullptr);
+      <typename UniSoulSystemWrapper::ServerSocketPtr&>
+      (_systemWrapperPtr->getContent()["ServerSocket"])->accept(nullptr,
+								nullptr);
     _libraryServiceWrapperPtr->getContent().run();
     return true;
   }
@@ -76,15 +83,8 @@ namespace App
   bool UniSoulServer<T, N, N2>::close()
   {
     boost::any_cast
-      <typename UniSoulSystemWrapper::SocketServerPtr>
-      (_systemWrapperPtr->getContent()["SocketServer"])->close();
-    boost::any_cast
-      <typename UniSoulSystemWrapper::SocketManager>
-      (_systemWrapperPtr->getContent()["SocketManager"])
-      .apply([](const std::shared_ptr<Network::ITCPSocket>& socket)
-	     {
-	       socket->close();
-	     });
+      <typename UniSoulSystemWrapper::ServerSocketPtr&>
+      (_systemWrapperPtr->getContent()["ServerSocket"])->close();
     return true;
   }
 }
