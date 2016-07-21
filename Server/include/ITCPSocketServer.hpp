@@ -15,7 +15,7 @@ namespace Network
   class ITCPSocketServer : virtual public ITCPSocket
   {
   public :
-    virtual ~ITCPSocketServer() { }
+    virtual ~ITCPSocketServer() = default;
     virtual bool bind(const t_sockaddr *, int) = 0;
     virtual bool listen(int) = 0;
     virtual T accept(t_sockaddr *, int *) = 0;

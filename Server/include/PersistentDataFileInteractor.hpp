@@ -16,7 +16,7 @@ namespace Persistence
     
     public :
       PersistentDataFileInteractor(const FilePtr<T>&);
-      virtual ~PersistentDataFileInteractor();
+      virtual ~PersistentDataFileInteractor() = default;
       virtual void init();
       virtual T find(const std::string&) const;
       virtual void close();
@@ -28,9 +28,6 @@ namespace Persistence
       _file(std::move(file))
     {
     }
-
-    template <typename T>
-    PersistentDataFileInteractor<T>::~PersistentDataFileInteractor() { }
 
     template <typename T>
     void PersistentDataFileInteractor<T>::init() { }

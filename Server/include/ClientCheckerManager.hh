@@ -3,6 +3,7 @@
 
 # include <memory>
 # include <string>
+# include <sstream>
 # include "IPersistentDataInteractor.hpp"
 
 namespace Persistence
@@ -20,7 +21,7 @@ namespace Persistence
 
     public :
       ClientCheckerManager(const PersistentDataInteractorPtr&);
-      ~ClientCheckerManager();
+      ~ClientCheckerManager() = default;
       void setPersistentDataInteractorPtr(const PersistentDataInteractorPtr&);
     
       template <typename... Args>
@@ -36,4 +37,4 @@ namespace Persistence
   } 
 }
 
-#endif /* !USER_CHECKER_MANAGER_HH_ */
+#endif /* !CLIENT_CHECKER_MANAGER_HH_ */

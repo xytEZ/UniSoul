@@ -12,7 +12,7 @@
 
 namespace App
 {
-  template <typename T, std::size_t N = 128, std::size_t N2 = 60>
+  template <typename T, std::size_t N = 128, std::size_t N2 = 5>
   class UniSoulServer : public IApp
   {    
   private :
@@ -26,7 +26,7 @@ namespace App
     
   public :
     UniSoulServer(const std::string&, int);
-    virtual ~UniSoulServer();
+    virtual ~UniSoulServer() = default;
     virtual bool init();
     virtual bool run();
     virtual bool close();
@@ -49,9 +49,6 @@ namespace App
 			port)))
   {
   }
-  
-  template <typename T, std::size_t N, std::size_t N2>
-  UniSoulServer<T, N, N2>::~UniSoulServer() { }
   
   template <typename T, std::size_t N, std::size_t N2>
   bool UniSoulServer<T, N, N2>::init()

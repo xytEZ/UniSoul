@@ -1,42 +1,41 @@
 #ifndef COMMAND_EXECUTOR_HPP_
 # define COMMAND_EXECUTOR_HPP_
 
-# include <memory>
+# include "CommandNotFoundException.hh"
+# include "ICommand.hpp"
 
 namespace Command
 {
-  template <typename T>
-  class ICommand;
-  
-  template <typename T>
+  template <typename T, typename U, typename V>
   class CommandExecutor
   {
   private :
-    std::shared_ptr<ICommand<T>>	_commandPtr;
+    CommandPtr<T, U, V>	_commandPtr;
 
   public :
     CommandExecutor();
-    ~CommandExecutor();
-    void setCommandPtr(const std::shared_ptr<ICommand<T>>&);
-    bool execute(T&) const;
+    ~CommandExecutor() = default;
+    void setCommandPtr(const CommandPtr<T, U, V>&);
+    T execute(U&, const V&) const;
   };
 
-  template <typename T>
-  CommandExecutor<T>::CommandExecutor() : _commandPtr(nullptr) { }
+  template <typename T, typename U, typename V>
+  CommandExecutor<T, U, V>::CommandExecutor() : _commandPtr(nullptr) { }
 
-  template <typename T>
-  CommandExecutor<T>::~CommandExecutor() { }
-
-  template <typename T>
-  void CommandExecutor<T>::setCommandPtr(const std::shared_ptr<ICommand<T>>& commandPtr)
+  template <typename T, typename U, typename V>
+  void CommandExecutor<T, U, V>
+  ::setCommandPtr(const CommandPtr<T, U, V>& commandPtr)
   {
     _commandPtr = commandPtr;
   }
 
-  template <typename T>
-  bool CommandExecutor<T>::execute(T& value) const
+  template <typename T, typename U, typename V>
+  T CommandExecutor<T, U, V>::execute(U& value, const V& value2) const
   {
-    return _commandPtr->execute(value);
+    if (_commandPtr == nullptr)
+      throw new Exception::Command
+	::CommandNotFoundException("Command not initialized.");
+    return _commandPtr->execute(value, value2);
   }
 }
 

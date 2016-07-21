@@ -6,7 +6,7 @@ namespace App
   class IApp
   {
   public :
-    virtual ~IApp() { }
+    virtual ~IApp() = default;
     virtual bool init() = 0;
     virtual bool run() = 0;
     virtual bool close() = 0;

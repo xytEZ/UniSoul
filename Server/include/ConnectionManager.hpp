@@ -18,8 +18,8 @@ namespace Network
       std::list<T>	_connections;
 
     public :
-      ConnectionManager();
-      ~ConnectionManager();
+      ConnectionManager() = default;
+      ~ConnectionManager() = default;
       int size() const;
       void addConnection(const T&);
       void deleteConnection(const T&);
@@ -27,12 +27,6 @@ namespace Network
       const T& getConnectionIf(const std::function<bool(const T&)>&) const;
       void apply(const std::function<void(const T&)>&);
     };
-
-    template <typename T>
-    ConnectionManager<T>::ConnectionManager() { }
-
-    template <typename T>
-    ConnectionManager<T>::~ConnectionManager() { }
 
     template <typename T>
     int ConnectionManager<T>::size() const { return _connections.size(); }

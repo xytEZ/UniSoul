@@ -6,7 +6,7 @@ namespace Network
   class ISocket
   {
   public :
-    virtual ~ISocket() { }
+    virtual ~ISocket() = default;
     virtual bool open(int, int, int) = 0;
     virtual bool close() = 0;
   };

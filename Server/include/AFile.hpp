@@ -17,15 +17,12 @@ namespace Persistence
     
     public :
       AFile(const std::string&);
-      virtual ~AFile();
+      virtual ~AFile() = default;
       virtual T find(const std::string& = "") const = 0;
     };
     
     template <typename T>
     AFile<T>::AFile(const std::string& fullName) : _fullName(fullName) { }
-
-    template <typename T>
-    AFile<T>::~AFile() { }
     
     using StringList = std::list<std::string>;
   

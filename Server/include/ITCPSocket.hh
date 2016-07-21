@@ -9,7 +9,7 @@ namespace Network
   class ITCPSocket : public ISocket
   {
   public :
-    virtual ~ITCPSocket() { }
+    virtual ~ITCPSocket() = default;
     virtual bool send(const std::string&) = 0;
     virtual std::string recv() = 0;
   };

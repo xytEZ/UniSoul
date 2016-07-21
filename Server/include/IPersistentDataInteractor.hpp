@@ -9,7 +9,7 @@ namespace Persistence
   class IPersistentDataInteractor
   {
   public :
-    virtual ~IPersistentDataInteractor() { };
+    virtual ~IPersistentDataInteractor() = default;
     virtual void init() = 0;
     virtual T find(const std::string&) const = 0;
     virtual void close() = 0;

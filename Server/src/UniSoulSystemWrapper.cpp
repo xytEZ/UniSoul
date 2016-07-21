@@ -18,6 +18,5 @@ namespace Wrapper
     {
     }
 
-  UniSoulSystemWrapper::~UniSoulSystemWrapper() { }
   VariantMap& UniSoulSystemWrapper::getContent() { return _components; }
 }

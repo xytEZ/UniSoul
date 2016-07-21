@@ -12,8 +12,8 @@ namespace Wrapper
     static boost::asio::io_service	_ios;
     
   public :
-    BoostServiceWrapper();
-    virtual ~BoostServiceWrapper();
+    BoostServiceWrapper() = default;
+    virtual ~BoostServiceWrapper() = default;
     virtual boost::asio::io_service& getContent();
   };
 }

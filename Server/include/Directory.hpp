@@ -5,7 +5,6 @@
 # include <algorithm>
 # include <functional>
 # include <vector>
-# include "ErrorOpeningFileException.hh"
 # include "AFile.hpp"
 
 namespace Persistence
@@ -23,7 +22,7 @@ namespace Persistence
 
     public :
       Directory(const std::string&);
-      virtual ~Directory();
+      virtual ~Directory() = default;
       virtual bool find(const std::string&) const;
       void addAbstractFile(const FilePtr<bool>&);
     };
@@ -36,7 +35,7 @@ namespace Persistence
 
     public :
       Directory(const std::string&);
-      virtual ~Directory();
+      virtual ~Directory() = default;
       virtual StringList find(const std::string& = "") const;
       void addAbstractFile(const FilePtr<StringList>&);
     };
@@ -44,23 +43,13 @@ namespace Persistence
     Directory<bool>::Directory(const std::string& fullName) :
       AFile<bool>(fullName) { }
 
-    Directory<bool>::~Directory() { }
-
     bool Directory<bool>::find(const std::string& data) const
     { 
       return std::find_if(_filesPtr.cbegin(),
 			  _filesPtr.cend(),
 			  [&data](const FilePtr<bool>& filePtr)-> bool
 			  {
-			    try
-			      {
-				return filePtr->find(data);
-			      }
-			    catch (const Exception::Persistence
-				   ::ErrorOpeningFileException& e)
-			      {
-				return false;
-			      }
+			    return filePtr->find(data);
 			  }) != _filesPtr.cend();
     }
     
@@ -74,8 +63,6 @@ namespace Persistence
     {
     }
 
-    Directory<StringList>::~Directory() { }
-
     StringList Directory<StringList>::find(const std::string&) const
     {
       StringList	datas;
@@ -84,12 +71,7 @@ namespace Persistence
 		    _filesPtr.cend(),
 		    [&datas](const FilePtr<StringList>& filePtr) -> void
 		    {
-		      try
-			{
-			  datas.merge(filePtr->find());
-			}
-		      catch (const Exception::Persistence
-			     ::ErrorOpeningFileException& e) { }
+		      datas.merge(filePtr->find());
 		    });
       return datas;
     }

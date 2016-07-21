@@ -2,7 +2,6 @@
 # define FILE_HPP_
 
 # include <fstream>
-# include "ErrorOpeningFileException.hh"
 # include "AFile.hpp"
 
 namespace Persistence
@@ -17,7 +16,7 @@ namespace Persistence
     {
     public :
       File(const std::string&);
-      virtual ~File();
+      virtual ~File() = default;
       virtual bool find(const std::string&) const;
     };
   
@@ -26,32 +25,31 @@ namespace Persistence
     { 
     public :
       File(const std::string&);
-      virtual ~File();
+      virtual ~File() = default;
       virtual StringList find(const std::string& = "") const;
     };
 
     File<bool>::File(const std::string& fullName) : AFile<bool>(fullName) { }
 
-    File<bool>::~File() { }
-
     bool File<bool>::find(const std::string& data) const
     {
-      std::ifstream	ifs(_fullName, std::ifstream::in);
+      std::ifstream	ifs;
       bool		isFound = false;
 
-      if (!ifs.is_open())
-	throw Exception::Persistence
-	  ::ErrorOpeningFileException("Fail to open \""
-				      + _fullName
-				      + "\" file");
-      for (std::string line; ifs >> line;)
+      ifs.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+      try
 	{
-	  if (line == data)
+	  ifs.open(_fullName, std::ifstream::in);
+	  for (std::string line; ifs >> line;)
 	    {
-	      isFound = true;
-	      break;
+	      if (line == data)
+		{
+		  isFound = true;
+		  break;
+		}
 	    }
 	}
+      catch (const std::ifstream::failure&) { }
       ifs.close();
       return isFound;
     }
@@ -61,22 +59,20 @@ namespace Persistence
     {
     }
 
-    File<StringList>::~File() { }
-
     StringList File<StringList>::find(const std::string&) const
     {
-      std::ifstream	ifs(_fullName, std::ifstream::in);
-
-      if (!ifs.is_open())
-	throw Exception::Persistence
-	  ::ErrorOpeningFileException("Fail to open \""
-				      + _fullName
-				      + "\" file");
-
+      std::ifstream	ifs;
       StringList	datas;
 
-      for (std::string line; ifs >> line;)
-	datas.push_back(line);
+      ifs.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+      try
+	{
+	  ifs.open(_fullName, std::ifstream::in);
+	  for (std::string line; ifs >> line;)
+	    datas.push_back(line);
+	}
+      catch (const std::ifstream::failure&) { }
+      ifs.close();
       return datas;
     }
   }

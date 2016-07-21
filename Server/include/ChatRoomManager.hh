@@ -8,8 +8,8 @@ namespace Communication
     class ChatRoomManager
     {
     public :
-      ChatRoomManager() { };
-      ~ChatRoomManager() { };
+      ChatRoomManager() = default;
+      ~ChatRoomManager() = default;
     };
   }
 }

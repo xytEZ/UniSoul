@@ -3,7 +3,7 @@
 
 # include "TCPBoostSocket.hpp"
 # include "ITCPSocketServer.hpp"
-# include "HandlerAsyncAccept.hpp"
+# include "AsyncAcceptHandler.hpp"
 
 namespace Network
 { 
@@ -32,7 +32,7 @@ namespace Network
 			   int);
       
     public :
-      virtual ~TCPBoostSocketServer();
+      virtual ~TCPBoostSocketServer() = default;
       virtual bool open(int, int, int);
       virtual bool close();
       virtual bool send(const std::string&);
@@ -43,7 +43,7 @@ namespace Network
 
     private :
       template <typename HandlerPolicy>
-      void handleAccept(const std::shared_ptr<TCPBoostSocketServer<N, N2, T>>&,
+      void acceptHandle(const std::shared_ptr<TCPBoostSocketServer<N, N2, T>>&,
 			const std::shared_ptr<TCPBoostSocket<N, N2>>&,
 			const boost::system::error_code&);
     };
@@ -78,9 +78,6 @@ namespace Network
     _endpoint(boost::asio::ip::address::from_string(hostname), port)
   {
   }
-
-  template <std::size_t N, std::size_t N2, typename T>
-  TCPBoostSocketServer<N, N2, T>::~TCPBoostSocketServer() { }
 
   template <std::size_t N, std::size_t N2, typename T>
   bool TCPBoostSocketServer<N, N2, T>::open(int, int, int)
@@ -132,8 +129,8 @@ namespace Network
     _acceptor.async_accept(socketPtr->getSocket(),
 			   boost
 			   ::bind(&TCPBoostSocketServer
-				  ::handleAccept
-				  <Handler::HandlerAsyncAccept<N, N2, T>>,
+				  ::acceptHandle
+				  <Handler::AsyncAcceptHandler<N, N2, T>>,
 				  this,
 				  std::static_pointer_cast
 				  <TCPBoostSocketServer<N, N2, T>>
@@ -146,12 +143,12 @@ namespace Network
   template <std::size_t N, std::size_t N2, typename T>
   template <typename HandlerPolicy>
   void TCPBoostSocketServer<N, N2, T>
-  ::handleAccept(const std::shared_ptr
+  ::acceptHandle(const std::shared_ptr
 		 <TCPBoostSocketServer<N, N2, T>>& serverSocketPtr,
 		 const std::shared_ptr<TCPBoostSocket<N, N2>>& socketPtr,
 		 const boost::system::error_code& error)
   {
-    HandlerPolicy::handleAccept(serverSocketPtr, socketPtr, error);
+    HandlerPolicy(serverSocketPtr, socketPtr, error).acceptHandle();
   }
 }
 

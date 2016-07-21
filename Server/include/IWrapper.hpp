@@ -7,7 +7,7 @@ namespace Wrapper
   class IWrapper
   {
   public :
-    virtual ~IWrapper() { };
+    virtual ~IWrapper() = default;
     virtual T& getContent() = 0;
   };
 }
