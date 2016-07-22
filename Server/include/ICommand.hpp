@@ -5,16 +5,16 @@
 
 namespace Command
 {
-  template <typename T, typename U, typename V>
+  template <typename T, typename... Args>
   class ICommand
   {
   public :
     virtual ~ICommand() = default;
-    virtual T execute(U&, const V&) const = 0;
+    virtual T execute(Args&...) const = 0;
   };
 
-  template <typename T, typename U, typename V>
-  using CommandPtr = std::shared_ptr<ICommand<T, U, V>>;
+  template <typename T, typename... Args>
+  using CommandPtr = std::shared_ptr<ICommand<T, Args...>>;
 }
 
 #endif /* !ICOMMAND_HPP_ */

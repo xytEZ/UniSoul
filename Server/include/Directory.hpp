@@ -28,7 +28,7 @@ namespace Persistence
     };
   
     template <>
-    class Directory<StringList> : public AFile<StringList>
+    class Directory<StringArray> : public AFile<StringArray>
     {
     private :
       std::vector<FilePtr<StringList>>	_filesPtr;
@@ -36,8 +36,8 @@ namespace Persistence
     public :
       Directory(const std::string&);
       virtual ~Directory() = default;
-      virtual StringList find(const std::string& = "") const;
-      void addAbstractFile(const FilePtr<StringList>&);
+      virtual StringArray find(const std::string& = "") const;
+      void addAbstractFile(const FilePtr<StringArray>&);
     };
 
     Directory<bool>::Directory(const std::string& fullName) :
@@ -58,14 +58,14 @@ namespace Persistence
       _filesPtr.push_back(std::move(filePtr));
     }
 
-    Directory<StringList>::Directory(const std::string& fullName) :
-      AFile<StringList>(fullName)
+    Directory<StringArray>::Directory(const std::string& fullName) :
+      AFile<StringArray>(fullName)
     {
     }
 
-    StringList Directory<StringList>::find(const std::string&) const
+    StringArray Directory<StringArray>::find(const std::string&) const
     {
-      StringList	datas;
+      StringArray	datas;
       
       std::for_each(_filesPtr.cbegin(),
 		    _filesPtr.cend(),
@@ -76,8 +76,8 @@ namespace Persistence
       return datas;
     }
 
-    void Directory<StringList>
-    ::addAbstractFile(const FilePtr<StringList>& filePtr)
+    void Directory<StringArray>
+    ::addAbstractFile(const FilePtr<StringArray>& filePtr)
     {
       _filesPtr.push_back(std::move(filePtr));
     }  

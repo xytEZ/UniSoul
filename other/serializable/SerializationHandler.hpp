@@ -30,8 +30,8 @@ namespace Handler
     std::string serialize(std::shared_ptr
 			  <Serializable::ASerializable<T>>&&) const;
 
-    template <typename U>
-    std::shared_ptr<U> deserialize(const std::string&) const;
+    std::shared_ptr<Serializable::ASerializable<T>>
+    deserialize(const std::string&) const;
   };
 
   template <typename T>
@@ -55,10 +55,9 @@ namespace Handler
   {
     return serialize(serializablePtr);
   }
-
+  
   template <typename T>
-  template <typename U>
-  std::shared_ptr<U> SerializationHandler<T>
+  std::shared_ptr<Serializable::ASerializable<T>> SerializationHandler<T>
   ::deserialize(const std::string& serializedStr) const
   {
     std::stringstream                                 ss(serializedStr);
@@ -71,7 +70,7 @@ namespace Handler
     ia >> serializablePtr;
     serializablePtr2 = Tool::SmartPointer
       ::make_shared_ptr_from_boost(serializablePtr);
-    return std::dynamic_pointer_cast<U>(serializablePtr2);
+    return serializablePtr2;
   }
 }
 

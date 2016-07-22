@@ -4,7 +4,7 @@
 # include <memory>
 # include <map>
 # include <string>
-# include <list>
+# include <vector>
 # include <boost/any.hpp>
 # include "IWrapper.hpp"
 # include "ConnectionManager.hpp"
@@ -37,12 +37,16 @@ namespace Wrapper
       <std::shared_ptr<Network::TCPConnection<Info::ClientInfo>>>;
     using ClientCheckerManager = Persistence::Manager::ClientCheckerManager;
     using ChatRoomManager = Communication::Chat::ChatRoomManager;
-    using CommandFactory = Command
-      ::CommandFactory
-      <std::list<std::string>, UniSoulSystemWrapper, std::string>;
-    using CommandExecutor = Command
-      ::CommandExecutor
-      <std::list<std::string>, UniSoulSystemWrapper, std::string>;
+    using CommandFactory = Command::CommandFactory
+      <bool,
+       std::unique_ptr<IWrapper<VariantMap>>,
+       std::vector<std::string>,
+       std::string>;
+    using CommandExecutor = Command::CommandExecutor
+      <bool,
+       std::unique_ptr<IWrapper<VariantMap>>,
+       std::vector<std::string>,
+       std::string>;
     
   private :
     VariantMap	_components;

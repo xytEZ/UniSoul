@@ -12,8 +12,8 @@ namespace Factory
     ~UniSoulPacketFactory() = default;
     
   public :
-    UniSoulPacket create(Network::t_communication,
-			 Network::t_request,
+    UniSoulPacket create(Network::Protocol::Communication,
+			 Network::Protocol::Request,
 			 const char *) const;
   };
 }

@@ -6,36 +6,36 @@
 
 namespace Command
 {
-  template <typename T, typename U, typename V>
+  template <typename T, typename... Args>
   class CommandExecutor
   {
   private :
-    CommandPtr<T, U, V>	_commandPtr;
+    CommandPtr<T, Args...>	_commandPtr;
 
   public :
     CommandExecutor();
     ~CommandExecutor() = default;
-    void setCommandPtr(const CommandPtr<T, U, V>&);
-    T execute(U&, const V&) const;
+    void setCommandPtr(const CommandPtr<T, Args...>&);
+    T execute(Args&...) const;
   };
 
-  template <typename T, typename U, typename V>
-  CommandExecutor<T, U, V>::CommandExecutor() : _commandPtr(nullptr) { }
+  template <typename T, typename... Args>
+  CommandExecutor<T, Args...>::CommandExecutor() : _commandPtr(nullptr) { }
 
-  template <typename T, typename U, typename V>
-  void CommandExecutor<T, U, V>
-  ::setCommandPtr(const CommandPtr<T, U, V>& commandPtr)
+  template <typename T, typename... Args>
+  void CommandExecutor<T, Args...>
+  ::setCommandPtr(const CommandPtr<T, Args...>& commandPtr)
   {
     _commandPtr = commandPtr;
   }
 
-  template <typename T, typename U, typename V>
-  T CommandExecutor<T, U, V>::execute(U& value, const V& value2) const
+  template <typename T, typename... Args>
+  T CommandExecutor<T, Args...>::execute(Args&... args) const
   {
     if (_commandPtr == nullptr)
       throw new Exception::Command
 	::CommandNotFoundException("Command not initialized.");
-    return _commandPtr->execute(value, value2);
+    return _commandPtr->execute(args...);
   }
 }
 

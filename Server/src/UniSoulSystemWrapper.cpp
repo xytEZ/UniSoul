@@ -10,7 +10,12 @@ namespace Wrapper
   {
     { "ServerSocket", std::move(serverSocketPtr) },
       { "ConnectionManager", ConnectionManager() },
-	{ "ClientCheckerManager", ClientCheckerManager(std::make_unique<Persistence::File::PersistentDataFileInteractor<bool>>(std::make_unique<Persistence::File::File<bool>>(""))) },
+	{ "ClientCheckerManager", ClientCheckerManager
+	    (std::make_unique
+	     <Persistence::File::PersistentDataFileInteractor<bool>>
+	     (std::make_unique
+	      <Persistence::File::File<bool>>
+	      ("../../other/data/users.txt"))) },
 	  { "ChatRoomManager", ChatRoomManager() },
 	    { "CommandFactory", CommandFactory() },
 	      { "CommandExecutor", CommandExecutor() }

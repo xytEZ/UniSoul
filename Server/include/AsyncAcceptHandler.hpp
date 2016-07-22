@@ -63,8 +63,7 @@ namespace Handler
 	  <Network::TCPConnection<Info::ClientInfo>> connectionPtr =
 	  std::make_shared<Network::TCPConnection
 			   <Info::ClientInfo>>(_socketPtr);
-
-	connectionPtr->send("Welcome to the server\n");
+	
 	connectionPtr->recv();
 	boost::any_cast
 	  <typename UniSoulSystemWrapper::ConnectionManager&>

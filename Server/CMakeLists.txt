@@ -25,6 +25,7 @@ file(
   ${CMAKE_CURRENT_SOURCE_DIR}/../other/serializable/*.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../other/tool/*.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../other/packet/*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../other/protocol/*.cpp
   )
 
 add_executable(server ${server_srcs})

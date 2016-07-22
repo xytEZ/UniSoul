@@ -32,6 +32,7 @@ namespace Network
     boost::asio::ip::tcp::socket	_socket;
     boost::asio::deadline_timer		_timer;
     boost::array<char, N>		_buffer;
+    bool				_maintainInstance;
 
   protected :
     boost::asio::io_service&		_ios;
@@ -55,6 +56,8 @@ namespace Network
     boost::asio::ip::tcp::socket& getSocket();
     std::string getBuffer() const;
     SystemWrapperPtrRef getSystemWrapperPtrRef();
+    bool getMaintainInstance() const;
+    void setMaintainInstance(bool);
 
   private :
     template <typename HandlerPolicy>
@@ -83,6 +86,7 @@ namespace Network
 		   SystemWrapperPtrRef systemWrapperPtrRef) :
     _socket(ios),
     _timer(ios, boost::posix_time::seconds(N2)),
+    _maintainInstance(true),
     _ios(ios),
     _systemWrapperPtrRef(systemWrapperPtrRef)
   {
@@ -148,6 +152,18 @@ namespace Network
   TCPBoostSocket<N, N2>::getSystemWrapperPtrRef()
   {
     return _systemWrapperPtrRef;
+  }
+
+  template <std::size_t N, std::size_t N2>
+  bool TCPBoostSocket<N, N2>::getMaintainInstance() const
+  {
+    return _maintainInstance;
+  }
+
+  template <std::size_t N, std::size_t N2>
+  void TCPBoostSocket<N, N2>::setMaintainInstance(bool maintainInstance)
+  {
+    _maintainInstance = maintainInstance;
   }
   
   template <std::size_t N, std::size_t N2>

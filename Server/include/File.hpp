@@ -21,12 +21,12 @@ namespace Persistence
     };
   
     template <>
-    class File<StringList> : public AFile<StringList>
+    class File<StringArray> : public AFile<StringArray>
     { 
     public :
       File(const std::string&);
       virtual ~File() = default;
-      virtual StringList find(const std::string& = "") const;
+      virtual StringArray find(const std::string& = "") const;
     };
 
     File<bool>::File(const std::string& fullName) : AFile<bool>(fullName) { }
@@ -54,15 +54,15 @@ namespace Persistence
       return isFound;
     }
 
-    File<StringList>::File(const std::string& fullName) :
-      AFile<StringList>(fullName)
+    File<StringArray>::File(const std::string& fullName) :
+      AFile<StringArray>(fullName)
     {
     }
 
-    StringList File<StringList>::find(const std::string&) const
+    StringArray File<StringArray>::find(const std::string&) const
     {
       std::ifstream	ifs;
-      StringList	datas;
+      StringArray	datas;
 
       ifs.exceptions(std::ifstream::failbit | std::ifstream::badbit);
       try

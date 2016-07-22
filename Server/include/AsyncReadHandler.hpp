@@ -4,11 +4,11 @@
 # include <cstddef>
 # include <memory>
 # include <boost/system/error_code.hpp>
-# include "DisconnectFromAsyncTaskHandler.hpp"
 # include "UniSoulNetworkProtocolSerializable.hh"
 # include "SerializationHandler.hpp"
-# include "UniSoulPacketFactory.hh"
-# include "UniSoulNetworkProtocol.hh"
+# include "RequestExecuteFromAsyncTaskHandler.hpp"
+# include "DisconnectFromAsyncTaskHandler.hpp"
+# include "DeserializeErrorFromAsyncTaskHandler.hpp"
 
 namespace Network
 {
@@ -23,10 +23,9 @@ namespace Handler
   {
   private :
     const std::shared_ptr
-    <Network::TCPBoostSocket<N, N2>>&	_socketPtr;
-    const boost::system::error_code&	_error;
-    SerializationHandler<UniSoulPacket>	_serializationHandler;
-    Factory::UniSoulPacketFactory	_packetFactory;
+    <Network::TCPBoostSocket<N, N2>>&			_socketPtr;
+    const boost::system::error_code&			_error;
+    SerializationHandler<UniSoulPacket>			_serializationHandler;
     
   public :
     AsyncReadHandler(const std::shared_ptr<Network::TCPBoostSocket<N, N2>>&,
@@ -53,7 +52,7 @@ namespace Handler
   void AsyncReadHandler<N, N2>::readHandle() const
   {
     static bool isFirstTime = true;
-
+    
     if (!_error)
       {
 	if (isFirstTime)
@@ -65,7 +64,7 @@ namespace Handler
 	  regularReadHandle();
       }
     else
-      Handler::DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr).disconnect();
+      DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr).disconnect();
   }
   
   template <std::size_t N, std::size_t N2>
@@ -74,26 +73,33 @@ namespace Handler
     std::shared_ptr
       <Serializable
        ::UniSoulNetworkProtocolSerializable>	serializablePtr
-      = _serializationHandler.deserialize
+      = std::dynamic_pointer_cast
       <Serializable::UniSoulNetworkProtocolSerializable>
-      (_socketPtr->getBuffer());
+      (_serializationHandler.deserialize(_socketPtr->getBuffer()));
     
     if (!serializablePtr)
-      {
-	_socketPtr->send
-	  (_serializationHandler
-	   .serialize(std::make_shared
-		      <Serializable::UniSoulNetworkProtocolSerializable>
-		      (_packetFactory.create
-		       (Network::e_communication::TCP,
-			Network::e_request::ERROR,
-			"An error is occurred during your identification. Try again."))));
-      }
+      DeserializeErrorFromAsyncTaskHandler<N, N2>
+	(_socketPtr, _serializationHandler).deserializeError(true);
+    else
+      RequestExecuteFromAsyncTaskHandler<N, N2>(_socketPtr, serializablePtr)
+	.requestExecute();
   }
   
   template <std::size_t N, std::size_t N2>
   void AsyncReadHandler<N, N2>::regularReadHandle() const
   {
+    std::shared_ptr
+      <Serializable::UniSoulNetworkProtocolSerializable>
+      serializablePtr = std::dynamic_pointer_cast
+      <Serializable::UniSoulNetworkProtocolSerializable>
+      (_serializationHandler.deserialize(_socketPtr->getBuffer()));
+
+    if (!serializablePtr)
+      DeserializeErrorFromAsyncTaskHandler<N, N2>
+	(_socketPtr, _serializationHandler).deserializeError(false);
+    else
+      RequestExecuteFromAsyncTaskHandler<N, N2>(_socketPtr, serializablePtr)
+	.requestExecute();
   }
 }
 

@@ -26,11 +26,6 @@ namespace Handler
 		      const boost::system::error_code&);
     ~AsyncWriteHandler() = default;
     void writeHandle() const;
-
-  private :
-    void firstTimeWriteHandle() const;
-    void regularWriteHandle() const;
-    void lastTimeWriteHandle() const;
   };
 
   template <std::size_t N, std::size_t N2>
@@ -46,35 +41,8 @@ namespace Handler
   template <std::size_t N, std::size_t N2>
   void AsyncWriteHandler<N, N2>::writeHandle() const
   {
-    static bool	isFirstTime = true;
-    
-    if (!_error)
-      {
-	if (isFirstTime)
-	  {
-	    firstTimeWriteHandle();
-	    isFirstTime = false;
-	  }
-	else
-	  regularWriteHandle();
-      }
-    lastTimeWriteHandle();
-  }
-
-  template <std::size_t N, std::size_t N2>
-  void AsyncWriteHandler<N, N2>::firstTimeWriteHandle() const
-  {
-  }
-
-  template <std::size_t N, std::size_t N2>
-  void AsyncWriteHandler<N, N2>::regularWriteHandle() const
-  {
-  }
-
-  template <std::size_t N, std::size_t N2>
-  void AsyncWriteHandler<N, N2>::lastTimeWriteHandle() const
-  {
-    Handler::DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr).disconnect();
+    if (_error)
+      DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr).disconnect();
   }
 }
 
