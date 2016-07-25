@@ -38,7 +38,8 @@ namespace Wrapper
     using ClientCheckerManager = Persistence::Manager::ClientCheckerManager;
     using ChatRoomManager = Communication::Chat::ChatRoomManager;
     using CommandFactory = Command::CommandFactory
-      <bool,
+      <Command::Command,
+       bool,
        std::unique_ptr<IWrapper<VariantMap>>,
        std::vector<std::string>,
        std::string>;
@@ -57,7 +58,5 @@ namespace Wrapper
     virtual VariantMap& getContent();
   };
 }
-
-using UniSoulSystemWrapper = Wrapper::UniSoulSystemWrapper;
 
 #endif /* !UNI_SOUL_SYSTEM_WRAPPER_HH_ */

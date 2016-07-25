@@ -53,6 +53,8 @@ namespace Network
     virtual bool close();
     virtual bool send(const std::string&);
     virtual std::string recv();
+    virtual std::string getAddress() const;
+    virtual unsigned short getPort() const;
     boost::asio::ip::tcp::socket& getSocket();
     std::string getBuffer() const;
     SystemWrapperPtrRef getSystemWrapperPtrRef();
@@ -116,7 +118,7 @@ namespace Network
 				    boost::asio::placeholders::error));
     return true;
   }
-
+  
   template <std::size_t N, std::size_t N2>
   std::string TCPBoostSocket<N, N2>::recv()
   {
@@ -133,6 +135,18 @@ namespace Network
     _timer.async_wait(boost::bind(&TCPBoostSocket::close,
 				  this->shared_from_this()));
     return "";
+  }
+  
+  template <std::size_t N, std::size_t N2>
+  std::string TCPBoostSocket<N, N2>::getAddress() const
+  {
+    return _socket.remote_endpoint().address().to_string();
+  }
+
+  template <std::size_t N, std::size_t N2>
+  unsigned short TCPBoostSocket<N, N2>::getPort() const
+  {
+    return _socket.remote_endpoint().port();
   }
   
   template <std::size_t N, std::size_t N2>

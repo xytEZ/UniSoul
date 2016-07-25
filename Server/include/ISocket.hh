@@ -2,7 +2,7 @@
 # define ISOCKET_HH_
 
 namespace Network
-{ 
+{
   class ISocket
   {
   public :

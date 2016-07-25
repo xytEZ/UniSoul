@@ -2,6 +2,8 @@
 # define CONNECTION_COMMAND_HPP_
 
 # include <tuple>
+# include <boost/any.hpp>
+# include "UniSoulSystemWrapper.hh"
 # include "ICommand.hpp"
 
 namespace Command
@@ -16,11 +18,15 @@ namespace Command
   };
 
   template <typename T, typename... Args>
-  T ConnectionCommand<T, Args...>::execute(Args&...) const
+  T ConnectionCommand<T, Args...>::execute(Args&... args) const
   {
-    //std::tuple<Args&...>	tuple = std::forward_as_tuple(args...);
+    std::tuple<Args&...>	tuple = std::forward_as_tuple(args...);
     
-    return T();
+    boost::any_cast
+      <typename Wrapper::UniSoulSystemWrapper::ClientCheckerManager&>
+      (std::get<0>(tuple)->getContent()["ClientCheckerManager"])
+      .checkClient(std::get<2>(tuple));
+    return true;
   }
 }
 

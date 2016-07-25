@@ -8,6 +8,7 @@
 # include <boost/serialization/shared_ptr.hpp>
 # include <boost/archive/binary_oarchive.hpp>
 # include <boost/archive/binary_iarchive.hpp>
+# include <boost/archive/archive_exception.hpp>
 # include "SmartPointer.hpp"
 
 namespace Serializable
@@ -39,11 +40,14 @@ namespace Handler
   ::serialize(std::shared_ptr
 	      <Serializable::ASerializable<T>>& serializablePtr) const
   {
-    std::stringstream                                 ss;
-    boost::archive::binary_oarchive                   oa(ss);
-    boost::shared_ptr<Serializable::ASerializable<T>> serializablePtr2 =
+    boost::shared_ptr<Serializable::ASerializable<T>>	serializablePtr2 =
       Tool::SmartPointer::make_boost_ptr_from_std(serializablePtr);
-
+    std::stringstream					ss;
+    boost::archive::binary_oarchive			oa(ss,
+							   boost
+							   ::archive
+							   ::no_header);
+    
     oa << serializablePtr2;
     return ss.str();
   }
@@ -60,12 +64,15 @@ namespace Handler
   std::shared_ptr<Serializable::ASerializable<T>> SerializationHandler<T>
   ::deserialize(const std::string& serializedStr) const
   {
-    std::stringstream                                 ss(serializedStr);
-    boost::archive::binary_iarchive                   ia(ss);
-    boost::shared_ptr<Serializable::ASerializable<T>> serializablePtr
+    boost::shared_ptr<Serializable::ASerializable<T>>	serializablePtr
       = nullptr;
-    std::shared_ptr<Serializable::ASerializable<T>>   serializablePtr2
+    std::shared_ptr<Serializable::ASerializable<T>>	serializablePtr2
       = nullptr;
+    std::stringstream					ss(serializedStr);
+    boost::archive::binary_iarchive			ia(ss,
+							   boost
+							   ::archive
+							   ::no_header);
 
     ia >> serializablePtr;
     serializablePtr2 = Tool::SmartPointer

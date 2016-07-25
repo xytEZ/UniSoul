@@ -12,6 +12,8 @@ namespace Network
     virtual ~ITCPSocket() = default;
     virtual bool send(const std::string&) = 0;
     virtual std::string recv() = 0;
+    virtual std::string getAddress() const = 0;
+    virtual unsigned short getPort() const = 0;
   };
 }
 

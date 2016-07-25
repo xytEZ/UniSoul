@@ -13,19 +13,12 @@ namespace Network
 	UDP = 0x1,
 	FTP = 0x2
       };
-
-    enum Request
-      {
-	NONE = 0x0,
-	CONNECTION = 0x1,
-	DECONNECTION = 0x2,
-      };
     
     struct Header
     {
       unsigned short int	header_size;
       Communication		communication;
-      Request			request;
+      unsigned short int	command;
     };
 
     struct Data
@@ -41,7 +34,5 @@ namespace Network
     };
   }
 }
-
-using UniSoulPacket = Network::Protocol::UniSoulPacket;
 
 #endif /* !UNI_SOUL_NETWORK_PROTOCOL_HH_ */

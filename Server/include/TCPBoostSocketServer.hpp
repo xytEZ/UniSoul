@@ -37,6 +37,8 @@ namespace Network
       virtual bool close();
       virtual bool send(const std::string&);
       virtual std::string recv();
+      virtual std::string getAddress() const;
+      virtual unsigned short getPort() const;
       virtual bool bind(const t_sockaddr *, int);
       virtual bool listen(int);
       virtual T accept(t_sockaddr *, int *);
@@ -103,6 +105,18 @@ namespace Network
   std::string TCPBoostSocketServer<N, N2, T>::recv()
   {
     return TCPBoostSocket<N, N2>::recv();
+  }
+
+  template <std::size_t N, std::size_t N2, typename T>
+  std::string TCPBoostSocketServer<N, N2, T>::getAddress() const
+  {
+    return TCPBoostSocket<N, N2>::getAddress();
+  }
+
+  template <std::size_t N, std::size_t N2, typename T>
+  unsigned short TCPBoostSocketServer<N, N2, T>::getPort() const
+  {
+    return TCPBoostSocket<N, N2>::getPort();
   }
   
   template <std::size_t N, std::size_t N2, typename T>

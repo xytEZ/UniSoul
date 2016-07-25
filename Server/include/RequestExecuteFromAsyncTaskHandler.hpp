@@ -3,8 +3,9 @@
 
 # include <cstddef>
 # include <memory>
+# include <string>
 # include "UniSoulSystemWrapper.hh"
-# include "RequestEnumConverter.hh"
+# include "UniSoulNetworkProtocol.hh"
 
 namespace Network
 {
@@ -14,60 +15,62 @@ namespace Network
 
 namespace Handler
 {
-  template <std::size_t N, std::size_t N2>
+  template <typename T, std::size_t N, std::size_t N2>
   class RequestExecuteFromAsyncTaskHandler
   {
   private :
     const std::shared_ptr
-    <Network::TCPBoostSocket<N, N2>>&			_socketPtr;
+    <Network::TCPBoostSocket<N, N2>>&	_socketPtr;
     const std::shared_ptr
-    <Serializable::UniSoulNetworkProtocolSerializable>&	_serializablePtr;
-    Network::Protocol::RequestEnumConverter		_requestEnumConverter;
+    <Serializable::ASerializable<T>>&	_serializablePtr;
 
   public :
     RequestExecuteFromAsyncTaskHandler(const std::shared_ptr
 				       <Network::TCPBoostSocket<N, N2>>&,
 				       const std::shared_ptr
-				       <Serializable::
-				       UniSoulNetworkProtocolSerializable>&);
+				       <Serializable::ASerializable<T>>&);
     RequestExecuteFromAsyncTaskHandler() = default;
-    bool requestExecute() const;
+    bool requestExecute(std::vector<std::string>&);
   };
 
-  template <std::size_t N, std::size_t N2>
-  RequestExecuteFromAsyncTaskHandler<N, N2>
+  template <typename T, std::size_t N, std::size_t N2>
+  RequestExecuteFromAsyncTaskHandler<T, N, N2>
   ::RequestExecuteFromAsyncTaskHandler(const std::shared_ptr
 				       <Network::TCPBoostSocket<N, N2>>&
 				       socketPtr,
 				       const std::shared_ptr
-				       <Serializable::
-				       UniSoulNetworkProtocolSerializable>&
+				       <Serializable::ASerializable<T>>&
 				       serializablePtr) :
     _socketPtr(socketPtr),
     _serializablePtr(serializablePtr)
   {
   }
 
-  template <std::size_t N, std::size_t N2>
-  bool RequestExecuteFromAsyncTaskHandler<N, N2>::requestExecute() const
+  template <typename T, std::size_t N, std::size_t N2>
+  bool RequestExecuteFromAsyncTaskHandler<T, N, N2>
+  ::requestExecute(std::vector<std::string>& datas)
   {
+    std::string	dataFromPacket(reinterpret_cast<const char *>
+			       (_serializablePtr
+				->getSerializableComponent()
+				.data.data));
+    
     boost::any_cast
-      <typename UniSoulSystemWrapper::CommandExecutor&>
+      <typename Wrapper::UniSoulSystemWrapper::CommandExecutor&>
       (_socketPtr->getSystemWrapperPtrRef()
        ->getContent()["CommandExecutor"])
       .setCommandPtr(boost::any_cast
-		     <typename UniSoulSystemWrapper::CommandFactory&>
+		     <typename Wrapper::UniSoulSystemWrapper::CommandFactory&>
 		     (_socketPtr->getSystemWrapperPtrRef()
 		      ->getContent()["CommandFactory"])
-		     .getCommand(_requestEnumConverter.convertRequestToString
+		     .getCommand(static_cast<Command::Command>
 				 (_serializablePtr->getSerializableComponent()
-				  .header.request)));
-    /*boost::any_cast
-      <typename UniSoulSystemWrapper::CommandExecutor&>
+				  .header.command)));
+    return boost::any_cast
+      <typename Wrapper::UniSoulSystemWrapper::CommandExecutor&>
       (_socketPtr->getSystemWrapperPtrRef()
        ->getContent()["CommandExecutor"])
-       .execute();*/
-    return true;
+      .execute(_socketPtr->getSystemWrapperPtrRef(), datas, dataFromPacket);
   }
 }
 

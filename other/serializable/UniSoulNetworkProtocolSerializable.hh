@@ -8,18 +8,22 @@
 namespace Serializable
 {
   class UniSoulNetworkProtocolSerializable :
-    public ASerializable<UniSoulPacket>
+    public ASerializable<Network::Protocol::UniSoulPacket>
   {
   private :
     friend class boost::serialization::access;
     
   public :
     UniSoulNetworkProtocolSerializable() = default;
-    UniSoulNetworkProtocolSerializable(const UniSoulPacket&);
+    UniSoulNetworkProtocolSerializable(const Network::Protocol
+				       ::UniSoulPacket&);
     virtual ~UniSoulNetworkProtocolSerializable() = default;
-    virtual const UniSoulPacket& getSerializableComponent() const;
-    virtual void setSerializableComponent(const UniSoulPacket&);
-
+    virtual const Network::Protocol::UniSoulPacket&
+    getSerializableComponent() const;
+    
+    virtual void setSerializableComponent(const Network::Protocol
+					  ::UniSoulPacket&);
+    
   private :
     template <class Archive>
     void serialize(Archive&, const unsigned int);

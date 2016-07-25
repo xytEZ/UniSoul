@@ -1,68 +1,56 @@
 #ifndef COMMAND_FACTORY_HPP_
 # define COMMAND_FACTORY_HPP_
 
-# include <string>
 # include <map>
 # include <utility>
 # include <algorithm>
 # include <iostream>
 # include "CommandNotFoundException.hh"
-# include "ConnectionCommand.hpp"
-# include "DeconnectionCommand.hpp"
+# include "ICommand.hpp"
 
 namespace Command
 { 
-  template <typename T, typename... Args>
+  template <typename T, typename U, typename... Args>
   class CommandFactory
   { 
   private :
-    std::map<std::string, CommandPtr<T, Args...>>	_commands;
+    std::map<T, CommandPtr<U, Args...>>	_commands;
 
   public :
-    CommandFactory();
+    CommandFactory() = default;
     ~CommandFactory() = default;
-    void addCommand(const std::string&,
-		    const CommandPtr<T, Args...>&);
-    const CommandPtr<T, Args...>& getCommand(const std::string&);
+    void addCommand(const T&,
+		    const CommandPtr<U, Args...>&);
+    const CommandPtr<U, Args...>& getCommand(const T&);
     void listCommands() const;
   };
-
-  template <typename T, typename... Args>
-  CommandFactory<T, Args...>::CommandFactory() :
-    _commands
-  {
-    { "Connection", std::make_shared<ConnectionCommand<T, Args...>>() },
-      { "Deconnection", std::make_shared<DeconnectionCommand<T, Args...>>() }
-  }
-    {
-    }
   
-  template <typename T, typename... Args>
-  void CommandFactory<T, Args...>
-  ::addCommand(const std::string& name,
-	       const CommandPtr<T, Args...>& commandPtr)
+  template <typename T, typename U, typename... Args>
+  void CommandFactory<T, U, Args...>
+  ::addCommand(const T& key,
+	       const CommandPtr<U, Args...>& commandPtr)
   {
-    _commands[std::move(name)] = std::move(commandPtr);
+    _commands[std::move(key)] = std::move(commandPtr);
   }
 
-  template <typename T, typename... Args>
-  const CommandPtr<T, Args...>& CommandFactory<T, Args...>
-  ::getCommand(const std::string& name)
+  template <typename T, typename U, typename... Args>
+  const CommandPtr<U, Args...>& CommandFactory<T, U, Args...>
+  ::getCommand(const T& key)
   {
-    if (_commands.find(name) == _commands.cend())
+    if (_commands.find(key) == _commands.cend())
       throw new Exception::Command
-	::CommandNotFoundException("\"" + name + "\" command doesn't exist.");
-    return _commands[std::move(name)];
+	::CommandNotFoundException("Command doesn't exist.");
+    return _commands[std::move(key)];
   }
   
-  template <typename T, typename... Args>
-  void CommandFactory<T, Args...>::listCommands() const
+  template <typename T, typename U, typename... Args>
+  void CommandFactory<T, U, Args...>::listCommands() const
   {
     std::cout << "Commands enabled :" << std::endl;
     std::for_each(_commands.cbegin(),
 		  _commands.cend(),
 		  [](const std::pair
-		     <std::string, CommandPtr<T, Args...>>& pair)
+		     <std::string, CommandPtr<U, Args...>>& pair)
 		  {
 		    std::cout << pair.first << std::endl;
 		  });

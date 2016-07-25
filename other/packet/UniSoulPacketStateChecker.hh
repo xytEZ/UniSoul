@@ -6,16 +6,17 @@
 
 namespace Network
 {
-  class UniSoulPacketStateChecker : public IPacketStateChecker<UniSoulPacket>
+  class UniSoulPacketStateChecker :
+    public IPacketStateChecker<Network::Protocol::UniSoulPacket>
   {
   private :
-    UniSoulPacket	_uniSoulPacket;
+    Network::Protocol::UniSoulPacket	_uniSoulPacket;
 
   public :
     UniSoulPacketStateChecker() = default;
-    UniSoulPacketStateChecker(const UniSoulPacket&);
+    UniSoulPacketStateChecker(const Network::Protocol::UniSoulPacket&);
     virtual ~UniSoulPacketStateChecker() = default;
-    virtual void setPacket(const UniSoulPacket&);
+    virtual void setPacket(const Network::Protocol::UniSoulPacket&);
     virtual bool checkPacket() const;
 
   private :

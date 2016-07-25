@@ -10,8 +10,6 @@ namespace Info
     std::string	firstName;
     std::string	lastName;
     std::string	email;
-    std::string	address;
-    std::string	port;
   };
 }
 

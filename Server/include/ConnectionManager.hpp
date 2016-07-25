@@ -54,11 +54,7 @@ namespace Network
     const T& ConnectionManager<T>
     ::getConnectionIf(const std::function<bool(const T&)>& func) const
     {
-      typename std::list<T>::iterator	it =
-	std::find_if(_connections.cbegin(), _connections.cend(), func);
-
-      if (it != _connections.cend())
-	return *it;
+      return *std::find_if(_connections.cbegin(), _connections.cend(), func);
     }
     
     template <typename T>

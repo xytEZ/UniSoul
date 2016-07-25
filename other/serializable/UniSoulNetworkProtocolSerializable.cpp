@@ -1,22 +1,26 @@
+#include <utility>
 #include <boost/serialization/base_object.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/export.hpp>
 #include "UniSoulNetworkProtocolSerializable.hh"
 
 namespace Serializable
 {
   UniSoulNetworkProtocolSerializable
-  ::UniSoulNetworkProtocolSerializable(const UniSoulPacket& component) :
+  ::UniSoulNetworkProtocolSerializable(const Network::Protocol
+				       ::UniSoulPacket& component) :
     ASerializable(component)
   {
   }
 
-  const UniSoulPacket&
-  UniSoulNetworkProtocolSerializable::getSerializableComponent() const
+  const Network::Protocol::UniSoulPacket& UniSoulNetworkProtocolSerializable
+  ::getSerializableComponent() const
   {
     return _component;
   }
 
   void UniSoulNetworkProtocolSerializable
-  ::setSerializableComponent(const UniSoulPacket& component)
+  ::setSerializableComponent(const Network::Protocol::UniSoulPacket& component)
   {
     _component = component;
   }
@@ -25,10 +29,11 @@ namespace Serializable
   void UniSoulNetworkProtocolSerializable::serialize(Archive& ar,
 						     const unsigned int)
   {
-    ar & boost::serialization::base_object<ASerializable<UniSoulPacket>>(*this);
+    ar & boost::serialization::base_object
+      <ASerializable<Network::Protocol::UniSoulPacket>>(*this);
     ar & _component.header.header_size;
     ar & _component.header.communication;
-    ar & _component.header.request;
+    ar & _component.header.command;
     ar & _component.data.data_size;
     ar & _component.data.data;
   }

@@ -6,27 +6,22 @@
 namespace Network
 {
   UniSoulPacketStateChecker
-  ::UniSoulPacketStateChecker(const UniSoulPacket& uniSoulPacket) :
+  ::UniSoulPacketStateChecker(const Network::Protocol
+			      ::UniSoulPacket& uniSoulPacket) :
     _uniSoulPacket(uniSoulPacket)
   {
   }
 
-  void UniSoulPacketStateChecker::setPacket(const UniSoulPacket& uniSoulPacket)
+  void UniSoulPacketStateChecker::setPacket(const Network::Protocol
+					    ::UniSoulPacket& uniSoulPacket)
   {
     _uniSoulPacket = uniSoulPacket;
   }
 
   bool UniSoulPacketStateChecker::checkPacket() const
   {
-    try
-      {
-	checkPacketHeaderSize();
-	checkPacketDataSize();
-      }
-    catch (const Exception::Network::PacketStateException& e)
-      {
-	throw e;
-      }
+    checkPacketHeaderSize();
+    checkPacketDataSize();
     return true;
   }
 
@@ -35,7 +30,7 @@ namespace Network
     std::size_t	expectedSize = _uniSoulPacket.header.header_size;
     std::size_t	cropSize
       = sizeof(_uniSoulPacket.header.communication)
-      + sizeof(_uniSoulPacket.header.request);
+      + sizeof(_uniSoulPacket.header.command);
 
     if (expectedSize != cropSize)
       throw Exception::Network::PacketHeaderSizeException();

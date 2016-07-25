@@ -2,7 +2,7 @@
 # define CHAT_ROOM_GETTER_MANAGER_HH_
 
 # include <memory>
-# include <list>
+# include <vector>
 # include <string>
 
 namespace Communication
@@ -14,9 +14,9 @@ namespace Communication
       class ChatRoomGetterManager
       {
       private :
-	using StringList = std::list<std::string>;
+	using StringArray = std::vector<std::string>;
 	using PersistentDataInteractorPtr =
-	  std::unique_ptr<Persistence::IPersistentDataInteractor<StringList>>;
+	  std::unique_ptr<Persistence::IPersistentDataInteractor<StringArray>>;
 
       private :
 	PersistentDataInteractorPtr	_persistentDataInteractorPtr;

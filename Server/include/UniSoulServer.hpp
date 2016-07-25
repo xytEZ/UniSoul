@@ -54,13 +54,13 @@ namespace App
   bool UniSoulServer<T, N, N2>::init()
   {
     boost::any_cast
-      <typename UniSoulSystemWrapper::ServerSocketPtr&>
+      <typename Wrapper::UniSoulSystemWrapper::ServerSocketPtr&>
       (_systemWrapperPtr->getContent()["ServerSocket"])->open(0, 0, 0);
     boost::any_cast
-      <typename UniSoulSystemWrapper::ServerSocketPtr&>
+      <typename Wrapper::UniSoulSystemWrapper::ServerSocketPtr&>
       (_systemWrapperPtr->getContent()["ServerSocket"])->bind(nullptr, 0);
     boost::any_cast
-      <typename UniSoulSystemWrapper::ServerSocketPtr&>
+      <typename Wrapper::UniSoulSystemWrapper::ServerSocketPtr&>
       (_systemWrapperPtr->getContent()["ServerSocket"])->listen(0);
     return true;
   }
@@ -69,7 +69,7 @@ namespace App
   bool UniSoulServer<T, N, N2>::run()
   {
     boost::any_cast
-      <typename UniSoulSystemWrapper::ServerSocketPtr&>
+      <typename Wrapper::UniSoulSystemWrapper::ServerSocketPtr&>
       (_systemWrapperPtr->getContent()["ServerSocket"])->accept(nullptr,
 								nullptr);
     _libraryServiceWrapperPtr->getContent().run();
@@ -80,7 +80,7 @@ namespace App
   bool UniSoulServer<T, N, N2>::close()
   {
     boost::any_cast
-      <typename UniSoulSystemWrapper::ServerSocketPtr&>
+      <typename Wrapper::UniSoulSystemWrapper::ServerSocketPtr&>
       (_systemWrapperPtr->getContent()["ServerSocket"])->close();
     return true;
   }

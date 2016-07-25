@@ -12,9 +12,9 @@ namespace Factory
     ~UniSoulPacketFactory() = default;
     
   public :
-    UniSoulPacket create(Network::Protocol::Communication,
-			 Network::Protocol::Request,
-			 const char *) const;
+    Network::Protocol::UniSoulPacket create(Network::Protocol::Communication,
+					    unsigned short int,
+					    const char *) const;
   };
 }
 

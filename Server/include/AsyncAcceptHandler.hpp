@@ -59,17 +59,7 @@ namespace Handler
   {
     if (!_error)
       {
-	std::shared_ptr
-	  <Network::TCPConnection<Info::ClientInfo>> connectionPtr =
-	  std::make_shared<Network::TCPConnection
-			   <Info::ClientInfo>>(_socketPtr);
-	
-	connectionPtr->recv();
-	boost::any_cast
-	  <typename UniSoulSystemWrapper::ConnectionManager&>
-	  (_serverSocketPtr->getSystemWrapperPtrRef()
-	   ->getContent()["ConnectionManager"])
-	  .addConnection(connectionPtr);
+	_socketPtr->recv();
 	_serverSocketPtr->accept(nullptr, nullptr);
       }
   }

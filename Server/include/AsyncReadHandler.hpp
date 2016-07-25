@@ -4,11 +4,11 @@
 # include <cstddef>
 # include <memory>
 # include <boost/system/error_code.hpp>
-# include "UniSoulNetworkProtocolSerializable.hh"
-# include "SerializationHandler.hpp"
-# include "RequestExecuteFromAsyncTaskHandler.hpp"
 # include "DisconnectFromAsyncTaskHandler.hpp"
-# include "DeserializeErrorFromAsyncTaskHandler.hpp"
+# include "RequestProcessingFromAsyncTaskHandler.hpp"
+# include "UniSoulPacketFactory.hh"
+# include "UniSoulNetworkProtocolSerializable.hh"
+# include "UniSoulPacketStateChecker.hh"
 
 namespace Network
 {
@@ -25,17 +25,12 @@ namespace Handler
     const std::shared_ptr
     <Network::TCPBoostSocket<N, N2>>&			_socketPtr;
     const boost::system::error_code&			_error;
-    SerializationHandler<UniSoulPacket>			_serializationHandler;
     
   public :
     AsyncReadHandler(const std::shared_ptr<Network::TCPBoostSocket<N, N2>>&,
 		     const boost::system::error_code&);
     ~AsyncReadHandler() = default;
     void readHandle() const;
-
-  private :
-    void firstTimeReadHandle() const;
-    void regularReadHandle() const;
   };
 
   template <std::size_t N, std::size_t N2>
@@ -51,55 +46,22 @@ namespace Handler
   template <std::size_t N, std::size_t N2>
   void AsyncReadHandler<N, N2>::readHandle() const
   {
-    static bool isFirstTime = true;
+    static bool	isFirstTime = true;
     
-    if (!_error)
+    if (_error)
       {
+	RequestProcessingFromAsyncTaskHandler
+	  <Network::Protocol::UniSoulPacket,
+	   Factory::UniSoulPacketFactory,
+	   Serializable::UniSoulNetworkProtocolSerializable,
+	   Network::UniSoulPacketStateChecker,
+	   N,
+	   N2>(_socketPtr).requestProcessing(isFirstTime);
 	if (isFirstTime)
-	  {
-	    firstTimeReadHandle();
-	    isFirstTime = false;
-	  }
-	else
-	  regularReadHandle();
+	  isFirstTime = false;
       }
     else
       DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr).disconnect();
-  }
-  
-  template <std::size_t N, std::size_t N2>
-  void AsyncReadHandler<N, N2>::firstTimeReadHandle() const
-  {
-    std::shared_ptr
-      <Serializable
-       ::UniSoulNetworkProtocolSerializable>	serializablePtr
-      = std::dynamic_pointer_cast
-      <Serializable::UniSoulNetworkProtocolSerializable>
-      (_serializationHandler.deserialize(_socketPtr->getBuffer()));
-    
-    if (!serializablePtr)
-      DeserializeErrorFromAsyncTaskHandler<N, N2>
-	(_socketPtr, _serializationHandler).deserializeError(true);
-    else
-      RequestExecuteFromAsyncTaskHandler<N, N2>(_socketPtr, serializablePtr)
-	.requestExecute();
-  }
-  
-  template <std::size_t N, std::size_t N2>
-  void AsyncReadHandler<N, N2>::regularReadHandle() const
-  {
-    std::shared_ptr
-      <Serializable::UniSoulNetworkProtocolSerializable>
-      serializablePtr = std::dynamic_pointer_cast
-      <Serializable::UniSoulNetworkProtocolSerializable>
-      (_serializationHandler.deserialize(_socketPtr->getBuffer()));
-
-    if (!serializablePtr)
-      DeserializeErrorFromAsyncTaskHandler<N, N2>
-	(_socketPtr, _serializationHandler).deserializeError(false);
-    else
-      RequestExecuteFromAsyncTaskHandler<N, N2>(_socketPtr, serializablePtr)
-	.requestExecute();
   }
 }
 

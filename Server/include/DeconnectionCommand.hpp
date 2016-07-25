@@ -1,14 +1,13 @@
-#ifndef DECONNECTION_COMMAND_HH_
-# define DECONNECTION_COMMAND_HH_
+#ifndef DECONNECTION_COMMAND_HPP_
+# define DECONNECTION_COMMAND_HPP_
 
+# include <tuple>
 # include "ICommand.hpp"
 
 namespace Command
 {
   template <typename T, typename... Args>
-  class DeconnectionCommand : public ICommand<T, Args...>
-
-    
+  class DeconnectionCommand : public ICommand<T, Args...>    
   {
   public :
     DeconnectionCommand() = default;
@@ -19,8 +18,8 @@ namespace Command
   template <typename T, typename... Args>
   T DeconnectionCommand<T, Args...>::execute(Args&...) const
   {
-    return T();
+    return true;
   }
 }
 
-#endif /* !DECONNECTION_COMMAND_HH_ */
+#endif /* !DECONNECTION_COMMAND_HPP_ */

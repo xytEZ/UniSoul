@@ -42,7 +42,7 @@ namespace Handler
   void DisconnectFromAsyncTaskHandler<N, N2>::disconnect() const
   {
     boost::any_cast
-      <typename UniSoulSystemWrapper::ConnectionManager&>
+      <typename Wrapper::UniSoulSystemWrapper::ConnectionManager&>
       (_socketPtr->getSystemWrapperPtrRef()
        ->getContent()["ConnectionManager"])
       .deleteConnectionIf

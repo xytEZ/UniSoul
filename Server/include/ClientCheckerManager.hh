@@ -3,7 +3,6 @@
 
 # include <memory>
 # include <string>
-# include <sstream>
 # include "IPersistentDataInteractor.hpp"
 
 namespace Persistence
@@ -23,16 +22,7 @@ namespace Persistence
       ClientCheckerManager(const PersistentDataInteractorPtr&);
       ~ClientCheckerManager() = default;
       void setPersistentDataInteractorPtr(const PersistentDataInteractorPtr&);
-    
-      template <typename... Args>
-      bool clientChecker(const char, const Args&...) const;
-
-    private :
-      template <typename T, typename... Args>
-      static std::string concatArguments(const char, const T&, const Args&...);
-
-      template <typename T>
-      static std::string concatArguments(const char, const T&);
+      bool checkClient(const std::string&) const;
     };
   } 
 }

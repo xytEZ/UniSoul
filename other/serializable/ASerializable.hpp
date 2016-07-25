@@ -1,7 +1,11 @@
 #ifndef ASERIALIZABLE_HPP_
 # define ASERIALIZABLE_HPP_
 
+# include <utility>
+# include <boost/serialization/shared_ptr.hpp>
 # include <boost/serialization/serialization.hpp>
+# include <boost/serialization/export.hpp>
+# include "UniSoulNetworkProtocol.hh"
 
 namespace Serializable
 {
@@ -28,13 +32,13 @@ namespace Serializable
 
   template <typename T>
   ASerializable<T>::ASerializable(const T& component) :
-    _component(component)
+    _component(std::move(component))
   {
   }
   
   template <typename T>
   template <class Archive>
   void ASerializable<T>::serialize(Archive&, const unsigned int) { }
-};
+}
 
 #endif /* !ASERIALIZABLE_HPP_ */

@@ -19,15 +19,13 @@ namespace Network
     
   public :
     TCPConnection(const SocketPtr&);
-    TCPConnection(const SocketPtr&, const T&);
     ~TCPConnection();
     bool send(const std::string&);
     std::string recv();
     const SocketPtr& getSocketPtr() const;
-    const T& getClientInfo() const;
-    void setClientInfo(const T&);
+    T& getClientInfo();
   };
-
+  
   template <typename T>
   TCPConnection<T>::TCPConnection(const SocketPtr& socketPtr) :
     _socketPtr(socketPtr)
@@ -35,15 +33,6 @@ namespace Network
     _socketPtr->open(0, 0, 0);
   }
   
-  template <typename T>
-  TCPConnection<T>::TCPConnection(const SocketPtr& socketPtr,
-				  const T& clientInfo) :
-    _socketPtr(socketPtr),
-    _clientInfo(std::move(clientInfo))
-  {
-    _socketPtr->open(0, 0, 0);
-  }
-
   template <typename T>
   TCPConnection<T>::~TCPConnection() { _socketPtr->close(); }
   
@@ -64,13 +53,7 @@ namespace Network
   }
 
   template <typename T>
-  const T& TCPConnection<T>::getClientInfo() const { return _clientInfo; }
-
-  template <typename T>
-  void TCPConnection<T>::setClientInfo(const T& clientInfo)
-  {
-    _clientInfo = std::move(clientInfo);
-  }
+  T& TCPConnection<T>::getClientInfo() { return _clientInfo; }
 }
 
 #endif /* !TCP_CONNECTION_HPP_ */
