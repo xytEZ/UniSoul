@@ -1,4 +1,5 @@
 #include <cstring>
+#include <iostream>
 #include "UniSoulPacketFactory.hh"
 
 namespace Factory
@@ -9,15 +10,13 @@ namespace Factory
 	   const char *data) const
   {
     Network::Protocol::UniSoulPacket	uniSoulPacket;
+    std::size_t				dataLen = std::strlen(data);
 
-    uniSoulPacket.header.header_size
-      = sizeof(communication) + sizeof(command);      
-    uniSoulPacket.header.communication = communication;
-    uniSoulPacket.header.command = command;
-    uniSoulPacket.data.data_size = std::strlen(data);
-    std::strncpy(reinterpret_cast<char *>(uniSoulPacket.data.data),
-		 data,
-		 uniSoulPacket.data.data_size);
+    uniSoulPacket.communication = communication;
+    uniSoulPacket.command = command;
+    uniSoulPacket.data = new char[dataLen];
+    std::strncpy(uniSoulPacket.data, data, dataLen);
+    uniSoulPacket.data[dataLen] = '\0';
     return uniSoulPacket;
   }
 }

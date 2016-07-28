@@ -1,3 +1,4 @@
+
 #ifndef REQUEST_PROCESSING_FROM_ASYNC_TASK_HANDLER_HPP_
 # define REQUEST_PROCESSING_FROM_ASYNC_TASK_HANDLER_HPP_
 
@@ -10,7 +11,6 @@
 # include <algorithm>
 # include <boost/archive/archive_exception.hpp>
 # include "SerializationHandler.hpp"
-# include "IPacketStateChecker.hpp"
 # include "NetworkPacketException.hh"
 # include "RequestExecuteFromAsyncTaskHandler.hpp"
 # include "PacketSenderFromAsyncTaskHandler.hpp"
@@ -24,8 +24,7 @@ namespace Network
 
 namespace Handler
 {
-  template <typename T, typename U, typename V, typename W, std::size_t N,
-	    std::size_t N2>
+  template <typename T, typename U, typename V, std::size_t N, std::size_t N2>
   class RequestProcessingFromAsyncTaskHandler
   {
   private :
@@ -37,22 +36,21 @@ namespace Handler
     RequestProcessingFromAsyncTaskHandler(const std::shared_ptr
 					  <Network::TCPBoostSocket<N, N2>>&);
     ~RequestProcessingFromAsyncTaskHandler() = default;
-    void requestProcessing(bool) const;
+    void requestProcessing() const;
 
   private :
     void validRequestProcessing(const std::shared_ptr
 				<Serializable::ASerializable<T>>&,
 				bool) const;
     
-    template <typename X>
+    template <typename W>
     void firstTimeValidRequestProcessing(const std::string&) const;
     
     void noValidRequestProcessing(bool) const;
   };
 
-  template <typename T, typename U, typename V, typename W, std::size_t N,
-	    std::size_t N2>
-  RequestProcessingFromAsyncTaskHandler<T, U, V, W, N, N2>::
+  template <typename T, typename U, typename V, std::size_t N, std::size_t N2>
+  RequestProcessingFromAsyncTaskHandler<T, U, V, N, N2>::
   RequestProcessingFromAsyncTaskHandler(const std::shared_ptr
 					<Network::TCPBoostSocket<N, N2>>&
 					socketPtr) :
@@ -60,41 +58,41 @@ namespace Handler
   {
   }
 
-  template <typename T, typename U, typename V, typename W, std::size_t N,
-	    std::size_t N2>
-  void RequestProcessingFromAsyncTaskHandler<T, U, V, W, N, N2>
-  ::requestProcessing(bool isFirstTime) const
+  template <typename T, typename U, typename V, std::size_t N, std::size_t N2>
+  void RequestProcessingFromAsyncTaskHandler<T, U, V, N, N2>
+  ::requestProcessing() const
   {
+    bool isFirstRequestFromConnection =
+      boost::any_cast
+      <typename Wrapper::UniSoulSystemWrapper::ConnectionManager&>
+      (_socketPtr->getSystemWrapperPtrRef()->getContent()["ConnectionManager"])
+      .getConnectionIf([this](const std::shared_ptr
+				     <Network::TCPConnection
+				     <Info::ClientInfo>>&
+				     connectionPtr) -> bool
+		       {
+			 return connectionPtr->getSocketPtr() == _socketPtr;
+		       });
+    
     try
       {
-	std::unique_ptr
-	  <Network::IPacketStateChecker<T>>	packetStateChecker =
-	  std::make_unique<W>();
 	std::shared_ptr<Serializable::ASerializable<T>>	serializablePtr
 	  = _serializationHandler.deserialize(_socketPtr->getBuffer());
 
-	packetStateChecker->setPacket(serializablePtr
-				      ->getSerializableComponent());
-	packetStateChecker->checkPacket();
-	validRequestProcessing(serializablePtr, isFirstTime);
+	validRequestProcessing(serializablePtr, isFirstRequestFromConnection);
       }
-    catch (const boost::archive::archive_exception&)
+    catch (const Exception::SerializationException&)
       {
-	noValidRequestProcessing(isFirstTime);
-      }
-    catch (const Exception::Network::PacketStateException&)
-      {
-	noValidRequestProcessing(isFirstTime);
+	noValidRequestProcessing(isFirstRequestFromConnection);
       }
   }
 
-  template <typename T, typename U, typename V, typename W, std::size_t N,
-	    std::size_t N2>
-  void RequestProcessingFromAsyncTaskHandler<T, U, V, W, N, N2>
+  template <typename T, typename U, typename V, std::size_t N, std::size_t N2>
+  void RequestProcessingFromAsyncTaskHandler<T, U, V, N, N2>
   ::validRequestProcessing(const std::shared_ptr
 			   <Serializable::ASerializable<T>>&
 			   serializablePtr,
-			   bool isFirstTime) const
+			   bool isFirstRequestFromConnection) const
   {
     std::vector<std::string>        datas;
     std::stringstream               ss;
@@ -109,22 +107,19 @@ namespace Handler
       (_socketPtr, _serializationHandler).packetSuccess(ss.str());
     if (ret)
       DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr).disconnect();
-    else if (isFirstTime)
+    else if (isFirstRequestFromConnection)
       firstTimeValidRequestProcessing<Info::ClientInfo>
-	(reinterpret_cast<const char *>(serializablePtr
-					->getSerializableComponent()
-					.data.data));
+	(serializablePtr->getSerializableComponent().data);
   }
 
-  template <typename T, typename U, typename V, typename W, std::size_t N,
-	    std::size_t N2>
-  template <typename X>
-  void RequestProcessingFromAsyncTaskHandler<T, U, V, W, N, N2>
+  template <typename T, typename U, typename V, std::size_t N, std::size_t N2>
+  template <typename W>
+  void RequestProcessingFromAsyncTaskHandler<T, U, V, N, N2>
   ::firstTimeValidRequestProcessing(const std::string& dataFromRequest) const
   {
     constexpr const char			DELIMITER = ';';
-    std::shared_ptr<Network::TCPConnection<X>>	connectionPtr =
-      std::make_shared<Network::TCPConnection<X>>(_socketPtr);
+    std::shared_ptr<Network::TCPConnection<W>>	connectionPtr =
+      std::make_shared<Network::TCPConnection<W>>(_socketPtr);
     std::stringstream				ss(dataFromRequest);
     std::string					str;
 
@@ -136,18 +131,18 @@ namespace Handler
     connectionPtr->getClientInfo().email = str;
     boost::any_cast
       <typename Wrapper::UniSoulSystemWrapper::ConnectionManager&>
-      (_socketPtr->getSystemWrapperPtrRef()
-       ->getContent()["ConnectionManager"])
+      (_socketPtr->getSystemWrapperPtrRef()->getContent()["ConnectionManager"])
       .addConnection(connectionPtr);
   }
   
-  template <typename T, typename U, typename V, typename W, std::size_t N,
-	    std::size_t N2>
-  void RequestProcessingFromAsyncTaskHandler<T, U, V, W, N, N2>
-  ::noValidRequestProcessing(bool isFirstTime) const
+  template <typename T, typename U, typename V, std::size_t N, std::size_t N2>
+  void RequestProcessingFromAsyncTaskHandler<T, U, V, N, N2>
+  ::noValidRequestProcessing(bool isFirstRequestFromConnection) const
   {
+    if (isFirstRequestFromConnection)
+      _socketPtr->setMaintainInstance(false);
     PacketSenderFromAsyncTaskHandler<T, U, V, N, N2>
-      (_socketPtr, _serializationHandler).packetError(isFirstTime);
+      (_socketPtr, _serializationHandler).packetError();
   }
 }
 

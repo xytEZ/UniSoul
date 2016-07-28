@@ -5,11 +5,17 @@
 # include <memory>
 # include <string>
 # include "ServerMessage.hh"
+# include "SerializationException.hh"
 
 namespace Network
 {
   template <std::size_t N, std::size_t N2>
   class TCPBoostSocket;
+}
+
+namespace Serializable
+{
+  class UniSoulNetworkProtocolSerializable;
 }
 
 namespace Handler
@@ -28,7 +34,7 @@ namespace Handler
 				     <Network::TCPBoostSocket<N, N2>>&,
 				     const SerializationHandler<T>&);
     ~PacketSenderFromAsyncTaskHandler() = default;
-    void packetError(bool) const;
+    void packetError() const;
     void packetSuccess(const std::string&) const;
   };
 
@@ -46,29 +52,41 @@ namespace Handler
 
 
   template <typename T, typename U, typename V, std::size_t N, std::size_t N2>
-  void PacketSenderFromAsyncTaskHandler<T, U, V, N, N2>
-  ::packetError(bool isFirstTime) const
+  void PacketSenderFromAsyncTaskHandler<T, U, V, N, N2>::packetError() const
   {
-    if (isFirstTime)
-      _socketPtr->setMaintainInstance(false);
-    _socketPtr->send
-      (_serializationHandler
-       .serialize(std::make_shared<V>
-		  (_packetFactory.create(Network::Protocol::Communication::TCP,
-					 Command::Command::NONE,
-					 Network::Message::Server::ERROR))));
+    try
+      {
+	_socketPtr->send
+	  (_serializationHandler
+	   .template serialize
+	   <Serializable::UniSoulNetworkProtocolSerializable>
+	   (std::make_shared<V>
+	    (_packetFactory.create(Network::Protocol
+				   ::Communication::TCP,
+				   Command::Command::NONE,
+				   Network::Message
+				   ::Server::ERROR))));
+      }
+    catch (const Exception::SerializationException&) { }
   }
-
+  
   template <typename T, typename U, typename V, std::size_t N, std::size_t N2>
   void PacketSenderFromAsyncTaskHandler<T, U, V, N, N2>
   ::packetSuccess(const std::string& data) const
   {
-    _socketPtr->send
-      (_serializationHandler
-       .serialize(std::make_shared<V>
-		  (_packetFactory.create(Network::Protocol::Communication::TCP,
-					 Command::Command::NONE,
-					 data.c_str()))));
+    try
+      {
+	_socketPtr->send
+	  (_serializationHandler
+	   .template serialize
+	   <Serializable::UniSoulNetworkProtocolSerializable>
+	   (std::make_shared<V>
+	    (_packetFactory.create(Network::Protocol
+				   ::Communication::TCP,
+				   Command::Command::NONE,
+				   data.c_str()))));
+      }
+    catch (const Exception::SerializationException&) { }
   }
 }
 

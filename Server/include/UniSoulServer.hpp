@@ -70,8 +70,8 @@ namespace App
   {
     boost::any_cast
       <typename Wrapper::UniSoulSystemWrapper::ServerSocketPtr&>
-      (_systemWrapperPtr->getContent()["ServerSocket"])->accept(nullptr,
-								nullptr);
+      (_systemWrapperPtr->getContent()["ServerSocket"])
+      ->accept(nullptr, nullptr);
     _libraryServiceWrapperPtr->getContent().run();
     return true;
   }
@@ -82,6 +82,15 @@ namespace App
     boost::any_cast
       <typename Wrapper::UniSoulSystemWrapper::ServerSocketPtr&>
       (_systemWrapperPtr->getContent()["ServerSocket"])->close();
+    boost::any_cast
+      <typename Wrapper::UniSoulSystemWrapper::ConnectionManager&>
+      (_systemWrapperPtr->getContent()["ConnectionManager"])
+      .apply([](const std::shared_ptr
+		<Network::TCPConnection
+		<Info::ClientInfo>>& connectionPtr) -> void
+	     {
+	       connectionPtr->getSocketPtr()->close();
+	     });
     return true;
   }
 }

@@ -50,10 +50,8 @@ namespace Handler
   bool RequestExecuteFromAsyncTaskHandler<T, N, N2>
   ::requestExecute(std::vector<std::string>& datas)
   {
-    std::string	dataFromPacket(reinterpret_cast<const char *>
-			       (_serializablePtr
-				->getSerializableComponent()
-				.data.data));
+    std::string	dataFromPacket(_serializablePtr->getSerializableComponent()
+			       .data);
     
     boost::any_cast
       <typename Wrapper::UniSoulSystemWrapper::CommandExecutor&>
@@ -65,7 +63,7 @@ namespace Handler
 		      ->getContent()["CommandFactory"])
 		     .getCommand(static_cast<Command::Command>
 				 (_serializablePtr->getSerializableComponent()
-				  .header.command)));
+				  .command)));
     return boost::any_cast
       <typename Wrapper::UniSoulSystemWrapper::CommandExecutor&>
       (_socketPtr->getSystemWrapperPtrRef()

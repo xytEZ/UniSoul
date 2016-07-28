@@ -1,6 +1,7 @@
 #ifndef TCP_CONNECTION_HPP_
 # define TCP_CONNECTION_HPP_
 
+# include <iostream>
 # include <memory>
 # include <utility>
 # include "ITCPSocket.hh"
@@ -19,10 +20,8 @@ namespace Network
     
   public :
     TCPConnection(const SocketPtr&);
-    ~TCPConnection();
-    bool send(const std::string&);
-    std::string recv();
-    const SocketPtr& getSocketPtr() const;
+    ~TCPConnection() = default;
+    SocketPtr& getSocketPtr();
     T& getClientInfo();
   };
   
@@ -30,24 +29,10 @@ namespace Network
   TCPConnection<T>::TCPConnection(const SocketPtr& socketPtr) :
     _socketPtr(socketPtr)
   {
-    _socketPtr->open(0, 0, 0);
-  }
-  
-  template <typename T>
-  TCPConnection<T>::~TCPConnection() { _socketPtr->close(); }
-  
-  template <typename T>
-  bool TCPConnection<T>::send(const std::string& msg)
-  {
-    return _socketPtr->send(msg);
   }
 
   template <typename T>
-  std::string TCPConnection<T>::recv() { return _socketPtr->recv(); }
-
-  template <typename T>
-  const typename TCPConnection<T>::SocketPtr& TCPConnection<T>
-  ::getSocketPtr() const
+  typename TCPConnection<T>::SocketPtr& TCPConnection<T>::getSocketPtr()
   {
     return _socketPtr;
   }

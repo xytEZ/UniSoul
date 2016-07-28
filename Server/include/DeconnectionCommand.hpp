@@ -18,7 +18,7 @@ namespace Command
   template <typename T, typename... Args>
   T DeconnectionCommand<T, Args...>::execute(Args&...) const
   {
-    return true;
+    return false;
   }
 }
 

@@ -1,7 +1,6 @@
 #ifndef UNI_SOUL_NETWORK_PROTOCOL_SERIALIZABLE_HH_
 # define UNI_SOUL_NETWORK_PROTOCOL_SERIALIZABLE_HH_
 
-# include <boost/serialization/export.hpp>
 # include "UniSoulNetworkProtocol.hh"
 # include "ASerializable.hpp"
 
@@ -17,7 +16,7 @@ namespace Serializable
     UniSoulNetworkProtocolSerializable() = default;
     UniSoulNetworkProtocolSerializable(const Network::Protocol
 				       ::UniSoulPacket&);
-    virtual ~UniSoulNetworkProtocolSerializable() = default;
+    virtual ~UniSoulNetworkProtocolSerializable();
     virtual const Network::Protocol::UniSoulPacket&
     getSerializableComponent() const;
     

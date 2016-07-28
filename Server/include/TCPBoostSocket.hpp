@@ -184,7 +184,8 @@ namespace Network
   template <typename HandlerPolicy>
   void TCPBoostSocket<N, N2>::sendHandle(const std::shared_ptr
 					 <TCPBoostSocket<N, N2>>& socketPtr,
-					 const boost::system::error_code& error)
+					 const boost::system::error_code&
+					 error)
   {
     HandlerPolicy(socketPtr, error).writeHandle();
   }
@@ -193,7 +194,8 @@ namespace Network
   template <typename HandlerPolicy>
   void TCPBoostSocket<N, N2>::recvHandle(const std::shared_ptr
 					 <TCPBoostSocket<N, N2>>& socketPtr,
-					 const boost::system::error_code& error)
+					 const boost::system::error_code&
+					 error)
   {
     HandlerPolicy(socketPtr, error).readHandle();
   }

@@ -41,7 +41,7 @@ namespace Handler
   template <std::size_t N, std::size_t N2>
   void AsyncWriteHandler<N, N2>::writeHandle() const
   {
-    if (_error)
+    if (_error || !_socketPtr->getMaintainInstance())
       DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr).disconnect();
   }
 }

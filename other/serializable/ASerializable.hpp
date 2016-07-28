@@ -2,10 +2,7 @@
 # define ASERIALIZABLE_HPP_
 
 # include <utility>
-# include <boost/serialization/shared_ptr.hpp>
 # include <boost/serialization/serialization.hpp>
-# include <boost/serialization/export.hpp>
-# include "UniSoulNetworkProtocol.hh"
 
 namespace Serializable
 {

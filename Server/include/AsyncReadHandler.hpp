@@ -8,7 +8,6 @@
 # include "RequestProcessingFromAsyncTaskHandler.hpp"
 # include "UniSoulPacketFactory.hh"
 # include "UniSoulNetworkProtocolSerializable.hh"
-# include "UniSoulPacketStateChecker.hh"
 
 namespace Network
 {
@@ -46,19 +45,14 @@ namespace Handler
   template <std::size_t N, std::size_t N2>
   void AsyncReadHandler<N, N2>::readHandle() const
   {
-    static bool	isFirstTime = true;
-    
     if (_error)
       {
 	RequestProcessingFromAsyncTaskHandler
 	  <Network::Protocol::UniSoulPacket,
 	   Factory::UniSoulPacketFactory,
 	   Serializable::UniSoulNetworkProtocolSerializable,
-	   Network::UniSoulPacketStateChecker,
 	   N,
-	   N2>(_socketPtr).requestProcessing(isFirstTime);
-	if (isFirstTime)
-	  isFirstTime = false;
+	   N2>(_socketPtr).requestProcessing();
       }
     else
       DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr).disconnect();

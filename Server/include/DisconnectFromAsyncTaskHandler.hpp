@@ -52,6 +52,7 @@ namespace Handler
        {
 	 return connectionPtr->getSocketPtr() == _socketPtr;
        });
+    _socketPtr->close();
   }
 }
 
