@@ -6,6 +6,7 @@
 # include "UniSoulSystemWrapper.hh"
 # include "ClientInfo.hh"
 # include "TCPConnection.hpp"
+# include "BoostDescriptor.hh"
 
 namespace Network
 {
@@ -25,7 +26,7 @@ namespace Handler
     DisconnectFromAsyncTaskHandler(const std::shared_ptr
 				   <Network::TCPBoostSocket<N, N2>>&);
     ~DisconnectFromAsyncTaskHandler() = default;
-    void disconnect() const;
+    void disconnect(bool) const;
   };
 
   template <std::size_t N, std::size_t N2>
@@ -36,20 +37,21 @@ namespace Handler
     _socketPtr(socketPtr)
   {
   }
-    
-  
+      
   template <std::size_t N, std::size_t N2>
-  void DisconnectFromAsyncTaskHandler<N, N2>::disconnect() const
+  void DisconnectFromAsyncTaskHandler<N, N2>
+  ::disconnect(bool registeredConnection) const
   {
-    boost::any_cast
-      <typename Wrapper::UniSoulSystemWrapper::ConnectionManager&>
-      (_socketPtr->getSystemWrapperPtrRef()
-       ->getContent()["ConnectionManager"])
-      .deleteConnectionIf
-      ([this](const std::shared_ptr
-	      <Network::TCPConnection
-	      <Info::ClientInfo>>& connectionPtr) -> bool
-       {
+    if (registeredConnection)
+      boost::any_cast
+	<typename Wrapper::UniSoulSystemWrapper::ConnectionManager&>
+	(_socketPtr->getSystemWrapperPtrRef()
+	 ->getContent()["ConnectionManager"])
+	.deleteConnectionIf
+	([this](const std::shared_ptr
+		<Network::TCPConnection
+		<Info::ClientInfo, ::Descriptor>>& connectionPtr) -> bool
+	 {
 	 return connectionPtr->getSocketPtr() == _socketPtr;
        });
     _socketPtr->close();

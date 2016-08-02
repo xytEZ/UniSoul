@@ -8,6 +8,7 @@
 # include "RequestProcessingFromAsyncTaskHandler.hpp"
 # include "UniSoulPacketFactory.hh"
 # include "UniSoulNetworkProtocolSerializable.hh"
+# include "BoostDescriptor.hh"
 
 namespace Network
 {
@@ -46,16 +47,27 @@ namespace Handler
   void AsyncReadHandler<N, N2>::readHandle() const
   {
     if (_error)
-      {
 	RequestProcessingFromAsyncTaskHandler
 	  <Network::Protocol::UniSoulPacket,
 	   Factory::UniSoulPacketFactory,
 	   Serializable::UniSoulNetworkProtocolSerializable,
 	   N,
 	   N2>(_socketPtr).requestProcessing();
-      }
     else
-      DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr).disconnect();
+      DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr)
+	.disconnect
+	(boost::any_cast
+	 <typename Wrapper::UniSoulSystemWrapper::ConnectionManager&>
+	 (_socketPtr->getSystemWrapperPtrRef()
+	  ->getContent()["ConnectionManager"])
+	 .findConnectionIf([this](const std::shared_ptr
+				  <Network::TCPConnection
+				  <Info::ClientInfo, ::Descriptor>>&
+				  connectionPtr) -> bool
+			   {
+			     return connectionPtr
+			       ->getSocketPtr() == _socketPtr;
+			   }));
   }
 }
 

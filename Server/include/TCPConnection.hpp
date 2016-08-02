@@ -4,15 +4,15 @@
 # include <iostream>
 # include <memory>
 # include <utility>
-# include "ITCPSocket.hh"
+# include "ITCPSocket.hpp"
 
 namespace Network
 {
-  template <typename T>
+  template <typename T, typename U = int>
   class TCPConnection
   {
   private :
-    using SocketPtr = std::shared_ptr<ITCPSocket>;
+    using SocketPtr = std::shared_ptr<ITCPSocket<U>>;
 
   private :
     SocketPtr	_socketPtr;
@@ -25,20 +25,20 @@ namespace Network
     T& getClientInfo();
   };
   
-  template <typename T>
-  TCPConnection<T>::TCPConnection(const SocketPtr& socketPtr) :
+  template <typename T, typename U>
+  TCPConnection<T, U>::TCPConnection(const SocketPtr& socketPtr) :
     _socketPtr(socketPtr)
   {
   }
 
-  template <typename T>
-  typename TCPConnection<T>::SocketPtr& TCPConnection<T>::getSocketPtr()
+  template <typename T, typename U>
+  typename TCPConnection<T, U>::SocketPtr& TCPConnection<T, U>::getSocketPtr()
   {
     return _socketPtr;
   }
 
-  template <typename T>
-  T& TCPConnection<T>::getClientInfo() { return _clientInfo; }
+  template <typename T, typename U>
+  T& TCPConnection<T, U>::getClientInfo() { return _clientInfo; }
 }
 
 #endif /* !TCP_CONNECTION_HPP_ */

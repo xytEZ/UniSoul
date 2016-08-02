@@ -20,16 +20,12 @@ namespace Network
     public :
       ConnectionManager() = default;
       ~ConnectionManager() = default;
-      int size() const;
       void addConnection(const T&);
       void deleteConnection(const T&);
       void deleteConnectionIf(const std::function<bool(const T&)>&);
-      const T& getConnectionIf(const std::function<bool(const T&)>&) const;
+      bool findConnectionIf(const std::function<bool(const T&)>&) const;
       void apply(const std::function<void(const T&)>&);
     };
-
-    template <typename T>
-    int ConnectionManager<T>::size() const { return _connections.size(); }
     
     template <typename T>
     void ConnectionManager<T>::addConnection(const T& connection)
@@ -51,10 +47,11 @@ namespace Network
     }
 
     template <typename T>
-    const T& ConnectionManager<T>
-    ::getConnectionIf(const std::function<bool(const T&)>& func) const
+    bool ConnectionManager<T>
+    ::findConnectionIf(const std::function<bool(const T&)>& func) const
     {
-      return *std::find_if(_connections.cbegin(), _connections.cend(), func);
+      return std::find_if(_connections.cbegin(), _connections.cend(), func)
+	!= _connections.cend();
     }
     
     template <typename T>

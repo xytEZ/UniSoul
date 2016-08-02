@@ -4,12 +4,13 @@
 # include "TCPBoostSocket.hpp"
 # include "ITCPSocketServer.hpp"
 # include "AsyncAcceptHandler.hpp"
+# include "Descriptor.hh"
 
 namespace Network
 { 
   template <std::size_t N, std::size_t N2, typename T = TCPBoostSocket<N, N2>>
     class TCPBoostSocketServer : public TCPBoostSocket<N, N2>,
-				 public ITCPSocketServer<T>
+				 public ITCPSocketServer<Descriptor, T>
     { 
     private :
       boost::asio::ip::tcp::acceptor	_acceptor;
@@ -22,19 +23,20 @@ namespace Network
 	       typename TCPBoostSocket<M, M2>
 	       ::SystemWrapperPtrRef,
 	       const std::string&,
-	       int);
+	       unsigned short);
       
     protected :
       TCPBoostSocketServer(boost::asio::io_service&,
 			   typename TCPBoostSocket<N, N2>
 			   ::SystemWrapperPtrRef,
 			   const std::string&,
-			   int);
+			   unsigned short);
       
     public :
       virtual ~TCPBoostSocketServer() = default;
       virtual bool open(int, int, int);
       virtual bool close();
+      virtual const ::Descriptor& getDescriptor() const;
       virtual bool send(const std::string&);
       virtual std::string recv();
       virtual std::string getAddress() const;
@@ -58,7 +60,7 @@ namespace Network
 	     typename TCPBoostSocket<M, M2>
 	     ::SystemWrapperPtrRef systemWrapperPtrRef,
 	     const std::string& hostname,
-	     int port)
+	     unsigned short port)
   {
     return std::shared_ptr
       <TCPBoostSocketServer<M, M2, U>>
@@ -74,7 +76,7 @@ namespace Network
 			 typename TCPBoostSocket<N, N2>
 			 ::SystemWrapperPtrRef systemWrapperPtrRef,
 			 const std::string& hostname,
-			 int port) :
+			 unsigned short port) :
     TCPBoostSocket<N, N2>(ios, systemWrapperPtrRef),
     _acceptor(ios),
     _endpoint(boost::asio::ip::address::from_string(hostname), port)
@@ -95,6 +97,12 @@ namespace Network
     return TCPBoostSocket<N, N2>::close();
   }
 
+  template <std::size_t N, std::size_t N2, typename T>
+  const ::Descriptor& TCPBoostSocketServer<N, N2, T>::getDescriptor() const
+  {
+    return TCPBoostSocket<N, N2>::getDescriptor();
+  }
+  
   template <std::size_t N, std::size_t N2, typename T>
   bool TCPBoostSocketServer<N, N2, T>::send(const std::string& msg)
   {
@@ -125,20 +133,20 @@ namespace Network
     _acceptor.bind(_endpoint);
     return true;
   }
-
+  
   template <std::size_t N, std::size_t N2, typename T>
   bool TCPBoostSocketServer<N, N2, T>::listen(int)
   {
     _acceptor.listen();
     return true;
   }
-
+  
   template <std::size_t N, std::size_t N2, typename T>
   T TCPBoostSocketServer<N, N2, T>::accept(t_sockaddr *, int *)
   {
     std::shared_ptr<TCPBoostSocket<N, N2>>	socketPtr =
-      TCPBoostSocket<N, N2>
-      ::template create<N, N2>(this->_ios, this->_systemWrapperPtrRef);
+      TCPBoostSocket<N, N2>::template create<N, N2>
+      (this->_socket.get_io_service(), this->_systemWrapperPtrRef);
 
     _acceptor.async_accept(socketPtr->getSocket(),
 			   boost

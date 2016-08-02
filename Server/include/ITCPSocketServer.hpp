@@ -7,18 +7,19 @@
 
 namespace Network
 {
+  template <typename T>
   class ITCPSocket;
   
   using t_sockaddr = struct sockaddr;
   
-  template <typename T = int>
-  class ITCPSocketServer : virtual public ITCPSocket
+  template <typename T, typename U = int>
+  class ITCPSocketServer : virtual public ITCPSocket<T>
   {
   public :
     virtual ~ITCPSocketServer() = default;
     virtual bool bind(const t_sockaddr *, int) = 0;
     virtual bool listen(int) = 0;
-    virtual T accept(t_sockaddr *, int *) = 0;
+    virtual U accept(t_sockaddr *, int *) = 0;
   };
 }
 

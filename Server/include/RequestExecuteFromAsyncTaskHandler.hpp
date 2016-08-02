@@ -6,6 +6,7 @@
 # include <string>
 # include "UniSoulSystemWrapper.hh"
 # include "UniSoulNetworkProtocol.hh"
+# include "BoostDescriptor.hh"
 
 namespace Network
 {

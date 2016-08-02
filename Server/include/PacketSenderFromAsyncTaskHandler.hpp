@@ -57,8 +57,7 @@ namespace Handler
     try
       {
 	_socketPtr->send
-	  (_serializationHandler
-	   .template serialize
+	  (_serializationHandler.template serialize
 	   <Serializable::UniSoulNetworkProtocolSerializable>
 	   (std::make_shared<V>
 	    (_packetFactory.create(Network::Protocol
@@ -77,8 +76,7 @@ namespace Handler
     try
       {
 	_socketPtr->send
-	  (_serializationHandler
-	   .template serialize
+	  (_serializationHandler.template serialize
 	   <Serializable::UniSoulNetworkProtocolSerializable>
 	   (std::make_shared<V>
 	    (_packetFactory.create(Network::Protocol

@@ -1,12 +1,13 @@
-#ifndef ITCP_SOCKET_HH_
-# define ITCP_SOCKET_HH_
+#ifndef ITCP_SOCKET_HPP_
+# define ITCP_SOCKET_HPP_
 
 # include <string>
-# include "ISocket.hh"
+# include "ISocket.hpp"
 
 namespace Network
 {
-  class ITCPSocket : public ISocket
+  template <typename T>
+  class ITCPSocket : public ISocket<T>
   {
   public :
     virtual ~ITCPSocket() = default;
@@ -17,4 +18,4 @@ namespace Network
   };
 }
 
-#endif /* !ITCP_SOCKET_HH_ */
+#endif /* !ITCP_SOCKET_HPP_ */

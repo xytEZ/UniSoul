@@ -1,4 +1,3 @@
-#include <utility>
 #include "PersistentDataFileInteractor.hpp"
 #include "File.hpp"
 #include "ConnectionCommand.hpp"
@@ -7,7 +6,8 @@
 
 namespace Wrapper
 {
-  UniSoulSystemWrapper::UniSoulSystemWrapper(const ServerSocketPtr& serverSocketPtr) :
+  UniSoulSystemWrapper
+  ::UniSoulSystemWrapper(const ServerSocketPtr& serverSocketPtr) :
     _components
   {
     { "ServerSocket", std::move(serverSocketPtr) },
@@ -21,23 +21,23 @@ namespace Wrapper
 	  { "ChatRoomManager", ChatRoomManager() },
 	    { "CommandExecutor", CommandExecutor() }
   }
-    {
-      CommandFactory	cf;
-
-      cf.addCommand(Command::CONNECTION,
-		    std::make_shared<Command::ConnectionCommand
-		    <bool,
-		    std::unique_ptr<IWrapper<VariantMap>>,
-		    std::vector<std::string>,
-		    std::string>>());
-      cf.addCommand(Command::DECONNECTION,
-		    std::make_shared<Command::DeconnectionCommand
-		    <bool,
-		    std::unique_ptr<IWrapper<VariantMap>>,
-		    std::vector<std::string>,
-		    std::string>>());
-      _components["CommandFactory"] = std::move(cf);
-    }
-
-  VariantMap& UniSoulSystemWrapper::getContent() { return _components; }
+  {
+    CommandFactory    cf;
+    
+    cf.addCommand(Command::CONNECTION,
+		  std::make_shared<Command::ConnectionCommand
+		  <bool,
+		  std::unique_ptr<IWrapper<VariantMap>>,
+		  std::vector<std::string>,
+		  std::string>>());
+    cf.addCommand(Command::DECONNECTION,
+		  std::make_shared<Command::DeconnectionCommand
+		  <bool,
+		  std::unique_ptr<IWrapper<VariantMap>>,
+		  std::vector<std::string>,
+		  std::string>>());
+    _components["CommandFactory"] = std::move(cf);
+  }
+  
+  VariantMap& UniSoulSystemWrapper::getContent() { return _components; }  
 }

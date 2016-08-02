@@ -4,10 +4,11 @@ project(Server)
 
 include_directories(
   include/
-  ${CMAKE_CURRENT_SOURCE_DIR}/../other/protocol/
-  ${CMAKE_CURRENT_SOURCE_DIR}/../other/serializable/
-  ${CMAKE_CURRENT_SOURCE_DIR}/../other/tool/
-  ${CMAKE_CURRENT_SOURCE_DIR}/../other/packet/
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/protocol/
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/serializable/
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/tool/
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/packet/
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/other/
   )
 
 add_definitions(-W -Wall -Wextra -std=c++14)
@@ -22,10 +23,10 @@ file(
   GLOB_RECURSE
   server_srcs
   src/*.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../other/serializable/*.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../other/tool/*.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../other/packet/*.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../other/protocol/*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/serializable/*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/tool/*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/packet/*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/protocol/*.cpp
   )
 
 add_executable(server ${server_srcs})

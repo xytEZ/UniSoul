@@ -9,6 +9,7 @@
 # include "IApp.hh"
 # include "BoostServiceWrapper.hh"
 # include "TCPBoostSocketServer.hpp"
+# include "Descriptor.hh"
 
 namespace App
 {
@@ -25,7 +26,7 @@ namespace App
     SystemWrapperPtr		_systemWrapperPtr;
     
   public :
-    UniSoulServer(const std::string&, int);
+    UniSoulServer(const std::string&, unsigned short);
     virtual ~UniSoulServer() = default;
     virtual bool init();
     virtual bool run();
@@ -34,15 +35,16 @@ namespace App
 
   template <typename T, std::size_t N, std::size_t N2>
   UniSoulServer<T, N, N2>::UniSoulServer(const std::string& hostname,
-					 int port) :
+					    unsigned short port) :
     _libraryServiceWrapperPtr(std::make_unique
 			      <Wrapper::BoostServiceWrapper>()),
     _systemWrapperPtr(std::make_unique
 		      <Wrapper::UniSoulSystemWrapper>
 		      (Network::TCPBoostSocketServer
-		       <N, N2, std::shared_ptr<Network::ITCPSocket>>
+		       <N, N2, std::shared_ptr
+		       <Network::ITCPSocket<::Descriptor>>>
 		       ::template create<N, N2, std::shared_ptr
-		       <Network::ITCPSocket>>
+		       <Network::ITCPSocket<::Descriptor>>>
 		       (_libraryServiceWrapperPtr->getContent(),
 			_systemWrapperPtr,
 			hostname,
@@ -87,7 +89,7 @@ namespace App
       (_systemWrapperPtr->getContent()["ConnectionManager"])
       .apply([](const std::shared_ptr
 		<Network::TCPConnection
-		<Info::ClientInfo>>& connectionPtr) -> void
+		<Info::ClientInfo, ::Descriptor>>& connectionPtr) -> void
 	     {
 	       connectionPtr->getSocketPtr()->close();
 	     });

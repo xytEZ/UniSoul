@@ -5,6 +5,7 @@
 # include <map>
 # include <string>
 # include <vector>
+# include <utility>
 # include <boost/any.hpp>
 # include "IWrapper.hpp"
 # include "ConnectionManager.hpp"
@@ -14,27 +15,30 @@
 # include "ClientCheckerManager.hh"
 # include "ClientInfo.hh"
 # include "TCPConnection.hpp"
+# include "BoostDescriptor.hh"
 
 namespace Network
 {
-  template <typename T>
+  template <typename T, typename U>
   class ITCPSocketServer;
 
+  template <typename T>
   class ITCPSocket;
 }
 
 namespace Wrapper
 {
   using VariantMap = std::map<std::string, boost::any>;
-    
+
   class UniSoulSystemWrapper : public IWrapper<VariantMap>
   { 
   public :
     using ServerSocketPtr = std::shared_ptr
       <Network::ITCPSocketServer
-       <std::shared_ptr<Network::ITCPSocket>>>;
+       <::Descriptor, std::shared_ptr<Network::ITCPSocket<::Descriptor>>>>;
     using ConnectionManager = Network::Manager::ConnectionManager
-      <std::shared_ptr<Network::TCPConnection<Info::ClientInfo>>>;
+      <std::shared_ptr
+       <Network::TCPConnection<Info::ClientInfo, ::Descriptor>>>;
     using ClientCheckerManager = Persistence::Manager::ClientCheckerManager;
     using ChatRoomManager = Communication::Chat::ChatRoomManager;
     using CommandFactory = Command::CommandFactory

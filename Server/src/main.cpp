@@ -4,15 +4,19 @@
 #include "BoostServiceWrapper.hh"
 #include "UniSoulServer.hpp"
 
-using Server = std::unique_ptr<App::IApp>;
+namespace
+{
+  using ServerPtr = std::unique_ptr<App::IApp>;
+
+  constexpr const char			HOSTNAME[] = "127.0.0.1";
+  constexpr const unsigned short	PORT = 4242;
+}
 
 int main()
 {
-  constexpr const char	hostname[] = "127.0.0.1";
-  constexpr const int	port = 4242;
-  Server		serverPtr
-    = std::make_unique
-    <App::UniSoulServer<boost::asio::io_service>>(hostname, port);
+  ServerPtr	serverPtr =
+    std::make_unique<App::UniSoulServer<boost::asio::io_service>>
+    (HOSTNAME, PORT);
   
   try
     {

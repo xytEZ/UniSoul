@@ -4,6 +4,7 @@
 # include <tuple>
 # include <boost/any.hpp>
 # include "UniSoulSystemWrapper.hh"
+# include "Descriptor.hh"
 # include "ICommand.hpp"
 
 namespace Command

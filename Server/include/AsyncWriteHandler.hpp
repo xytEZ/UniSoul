@@ -4,6 +4,7 @@
 # include <memory>
 # include <boost/system/error_code.hpp>
 # include "DisconnectFromAsyncTaskHandler.hpp"
+# include "BoostDescriptor.hh"
 
 namespace Network
 {
@@ -41,8 +42,21 @@ namespace Handler
   template <std::size_t N, std::size_t N2>
   void AsyncWriteHandler<N, N2>::writeHandle() const
   {
-    if (_error || !_socketPtr->getMaintainInstance())
-      DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr).disconnect();
+    bool	registeredConnection =
+      boost::any_cast
+      <typename Wrapper::UniSoulSystemWrapper::ConnectionManager&>
+      (_socketPtr->getSystemWrapperPtrRef()
+       ->getContent()["ConnectionManager"])
+      .findConnectionIf([this](const std::shared_ptr
+			       <Network::TCPConnection
+			       <Info::ClientInfo, ::Descriptor>>&
+			       connectionPtr) -> bool
+			{
+			  return connectionPtr->getSocketPtr() == _socketPtr;
+			});
+    if (_error || !registeredConnection)
+      DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr)
+	.disconnect(registeredConnection);
   }
 }
 
