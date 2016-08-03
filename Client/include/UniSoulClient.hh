@@ -7,15 +7,11 @@
 namespace Model
 {
   class UniSoulClient : public IModel<Observer::OutputResult>
-  {
+  { 
   public :
     UniSoulClient(const std::string&, unsigned short);
     virtual ~UniSoulClient();
     virtual void execute(const std::string&);
-
-  private :
-    void _init();
-    void _close();
   };
 }
 

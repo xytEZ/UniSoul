@@ -4,14 +4,15 @@
 # include <memory>
 # include <functional>
 # include <list>
-# include "ISocket.hh"
+
+# include "ISocket.hpp"
 
 namespace Network
 { 
   class IMultiplexer
   {
   protected :
-    using SocketPtr = std::unique_ptr<Network::ISocket>;
+    using SocketPtr = std::shared_ptr<Network::ISocket<int>>;
 
   public :
     using ioCallback = std::function<void(const SocketPtr&)>;
@@ -40,8 +41,9 @@ namespace Network
     virtual void addSockets(const std::list<SocketPtr>&,
 			    const ioCallback&,
 			    Flag = Flag::READ) = 0;
-    virtual void clear() = 0;
+    virtual int process() = 0;
     virtual void execute() = 0;
+    virtual void clear() = 0;
   };
 }
 

@@ -8,6 +8,7 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/serializable/
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/tool/
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/packet/
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/other/
   )
 
 add_definitions(-W -Wall -Wextra -std=c++14)
@@ -35,6 +36,7 @@ file(
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/tool/*.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/packet/*.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/protocol/*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/other/*.cpp
   )
 
 add_executable(client ${client_srcs})

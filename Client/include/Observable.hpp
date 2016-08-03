@@ -22,7 +22,7 @@ namespace Observer
 
   public :
     Observable() = default;
-    ~Observable() = default;
+    virtual ~Observable() = default;
     void notifyObservers(const T&) const;
     void addObserver(const ObserverPtr&);
     void removeObserver(const ObserverPtr&);

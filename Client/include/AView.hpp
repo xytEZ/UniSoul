@@ -2,6 +2,7 @@
 # define AVIEW_HPP_
 
 # include <memory>
+
 # include "IObserver.hpp"
 # include "AController.hpp"
 

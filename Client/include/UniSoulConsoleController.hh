@@ -6,7 +6,7 @@
 
 namespace Controller
 {
-  class UniSoulConsoleController :public AController<Observer::OutputResult>
+  class UniSoulConsoleController : public AController<Observer::OutputResult>
   {
   public :
     UniSoulConsoleController(const ModelPtr&);
