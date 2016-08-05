@@ -4,6 +4,7 @@
 # include <cstddef>
 # include <memory>
 # include <boost/system/error_code.hpp>
+
 # include "UniSoulSystemWrapper.hh"
 # include "ClientInfo.hh"
 # include "TCPConnection.hpp"
@@ -24,18 +25,18 @@ namespace Handler
   class AsyncAcceptHandler
   {
   private :
-    const std::shared_ptr
-    <Network::TCPBoostSocketServer<N, N2, T>>&	_serverSocketPtr;
-    const std::shared_ptr
-    <Network::TCPBoostSocket<N, N2>>&		_socketPtr;
-    const boost::system::error_code&		_error;
+    std::shared_ptr
+    <Network::TCPBoostSocketServer<N, N2, T>>		_serverSocketPtr;
+    
+    std::shared_ptr<Network::TCPBoostSocket<N, N2>>	_socketPtr;
+    boost::system::error_code				_error;
     
   public :
     AsyncAcceptHandler(const std::shared_ptr
 		       <Network::TCPBoostSocketServer<N, N2, T>>&,
-		       const std::shared_ptr
-		       <Network::TCPBoostSocket<N, N2>>&,
+		       const std::shared_ptr<Network::TCPBoostSocket<N, N2>>&,
 		       const boost::system::error_code&);
+    
     ~AsyncAcceptHandler() = default;
     void acceptHandle() const;
   };
@@ -60,7 +61,7 @@ namespace Handler
     if (!_error)
       {
 	_socketPtr->recv();
-	_serverSocketPtr->accept(nullptr, nullptr);
+	_serverSocketPtr->accept();
       }
   }
 }

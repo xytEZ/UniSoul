@@ -2,6 +2,7 @@
 # define BOOST_SERVICE_WRAPPER_HH_
 
 # include <boost/asio.hpp>
+
 # include "IWrapper.hpp"
 
 namespace Wrapper

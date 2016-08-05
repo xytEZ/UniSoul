@@ -27,6 +27,7 @@ file(
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/tool/*.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/packet/*.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/protocol/*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../commmon/other/*.cpp
   )
 
 add_executable(server ${server_srcs})

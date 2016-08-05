@@ -3,6 +3,7 @@
 
 # include <memory>
 # include <boost/system/error_code.hpp>
+
 # include "DisconnectFromAsyncTaskHandler.hpp"
 # include "BoostDescriptor.hh"
 
@@ -18,13 +19,13 @@ namespace Handler
   class AsyncWriteHandler
   {
   private :
-    const std::shared_ptr
-    <Network::TCPBoostSocket<N, N2>>&	_socketPtr;
-    const boost::system::error_code&	_error;
+    std::shared_ptr<Network::TCPBoostSocket<N, N2>>	_socketPtr;
+    boost::system::error_code				_error;
     
   public :
     AsyncWriteHandler(const std::shared_ptr<Network::TCPBoostSocket<N, N2>>&,
 		      const boost::system::error_code&);
+    
     ~AsyncWriteHandler() = default;
     void writeHandle() const;
   };

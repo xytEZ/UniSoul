@@ -9,11 +9,13 @@
 # include <string>
 # include <algorithm>
 # include <boost/archive/archive_exception.hpp>
+
 # include "SerializationHandler.hpp"
 # include "RequestExecuteFromAsyncTaskHandler.hpp"
 # include "PacketSenderFromAsyncTaskHandler.hpp"
 # include "DisconnectFromAsyncTaskHandler.hpp"
 # include "BoostDescriptor.hh"
+# include "ConnectionStateFlag.hh"
 
 namespace Network
 {
@@ -27,13 +29,13 @@ namespace Handler
   class RequestProcessingFromAsyncTaskHandler
   {
   private :
-    const std::shared_ptr
-    <Network::TCPBoostSocket<N, N2>>&	_socketPtr;
-    SerializationHandler<T>		_serializationHandler;
+    std::shared_ptr<Network::TCPBoostSocket<N, N2>>	_socketPtr;
+    SerializationHandler<T>				_serializationHandler;
 
   public :
     RequestProcessingFromAsyncTaskHandler(const std::shared_ptr
 					  <Network::TCPBoostSocket<N, N2>>&);
+    
     ~RequestProcessingFromAsyncTaskHandler() = default;
     void requestProcessing() const;
 
@@ -53,7 +55,8 @@ namespace Handler
   RequestProcessingFromAsyncTaskHandler(const std::shared_ptr
 					<Network::TCPBoostSocket<N, N2>>&
 					socketPtr) :
-    _socketPtr(socketPtr)
+    _socketPtr(socketPtr),
+    _serializationHandler()
   {
   }
 
@@ -95,18 +98,18 @@ namespace Handler
 			   serializablePtr,
 			   bool registeredConnection) const
   {
-    std::vector<std::string>        datas;
-    std::stringstream               ss;
-    bool			    ret;
+    std::vector<std::string>		datas;
+    std::stringstream			ss;
+    Network::ConnectionStateFlag	state;
 
-    ret = RequestExecuteFromAsyncTaskHandler<T, N, N2>
+    state = RequestExecuteFromAsyncTaskHandler<T, N, N2>
       (_socketPtr, serializablePtr).requestExecute(datas);
     std::copy(datas.cbegin(),
 	      datas.cend(),
 	      std::ostream_iterator<std::string>(ss, "|"));
     PacketSenderFromAsyncTaskHandler<T, U, V, N, N2>
       (_socketPtr, _serializationHandler).packetSuccess(ss.str());
-    if (ret)
+    if (state)
       DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr)
 	.disconnect(registeredConnection);
     else if (registeredConnection)
@@ -119,7 +122,7 @@ namespace Handler
   void RequestProcessingFromAsyncTaskHandler<T, U, V, N, N2>
   ::firstTimeValidRequestProcessing(const std::string& dataFromRequest) const
   {
-    constexpr const char			DELIMITER = ';';
+    constexpr char				DELIMITER = ';';
     std::shared_ptr
       <Network::TCPConnection<W, ::Descriptor>>	connectionPtr =
       std::make_shared<Network::TCPConnection<W, ::Descriptor>>(_socketPtr);

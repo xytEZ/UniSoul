@@ -3,9 +3,9 @@
 
 namespace Network
 {
-  namespace Message
+  namespace Server
   {
-    namespace Server
+    namespace Message
     {
       const char *ERROR = "An error is occured. Try again.";
       const char *CONNECTION = "You are connected to the server.";

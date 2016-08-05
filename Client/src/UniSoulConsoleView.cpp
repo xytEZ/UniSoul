@@ -1,12 +1,13 @@
 #include <iostream>
+#include <utility>
+
 #include "UniSoulConsoleView.hh"
 
 namespace View
 {
   UniSoulConsoleView::UniSoulConsoleView(const ControllerPtr& controllerPtr) :
     AView(controllerPtr),
-    _start(true),
-    _text("")
+    _oRes { true, "" }
   {
   }
   
@@ -19,7 +20,7 @@ namespace View
   {
     std::string	input;
     
-    while (_start)
+    while (_oRes.start)
       {
 	std::cout << PROMPT_MESSAGE;
 	std::getline(std::cin, input);
@@ -29,7 +30,7 @@ namespace View
 
   void UniSoulConsoleView::display()
   {
-    std::cout << _text << std::endl;
+    std::cout << _oRes.text << std::endl;
   }
 
   void UniSoulConsoleView::close()
@@ -39,8 +40,7 @@ namespace View
 
   void UniSoulConsoleView::update(const Observer::OutputResult& arg)
   {
-    _start = arg.start;
-    _text = arg.msg;
+    _oRes = arg;
     display();
   }
 }

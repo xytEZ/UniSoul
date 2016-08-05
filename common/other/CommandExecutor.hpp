@@ -34,7 +34,7 @@ namespace Command
   {
     if (_commandPtr == nullptr)
       throw new Exception::Command
-	::CommandNotFoundException("Command not initialized.");
+	::CommandNotFoundException("Unknown command.");
     return _commandPtr->execute(args...);
   }
 }

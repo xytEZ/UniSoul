@@ -12,6 +12,7 @@
 # include <boost/date_time/posix_time/posix_time_io.hpp>
 # include <boost/any.hpp>
 # include <boost/bind.hpp>
+
 # include "ITCPSocket.hpp"
 # include "AsyncReadHandler.hpp"
 # include "AsyncWriteHandler.hpp"
@@ -47,7 +48,7 @@ namespace Network
     
   public :
     virtual ~TCPBoostSocket() = default;
-    virtual bool open(int, int, int);
+    virtual bool open();
     virtual bool close();
     virtual const ::Descriptor& getDescriptor() const;
     virtual bool send(const std::string&);
@@ -91,7 +92,7 @@ namespace Network
   }
 
   template <std::size_t N, std::size_t N2>
-  bool TCPBoostSocket<N, N2>::open(int, int, int) { return true; }
+  bool TCPBoostSocket<N, N2>::open() { return true; }
 
   template <std::size_t N, std::size_t N2>
   bool TCPBoostSocket<N, N2>::close()

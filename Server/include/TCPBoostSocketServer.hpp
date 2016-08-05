@@ -34,16 +34,16 @@ namespace Network
       
     public :
       virtual ~TCPBoostSocketServer() = default;
-      virtual bool open(int, int, int);
+      virtual bool open();
       virtual bool close();
       virtual const ::Descriptor& getDescriptor() const;
       virtual bool send(const std::string&);
       virtual std::string recv();
       virtual std::string getAddress() const;
       virtual unsigned short getPort() const;
-      virtual bool bind(const t_sockaddr *, int);
-      virtual bool listen(int);
-      virtual T accept(t_sockaddr *, int *);
+      virtual bool bind();
+      virtual bool listen();
+      virtual T accept();
 
     private :
       template <typename HandlerPolicy>
@@ -84,7 +84,7 @@ namespace Network
   }
 
   template <std::size_t N, std::size_t N2, typename T>
-  bool TCPBoostSocketServer<N, N2, T>::open(int, int, int)
+  bool TCPBoostSocketServer<N, N2, T>::open()
   {
     _acceptor.open(_endpoint.protocol());
     _acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
@@ -128,21 +128,21 @@ namespace Network
   }
   
   template <std::size_t N, std::size_t N2, typename T>
-  bool TCPBoostSocketServer<N, N2, T>::bind(const t_sockaddr *, int)
+  bool TCPBoostSocketServer<N, N2, T>::bind()
   {
     _acceptor.bind(_endpoint);
     return true;
   }
   
   template <std::size_t N, std::size_t N2, typename T>
-  bool TCPBoostSocketServer<N, N2, T>::listen(int)
+  bool TCPBoostSocketServer<N, N2, T>::listen()
   {
     _acceptor.listen();
     return true;
   }
   
   template <std::size_t N, std::size_t N2, typename T>
-  T TCPBoostSocketServer<N, N2, T>::accept(t_sockaddr *, int *)
+  T TCPBoostSocketServer<N, N2, T>::accept()
   {
     std::shared_ptr<TCPBoostSocket<N, N2>>	socketPtr =
       TCPBoostSocket<N, N2>::template create<N, N2>

@@ -2,6 +2,8 @@
 # define FILE_HPP_
 
 # include <fstream>
+# include <vector>
+
 # include "AFile.hpp"
 
 namespace Persistence
@@ -21,12 +23,13 @@ namespace Persistence
     };
   
     template <>
-    class File<StringArray> : public AFile<StringArray>
+    class File<std::vector<std::string>> :
+      public AFile<std::vector<std::string>>
     { 
     public :
       File(const std::string&);
       virtual ~File() = default;
-      virtual StringArray find(const std::string& = "") const;
+      virtual std::vector<std::string> find(const std::string& = "") const;
     };
 
     File<bool>::File(const std::string& fullName) : AFile<bool>(fullName) { }
@@ -53,16 +56,17 @@ namespace Persistence
       ifs.close();
       return isFound;
     }
-
-    File<StringArray>::File(const std::string& fullName) :
-      AFile<StringArray>(fullName)
+    
+    File<std::vector<std::string>>::File(const std::string& fullName) :
+      AFile(fullName)
     {
     }
-
-    StringArray File<StringArray>::find(const std::string&) const
+    
+    std::vector<std::string> File<std::vector<std::string>>
+    ::find(const std::string&) const
     {
-      std::ifstream	ifs;
-      StringArray	datas;
+      std::ifstream		ifs;
+      std::vector<std::string>	datas;
 
       ifs.exceptions(std::ifstream::failbit | std::ifstream::badbit);
       try

@@ -4,9 +4,11 @@
 # include <cstddef>
 # include <memory>
 # include <string>
+
 # include "UniSoulSystemWrapper.hh"
 # include "UniSoulNetworkProtocol.hh"
 # include "BoostDescriptor.hh"
+# include "ConnectionStateFlag.hh"
 
 namespace Network
 {
@@ -20,18 +22,17 @@ namespace Handler
   class RequestExecuteFromAsyncTaskHandler
   {
   private :
-    const std::shared_ptr
-    <Network::TCPBoostSocket<N, N2>>&	_socketPtr;
-    const std::shared_ptr
-    <Serializable::ASerializable<T>>&	_serializablePtr;
+    std::shared_ptr<Network::TCPBoostSocket<N, N2>>	_socketPtr;
+    std::shared_ptr<Serializable::ASerializable<T>>	_serializablePtr;
 
   public :
     RequestExecuteFromAsyncTaskHandler(const std::shared_ptr
 				       <Network::TCPBoostSocket<N, N2>>&,
 				       const std::shared_ptr
 				       <Serializable::ASerializable<T>>&);
+    
     RequestExecuteFromAsyncTaskHandler() = default;
-    bool requestExecute(std::vector<std::string>&);
+    Network::ConnectionStateFlag requestExecute(std::vector<std::string>&);
   };
 
   template <typename T, std::size_t N, std::size_t N2>
@@ -48,7 +49,7 @@ namespace Handler
   }
 
   template <typename T, std::size_t N, std::size_t N2>
-  bool RequestExecuteFromAsyncTaskHandler<T, N, N2>
+  Network::ConnectionStateFlag RequestExecuteFromAsyncTaskHandler<T, N, N2>
   ::requestExecute(std::vector<std::string>& datas)
   {
     std::string	dataFromPacket(_serializablePtr->getSerializableComponent()
@@ -62,7 +63,7 @@ namespace Handler
 		     <typename Wrapper::UniSoulSystemWrapper::CommandFactory&>
 		     (_socketPtr->getSystemWrapperPtrRef()
 		      ->getContent()["CommandFactory"])
-		     .getCommand(static_cast<Command::Command>
+		     .getCommand(static_cast<Command::Type>
 				 (_serializablePtr->getSerializableComponent()
 				  .command)));
     return boost::any_cast

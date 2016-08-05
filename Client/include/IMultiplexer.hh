@@ -11,10 +11,8 @@ namespace Network
 { 
   class IMultiplexer
   {
-  protected :
-    using SocketPtr = std::shared_ptr<Network::ISocket<int>>;
-
   public :
+    using SocketPtr = std::shared_ptr<Network::ISocket<int>>;
     using ioCallback = std::function<void(const SocketPtr&)>;
     
   public :
@@ -33,14 +31,18 @@ namespace Network
   public :
     virtual ~IMultiplexer() = default;
     virtual void addSocket(const SocketPtr&, Flag = Flag::READ) = 0;
+    
     virtual void addSocket(const SocketPtr&,
 			   const ioCallback&,
 			   Flag = Flag::READ) = 0;
+    
     virtual void addSockets(const std::list<SocketPtr>&,
 			    Flag = Flag::READ) = 0;
+    
     virtual void addSockets(const std::list<SocketPtr>&,
 			    const ioCallback&,
 			    Flag = Flag::READ) = 0;
+    
     virtual int process() = 0;
     virtual void execute() = 0;
     virtual void clear() = 0;

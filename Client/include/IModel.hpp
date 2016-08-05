@@ -1,7 +1,10 @@
 #ifndef IMODEL_HPP_
 # define IMODEL_HPP_
 
+# include <vector>
 # include <string>
+
+# include "Parser.hh"
 # include "Observable.hpp"
 
 namespace Model
@@ -11,7 +14,7 @@ namespace Model
   {
   public :
     virtual ~IModel() = default;
-    virtual void execute(const std::string&) = 0;
+    virtual void execute(const std::vector<Parser::ParsedInput>&) = 0;
   };
 }
 

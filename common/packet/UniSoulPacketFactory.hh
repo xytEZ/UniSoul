@@ -10,8 +10,6 @@ namespace Factory
   public :
     UniSoulPacketFactory() = default;
     ~UniSoulPacketFactory() = default;
-    
-  public :
     Network::Protocol::UniSoulPacket create(Network::Protocol::Communication,
 					    unsigned short int,
 					    const char *) const;

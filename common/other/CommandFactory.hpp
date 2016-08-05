@@ -39,7 +39,7 @@ namespace Command
   {
     if (_commands.find(key) == _commands.cend())
       throw new Exception::Command
-	::CommandNotFoundException("Command doesn't exist.");
+	::CommandNotFoundException("Unknown command.");
     return _commands[std::move(key)];
   }
   

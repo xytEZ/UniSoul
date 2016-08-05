@@ -13,13 +13,6 @@ namespace Command
     virtual T execute(Args&...) const = 0;
   };
 
-  enum Command
-    {
-      NONE = 0,
-      CONNECTION = 1,
-      DECONNECTION = 2
-    };
-  
   template <typename T, typename... Args>
   using CommandPtr = std::shared_ptr<ICommand<T, Args...>>;
 }

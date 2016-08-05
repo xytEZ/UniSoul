@@ -8,7 +8,7 @@ namespace Observer
   struct OutputResult
   {
     bool		start;
-    std::string		msg;
+    std::string		text;
   };
 }
  

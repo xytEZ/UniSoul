@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+
 #include "ObserverOutputResult.hh"
 #include "UniSoulClient.hh"
 #include "UniSoulConsoleController.hh"

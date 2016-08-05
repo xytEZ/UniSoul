@@ -4,6 +4,7 @@
 # include <cstddef>
 # include <memory>
 # include <boost/system/error_code.hpp>
+
 # include "DisconnectFromAsyncTaskHandler.hpp"
 # include "RequestProcessingFromAsyncTaskHandler.hpp"
 # include "UniSoulPacketFactory.hh"
@@ -22,13 +23,13 @@ namespace Handler
   class AsyncReadHandler
   {
   private :
-    const std::shared_ptr
-    <Network::TCPBoostSocket<N, N2>>&			_socketPtr;
-    const boost::system::error_code&			_error;
+    std::shared_ptr<Network::TCPBoostSocket<N, N2>>	_socketPtr;
+    boost::system::error_code				_error;
     
   public :
     AsyncReadHandler(const std::shared_ptr<Network::TCPBoostSocket<N, N2>>&,
 		     const boost::system::error_code&);
+    
     ~AsyncReadHandler() = default;
     void readHandle() const;
   };

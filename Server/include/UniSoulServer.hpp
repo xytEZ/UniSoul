@@ -6,6 +6,7 @@
 # include <map>
 # include <string>
 # include <boost/any.hpp>
+
 # include "IApp.hh"
 # include "BoostServiceWrapper.hh"
 # include "TCPBoostSocketServer.hpp"
@@ -57,13 +58,13 @@ namespace App
   {
     boost::any_cast
       <typename Wrapper::UniSoulSystemWrapper::ServerSocketPtr&>
-      (_systemWrapperPtr->getContent()["ServerSocket"])->open(0, 0, 0);
+      (_systemWrapperPtr->getContent()["ServerSocket"])->open();
     boost::any_cast
       <typename Wrapper::UniSoulSystemWrapper::ServerSocketPtr&>
-      (_systemWrapperPtr->getContent()["ServerSocket"])->bind(nullptr, 0);
+      (_systemWrapperPtr->getContent()["ServerSocket"])->bind();
     boost::any_cast
       <typename Wrapper::UniSoulSystemWrapper::ServerSocketPtr&>
-      (_systemWrapperPtr->getContent()["ServerSocket"])->listen(0);
+      (_systemWrapperPtr->getContent()["ServerSocket"])->listen();
     return true;
   }
   
@@ -72,8 +73,7 @@ namespace App
   {
     boost::any_cast
       <typename Wrapper::UniSoulSystemWrapper::ServerSocketPtr&>
-      (_systemWrapperPtr->getContent()["ServerSocket"])
-      ->accept(nullptr, nullptr);
+      (_systemWrapperPtr->getContent()["ServerSocket"])->accept();
     _libraryServiceWrapperPtr->getContent().run();
     return true;
   }

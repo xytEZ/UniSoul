@@ -2,7 +2,6 @@
 # define AFILE_HPP_
 
 # include <memory>
-# include <vector>
 # include <string>
 
 namespace Persistence
@@ -24,8 +23,6 @@ namespace Persistence
     template <typename T>
     AFile<T>::AFile(const std::string& fullName) : _fullName(fullName) { }
     
-    using StringArray = std::vector<std::string>;
-  
     template <typename T>
     using FilePtr = std::shared_ptr<AFile<T>>;
   }

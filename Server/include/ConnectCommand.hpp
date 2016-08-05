@@ -1,34 +1,37 @@
-#ifndef CONNECTION_COMMAND_HPP_
-# define CONNECTION_COMMAND_HPP_
+#ifndef CONNECT_COMMAND_HPP_
+# define CONNECT_COMMAND_HPP_
 
 # include <tuple>
 # include <boost/any.hpp>
+
 # include "UniSoulSystemWrapper.hh"
 # include "Descriptor.hh"
+# include "ConnectionStateFlag.hh"
 # include "ICommand.hpp"
 
 namespace Command
 {
   template <typename T, typename... Args>
-  class ConnectionCommand : public ICommand<T, Args...>
+  class ConnectCommand : public ICommand<T, Args...>
   {
   public :
-    ConnectionCommand() = default;
-    virtual ~ConnectionCommand() = default;
+    ConnectCommand() = default;
+    virtual ~ConnectCommand() = default;
     virtual T execute(Args&...) const;
   };
 
   template <typename T, typename... Args>
-  T ConnectionCommand<T, Args...>::execute(Args&... args) const
+  T ConnectCommand<T, Args...>::execute(Args&... args) const
   {
     std::tuple<Args&...>	tuple = std::forward_as_tuple(args...);
     
-    boost::any_cast
+    return boost::any_cast
       <typename Wrapper::UniSoulSystemWrapper::ClientCheckerManager&>
       (std::get<0>(tuple)->getContent()["ClientCheckerManager"])
-      .checkClient(std::get<2>(tuple));
-    return true;
+      .checkClient(std::get<2>(tuple)) ?
+      Network::ConnectionStateFlag::LOG_IN :
+      Network::ConnectionStateFlag::LOG_OUT;
   }
 }
 
-#endif /* !CONNECTION_COMMAND_HPP_ */
+#endif /* !CONNECT_COMMAND_HPP_ */

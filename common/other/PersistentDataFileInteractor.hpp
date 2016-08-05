@@ -12,7 +12,7 @@ namespace Persistence
     class PersistentDataFileInteractor : public IPersistentDataInteractor<T>
     { 
     private :
-      FilePtr<T>	_file;
+      FilePtr<T>	_filePtr;
     
     public :
       PersistentDataFileInteractor(const FilePtr<T>&);
@@ -24,8 +24,8 @@ namespace Persistence
 
     template <typename T>
     PersistentDataFileInteractor<T>
-    ::PersistentDataFileInteractor(const FilePtr<T>& file) :
-      _file(std::move(file))
+    ::PersistentDataFileInteractor(const FilePtr<T>& filePtr) :
+      _filePtr(std::move(filePtr))
     {
     }
 
@@ -35,7 +35,7 @@ namespace Persistence
     template <typename T>
     T PersistentDataFileInteractor<T>::find(const std::string& data) const
     {
-      return _file->find(data);
+      return _filePtr->find(data);
     }
 
     template <typename T>

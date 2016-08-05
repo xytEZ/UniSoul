@@ -1,7 +1,7 @@
 #include "PersistentDataFileInteractor.hpp"
 #include "File.hpp"
-#include "ConnectionCommand.hpp"
-#include "DeconnectionCommand.hpp"
+#include "ConnectCommand.hpp"
+#include "DeconnectCommand.hpp"
 #include "UniSoulSystemWrapper.hh"
 
 namespace Wrapper
@@ -17,22 +17,22 @@ namespace Wrapper
 	     <Persistence::File::PersistentDataFileInteractor<bool>>
 	     (std::make_unique
 	      <Persistence::File::File<bool>>
-	      ("../../other/data/users.txt"))) },
+	      ("../../other/user/users.txt"))) },
 	  { "ChatRoomManager", ChatRoomManager() },
 	    { "CommandExecutor", CommandExecutor() }
   }
   {
     CommandFactory    cf;
     
-    cf.addCommand(Command::CONNECTION,
-		  std::make_shared<Command::ConnectionCommand
-		  <bool,
+    cf.addCommand(Command::Type::CONNECT,
+		  std::make_shared<Command::ConnectCommand
+		  <Network::ConnectionStateFlag,
 		  std::unique_ptr<IWrapper<VariantMap>>,
 		  std::vector<std::string>,
 		  std::string>>());
-    cf.addCommand(Command::DECONNECTION,
-		  std::make_shared<Command::DeconnectionCommand
-		  <bool,
+    cf.addCommand(Command::Type::DECONNECT,
+		  std::make_shared<Command::DeconnectCommand
+		  <Network::ConnectionStateFlag,
 		  std::unique_ptr<IWrapper<VariantMap>>,
 		  std::vector<std::string>,
 		  std::string>>());

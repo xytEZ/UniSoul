@@ -6,11 +6,10 @@
 # include <utility>
 # include <algorithm>
 
+# include "IObserver.hpp"
+
 namespace Observer
 {
-  template <typename T>
-  class IObserver;
-  
   template <typename T>
   class Observable
   {
@@ -44,7 +43,7 @@ namespace Observer
   {
     _observers.insert(observerPtr);
   }
-
+  
   template <typename T>
   void Observable<T>::removeObserver(const ObserverPtr& observerPtr)
   {

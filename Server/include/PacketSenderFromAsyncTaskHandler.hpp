@@ -4,8 +4,10 @@
 # include <cstddef>
 # include <memory>
 # include <string>
+
 # include "ServerMessage.hh"
 # include "SerializationException.hh"
+# include "CommandType.hh"
 
 namespace Network
 {
@@ -24,15 +26,15 @@ namespace Handler
   class PacketSenderFromAsyncTaskHandler
   {
   private :
-    const std::shared_ptr
-    <Network::TCPBoostSocket<N, N2>>&	_socketPtr;
-    const SerializationHandler<T>&	_serializationHandler;
-    U					_packetFactory;
+    std::shared_ptr<Network::TCPBoostSocket<N, N2>>	_socketPtr;
+    SerializationHandler<T>				_serializationHandler;
+    U							_packetFactory;
 
   public :
     PacketSenderFromAsyncTaskHandler(const std::shared_ptr
 				     <Network::TCPBoostSocket<N, N2>>&,
 				     const SerializationHandler<T>&);
+    
     ~PacketSenderFromAsyncTaskHandler() = default;
     void packetError() const;
     void packetSuccess(const std::string&) const;
@@ -60,11 +62,9 @@ namespace Handler
 	  (_serializationHandler.template serialize
 	   <Serializable::UniSoulNetworkProtocolSerializable>
 	   (std::make_shared<V>
-	    (_packetFactory.create(Network::Protocol
-				   ::Communication::TCP,
-				   Command::Command::NONE,
-				   Network::Message
-				   ::Server::ERROR))));
+	    (_packetFactory.create(Network::Protocol::Communication::TCP,
+				   Command::Type::NONE,
+				   Network::Server::Message::ERROR))));
       }
     catch (const Exception::SerializationException&) { }
   }
@@ -79,9 +79,8 @@ namespace Handler
 	  (_serializationHandler.template serialize
 	   <Serializable::UniSoulNetworkProtocolSerializable>
 	   (std::make_shared<V>
-	    (_packetFactory.create(Network::Protocol
-				   ::Communication::TCP,
-				   Command::Command::NONE,
+	    (_packetFactory.create(Network::Protocol::Communication::TCP,
+				   Command::Type::NONE,
 				   data.c_str()))));
       }
     catch (const Exception::SerializationException&) { }

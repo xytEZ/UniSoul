@@ -12,8 +12,7 @@ namespace View
     static constexpr const char	*PROMPT_MESSAGE = "> ";
 
   private :
-    bool		_start;
-    std::string		_text;
+    Observer::OutputResult	_oRes;
     
   public :
     UniSoulConsoleView(const ControllerPtr&);
