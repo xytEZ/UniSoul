@@ -122,7 +122,7 @@ namespace Handler
   void RequestProcessingFromAsyncTaskHandler<T, U, V, N, N2>
   ::firstTimeValidRequestProcessing(const std::string& dataFromRequest) const
   {
-    constexpr char				DELIMITER = ';';
+    const constexpr char			DELIMITER = ';';
     std::shared_ptr
       <Network::TCPConnection<W, ::Descriptor>>	connectionPtr =
       std::make_shared<Network::TCPConnection<W, ::Descriptor>>(_socketPtr);
