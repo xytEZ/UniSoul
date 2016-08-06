@@ -21,10 +21,13 @@ public :
     ParsedState     state;
     std::string     what;
   };
+
+public :
+  static constexpr const char	*DELIMETERS = " \t";
   
 private :
   static const std::map<std::string,
-		     std::vector<std::string>>	REGEX_COMMANDS;
+			std::vector<std::string>>	REGEX_COMMANDS;
   
 public :
   Parser() = default;

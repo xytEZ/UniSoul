@@ -24,7 +24,8 @@ namespace Controller
 	  []() -> const char * { return "Excess argument."; } }
       };
     
-    if (!input.empty())
+    if (!input.empty()
+	&& input.find_first_not_of(Parser::DELIMETERS) != std::string::npos)
       {
 	std::vector<Parser::ParsedInput>			parsedInputArray;
 	std::vector<Parser::ParsedInput>::const_iterator	constIt;

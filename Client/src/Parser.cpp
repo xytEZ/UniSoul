@@ -16,7 +16,6 @@ const std::map<std::string, std::vector<std::string>>
 std::vector<Parser::ParsedInput>
 Parser::getParsedInput(const std::string& input) const
 {
-  const constexpr char			DELIMETERS[] = " \t";
   std::vector<Parser::ParsedInput>	parsedInputArray;
   char					*inputCopy;
   char					*tmp;
