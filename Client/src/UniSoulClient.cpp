@@ -78,8 +78,8 @@ namespace Model
 	  .setCommandPtr(_commandFactory
 			 .getCommand(parsedInputArray[0].what));
 	state = _commandExecutor
-	  .execute(const_cast
-		   <std::vector<Parser::ParsedInput>&>(parsedInputArray),
+	  .execute(const_cast<std::vector
+		   <Parser::ParsedInput>&>(parsedInputArray),
 		   retMsg);
 	oRes.start = (state == App::State::RUNNING);
 	oRes.text = std::move(retMsg);

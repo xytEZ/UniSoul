@@ -28,10 +28,20 @@ Parser::getParsedInput(const std::string& input) const
   if ((tmp = std::strtok(inputCopy, DELIMETERS)))
     {
       std::string	cmd(tmp);
-      
+
       parsedInputArray.push_back(getParsedInputCommand(cmd));
-      for (int n = 0; (tmp = std::strtok(nullptr, DELIMETERS)); ++n)
-	parsedInputArray.push_back(getParsedInputParam(cmd, tmp, n));
+      try
+	{
+	  int	nbRequiredParam = REGEX_COMMANDS.at(cmd).size();
+	  int	n = 0;
+	  
+	  while ((tmp = std::strtok(nullptr, DELIMETERS)))
+	    parsedInputArray.push_back(getParsedInputParam(cmd, tmp, n++));
+	  if (n < nbRequiredParam)
+	    parsedInputArray
+	      .push_back({ Parser::ParsedState::MISSING_ARG, "" });
+	}
+      catch (const std::out_of_range&) { }
     }
   delete[] inputCopy;
   return parsedInputArray;
@@ -54,9 +64,8 @@ Parser::getParsedInputParam(const std::string& cmd,
 			    const std::string& token,
 			    int n) const
 {
-
   Parser::ParsedInput	parsedInput;
-  
+
   try
     {
       std::regex	regex(REGEX_COMMANDS.at(cmd).at(n));

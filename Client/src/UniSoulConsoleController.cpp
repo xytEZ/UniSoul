@@ -20,6 +20,8 @@ namespace Controller
 	  []() -> const char * { return "Command is invalid."; } },
 	{ Parser::ParsedState::INVALID_ARG,
 	  []() -> const char * { return "Argument(s) is invalid."; } },
+	{ Parser::ParsedState::MISSING_ARG,
+	  []() -> const char * { return "Argument(s) is missing."; } },
 	{ Parser::ParsedState::EXCESS_ARG,
 	  []() -> const char * { return "Excess argument."; } }
       };

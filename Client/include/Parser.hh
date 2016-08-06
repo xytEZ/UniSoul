@@ -13,7 +13,8 @@ public :
     VALID,
       INVALID_CMD,
       INVALID_ARG,
-      EXCESS_ARG
+      MISSING_ARG,
+      EXCESS_ARG,
       };
   
   struct ParsedInput
