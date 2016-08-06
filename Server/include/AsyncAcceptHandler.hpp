@@ -12,42 +12,45 @@
 
 namespace Network
 {
-  template <std::size_t N, std::size_t N2, typename T>
-  class TCPBoostSocketServer;
-
   template <std::size_t N, std::size_t N2>
-  class TCPBoostSocket;
+  class TCPBoostSocketServer;
 }
 
 namespace Handler
 {
-  template <std::size_t N, std::size_t N2, typename T>
+  template <std::size_t N, std::size_t N2>
   class AsyncAcceptHandler
   {
   private :
     std::shared_ptr
-    <Network::TCPBoostSocketServer<N, N2, T>>		_serverSocketPtr;
+    <Network::TCPBoostSocketServer<N, N2>>	_serverSocketPtr;
     
-    std::shared_ptr<Network::TCPBoostSocket<N, N2>>	_socketPtr;
-    boost::system::error_code				_error;
+    std::shared_ptr
+    <Network::ITCPSocket
+    <boost::asio::ip::tcp::socket>>		_socketPtr;
+    
+    boost::system::error_code			_error;
     
   public :
     AsyncAcceptHandler(const std::shared_ptr
-		       <Network::TCPBoostSocketServer<N, N2, T>>&,
-		       const std::shared_ptr<Network::TCPBoostSocket<N, N2>>&,
+		       <Network::TCPBoostSocketServer<N, N2>>&,
+		       const std::shared_ptr
+		       <Network::ITCPSocket
+		       <boost::asio::ip::tcp::socket>>&,
 		       const boost::system::error_code&);
     
     ~AsyncAcceptHandler() = default;
     void acceptHandle() const;
   };
 
-  template <std::size_t N, std::size_t N2, typename T>
-  AsyncAcceptHandler<N, N2, T>
+  template <std::size_t N, std::size_t N2>
+  AsyncAcceptHandler<N, N2>
   ::AsyncAcceptHandler(const std::shared_ptr
-		       <Network::TCPBoostSocketServer<N, N2, T>>&
+		       <Network::TCPBoostSocketServer<N, N2>>&
 		       serverSocketPtr,
 		       const std::shared_ptr
-		       <Network::TCPBoostSocket<N, N2>>& socketPtr,
+		       <Network::ITCPSocket
+		       <boost::asio::ip::tcp::socket>>& socketPtr,
 		       const boost::system::error_code& error) :
     _serverSocketPtr(serverSocketPtr),
     _socketPtr(socketPtr),
@@ -55,8 +58,8 @@ namespace Handler
   {
   }
   
-  template <std::size_t N, std::size_t N2, typename T>
-  void AsyncAcceptHandler<N, N2, T>::acceptHandle() const
+  template <std::size_t N, std::size_t N2>
+  void AsyncAcceptHandler<N, N2>::acceptHandle() const
   {
     if (!_error)
       {

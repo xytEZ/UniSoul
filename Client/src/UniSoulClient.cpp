@@ -82,6 +82,7 @@ namespace Model
 		   <std::vector<Parser::ParsedInput>&>(parsedInputArray),
 		   retMsg);
 	oRes.start = (state == App::State::RUNNING);
+	oRes.text = std::move(retMsg);
       }
     catch (const Exception::Command::CommandNotFoundException& e)
       {

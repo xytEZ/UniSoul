@@ -82,7 +82,6 @@ namespace Network
     socketCallback.socketPtr = socketPtr;
     socketCallback.callback = _callbacks[flag];
     _events[flag].data.ptr = &socketCallback.socketPtr;
-
     if (::epoll_ctl(_epollFd,
 		    EPOLL_CTL_ADD,
 		    socketCallback.socketPtr->getDescriptor(),
@@ -160,6 +159,11 @@ namespace Network
 	  *reinterpret_cast<IMultiplexer::SocketCallback *>(_eventsRes[n]
 							    .data
 							    .ptr);
+	if (!(_eventRes[n].events & EPOLLERR)
+	    && !(_eventsRes[n].events & EPOLLHUP))
+	  socketCallback.callback(socketCallBack.socketPtr);
+	else if (_eventRes[n].events & EPOLLHUP)
+	  closeSocket(socketCallback);
       }
   }
 
@@ -181,8 +185,7 @@ namespace Network
   }
 
   template <std::size_t N>
-  void Epoll<N>::closeSocket(const IMultiplexer::SocketCallback&
-			     socketCallback)
+  void Epoll<N>::closeSocket(const IMultiplexer::SocketCallback& socketCallback)
   {
     if (::epoll_ctl(_epollFd,
 		    EPOLL_CTL_DEL,

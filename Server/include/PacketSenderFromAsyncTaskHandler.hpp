@@ -11,8 +11,8 @@
 
 namespace Network
 {
-  template <std::size_t N, std::size_t N2>
-  class TCPBoostSocket;
+  template <typename T>
+  class ITCPSocket;
 }
 
 namespace Serializable
@@ -26,13 +26,15 @@ namespace Handler
   class PacketSenderFromAsyncTaskHandler
   {
   private :
-    std::shared_ptr<Network::TCPBoostSocket<N, N2>>	_socketPtr;
-    SerializationHandler<T>				_serializationHandler;
-    U							_packetFactory;
+    std::shared_ptr<Network::ITCPSocket
+    <boost::asio::ip::tcp::socket>>	_socketPtr;
+    
+    SerializationHandler<T>		_serializationHandler;
+    U					_packetFactory;
 
   public :
-    PacketSenderFromAsyncTaskHandler(const std::shared_ptr
-				     <Network::TCPBoostSocket<N, N2>>&,
+    PacketSenderFromAsyncTaskHandler(const std::shared_ptr<Network::ITCPSocket
+				     <boost::asio::ip::tcp::socket>>&,
 				     const SerializationHandler<T>&);
     
     ~PacketSenderFromAsyncTaskHandler() = default;
@@ -42,9 +44,8 @@ namespace Handler
 
   template <typename T, typename U, typename V, std::size_t N, std::size_t N2>
   PacketSenderFromAsyncTaskHandler<T, U, V, N, N2>
-  ::PacketSenderFromAsyncTaskHandler(const std::shared_ptr
-				     <Network::TCPBoostSocket<N, N2>>&
-				     socketPtr,
+  ::PacketSenderFromAsyncTaskHandler(const std::shared_ptr<Network::ITCPSocket
+				     <boost::asio::ip::tcp::socket>>& socketPtr,
 				     const SerializationHandler<T>&
 				     serializationHandler) :
     _socketPtr(socketPtr),

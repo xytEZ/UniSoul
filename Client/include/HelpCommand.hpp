@@ -1,6 +1,8 @@
 #ifndef HELP_COMMAND_HPP_
 # define HELP_COMMAND_HPP_
 
+# include <iostream>
+
 # include <tuple>
 
 # include "AppStateFlag.hh"
@@ -18,10 +20,16 @@ namespace Command
   };
 
   template <typename T, typename... Args>
-  T HelpCommand<T, Args...>::execute(Args&...) const
+  T HelpCommand<T, Args...>::execute(Args&... args) const
   {
-    //std::tuple<Args&...>	tuple = std::forward_as_tuple(args...);
-    
+    std::tuple<Args&...>	tuple = std::forward_as_tuple(args...);
+
+    std::get<1>(tuple)
+      .append("Commands available :\n\n")
+      .append("\t- Help\n")
+      .append("\t- Quit\n")
+      .append("\t- Connect\n")
+      .append("\t- Deconnect");
     return App::State::RUNNING;
   }
 }

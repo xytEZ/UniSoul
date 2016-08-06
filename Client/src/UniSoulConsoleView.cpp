@@ -41,6 +41,7 @@ namespace View
   void UniSoulConsoleView::update(const Observer::OutputResult& arg)
   {
     _oRes = arg;
-    display();
+    if (_oRes.start)
+      display();
   }
 }

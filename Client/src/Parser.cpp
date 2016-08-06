@@ -16,26 +16,25 @@ const std::map<std::string, std::vector<std::string>>
 std::vector<Parser::ParsedInput>
 Parser::getParsedInput(const std::string& input) const
 {
-  constexpr char			DELIMETERS[] = " \t";
+  const constexpr char			DELIMETERS[] = " \t";
   std::vector<Parser::ParsedInput>	parsedInputArray;
-  std::string				token;
   char					*inputCopy;
+  char					*tmp;
   int					inputLength;
 
   inputLength = input.length();
   inputCopy = new char[inputLength + 1];
   std::strncpy(inputCopy, input.c_str(), inputLength);
-  token.assign(std::strtok(inputCopy, DELIMETERS));
-  if (!token.empty())
+  inputCopy[inputLength] = '\0';
+  if ((tmp = std::strtok(inputCopy, DELIMETERS)))
     {
-      std::string     cmd(token);
+      std::string	cmd(tmp);
       
-      parsedInputArray.push_back(getParsedInputCommand(token));
-      for (int n = 0;
-	   !token.assign(std::strtok(nullptr, DELIMETERS)).empty();
-	   ++n)
-	parsedInputArray.push_back(getParsedInputParam(cmd, token, n));
+      parsedInputArray.push_back(getParsedInputCommand(cmd));
+      for (int n = 0; (tmp = std::strtok(nullptr, DELIMETERS)); ++n)
+	parsedInputArray.push_back(getParsedInputParam(cmd, tmp, n));
     }
+  delete[] inputCopy;
   return parsedInputArray;
 }
 
@@ -56,11 +55,12 @@ Parser::getParsedInputParam(const std::string& cmd,
 			    const std::string& token,
 			    int n) const
 {
-  Parser::ParsedInput	parsedInput;
 
+  Parser::ParsedInput	parsedInput;
+  
   try
     {
-      std::regex		regex(REGEX_COMMANDS.at(cmd)[n]);
+      std::regex	regex(REGEX_COMMANDS.at(cmd).at(n));
 
       parsedInput.state = std::regex_match(token, regex) ?
 	Parser::ParsedState::VALID : Parser::ParsedState::INVALID_ARG;

@@ -13,29 +13,25 @@ namespace Controller
   
   void UniSoulConsoleController::performAction(const std::string& input)
   {
-    static const
-      std::map<Parser::ParsedState, std::function<std::string()>>
+    static const std::map<Parser::ParsedState, std::function<const char *()>>
       FUNCS_ERR_MSG =
       {
 	{ Parser::ParsedState::INVALID_CMD,
-	  []() -> std::string { return "Command is invalid."; } },
+	  []() -> const char * { return "Command is invalid."; } },
 	{ Parser::ParsedState::INVALID_ARG,
-	  []() -> std::string { return "Argument(s) is invalid."; } },
+	  []() -> const char * { return "Argument(s) is invalid."; } },
 	{ Parser::ParsedState::EXCESS_ARG,
-	  []() -> std::string { return "Excess argument."; } }
+	  []() -> const char * { return "Excess argument."; } }
       };
     
     if (!input.empty())
       {
-	std::vector<Parser::ParsedInput>	parsedInputArray;
-	
-	std::vector<Parser::ParsedInput>
-	  ::const_iterator			it;
-	
-	std::string				errMsg;
+	std::vector<Parser::ParsedInput>			parsedInputArray;
+	std::vector<Parser::ParsedInput>::const_iterator	constIt;
+	std::string						errMsg;
 	
 	parsedInputArray = _parser.getParsedInput(input);
-	it = std::find_if
+	constIt = std::find_if
 	  (parsedInputArray.cbegin(),
 	   parsedInputArray.cend(),
 	   [&errMsg](const Parser::ParsedInput& parsedInput) -> bool
@@ -47,7 +43,7 @@ namespace Controller
 	       }
 	     return false;
 	   });
-	if (it != parsedInputArray.end())
+	if (constIt != parsedInputArray.cend())
 	  _modelPtr->notifyObservers({ true, errMsg });
 	else
 	  _modelPtr->execute(parsedInputArray);

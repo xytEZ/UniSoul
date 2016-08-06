@@ -1,13 +1,12 @@
 #ifndef ITCP_SOCKET_SERVER_HPP_
 # define ITCP_SOCKET_SERVER_HPP_
 
+# include "ITCPSocket.hpp"
+
 namespace Network
 {
-  template <typename T>
-  class ITCPSocket;
-  
   template <typename T, typename U = int>
-  class ITCPSocketServer : virtual public ITCPSocket<T>
+  class ITCPSocketServer : public ITCPSocket<T>
   {
   public :
     virtual ~ITCPSocketServer() = default;

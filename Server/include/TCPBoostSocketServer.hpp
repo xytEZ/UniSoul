@@ -1,176 +1,291 @@
 #ifndef TCP_BOOST_SOCKET_SERVER_HPP_
 # define TCP_BOOST_SOCKET_SERVER_HPP_
 
-# include "TCPBoostSocket.hpp"
-# include "ITCPSocketServer.hpp"
+# include <cstddef>
+# include <memory>
+# include <map>
+# include <boost/asio.hpp>
+# include <boost/array.hpp>
+# include <boost/noncopyable.hpp>
+# include <boost/enable_shared_from_this.hpp>
+# include <boost/date_time/posix_time/posix_time.hpp>
+# include <boost/date_time/posix_time/posix_time_io.hpp>
+# include <boost/any.hpp>
+# include <boost/bind.hpp>
+
 # include "AsyncAcceptHandler.hpp"
-# include "Descriptor.hh"
+# include "AsyncReadHandler.hpp"
+# include "AsyncWriteHandler.hpp"
+# include "ITCPSocketServer.hpp"
 
 namespace Network
 { 
-  template <std::size_t N, std::size_t N2, typename T = TCPBoostSocket<N, N2>>
-    class TCPBoostSocketServer : public TCPBoostSocket<N, N2>,
-				 public ITCPSocketServer<Descriptor, T>
-    { 
-    private :
-      boost::asio::ip::tcp::acceptor	_acceptor;
-      boost::asio::ip::tcp::endpoint	_endpoint;
+  template <std::size_t N, std::size_t N2>
+  class TCPBoostSocketServer :
+    public ITCPSocketServer<boost::asio::ip::tcp::socket,
+			    std::shared_ptr
+			    <ITCPSocket<boost::asio::ip::tcp::socket>>>,
+    private boost::noncopyable,
+    public std::enable_shared_from_this<TCPBoostSocketServer<N, N2>>
+  {
+  private :
+    using SystemWrapperPtrRef = std::unique_ptr
+      <Wrapper::IWrapper<std::map<std::string, boost::any>>>&;
+    
+  private :
+    boost::asio::ip::tcp::socket	_socket;
+    boost::asio::ip::tcp::acceptor	_acceptor;
+    boost::asio::ip::tcp::endpoint	_endpoint;
+    boost::asio::deadline_timer		_timer;
+    boost::array<char, N>		_buffer;
+    SystemWrapperPtrRef			_systemWrapperPtrRef;
       
-    public :
-      template <std::size_t M, std::size_t M2, typename U>
-      static std::shared_ptr<TCPBoostSocketServer<M, M2, U>>
-	create(boost::asio::io_service&,
-	       typename TCPBoostSocket<M, M2>
-	       ::SystemWrapperPtrRef,
-	       const std::string&,
-	       unsigned short);
-      
-    protected :
-      TCPBoostSocketServer(boost::asio::io_service&,
-			   typename TCPBoostSocket<N, N2>
-			   ::SystemWrapperPtrRef,
-			   const std::string&,
-			   unsigned short);
-      
-    public :
-      virtual ~TCPBoostSocketServer() = default;
-      virtual bool open();
-      virtual bool close();
-      virtual const ::Descriptor& getDescriptor() const;
-      virtual bool send(const std::string&);
-      virtual std::string recv();
-      virtual std::string getAddress() const;
-      virtual unsigned short getPort() const;
-      virtual bool bind();
-      virtual bool listen();
-      virtual T accept();
+  public :
+    template <std::size_t M, std::size_t M2>
+      static std::shared_ptr<TCPBoostSocketServer<M, M2>>
+      create(boost::asio::io_service&,
+	     SystemWrapperPtrRef,
+	     const std::string&,
+	     unsigned short);
+    
+  private :
+    template <std::size_t M, std::size_t M2>
+      static std::shared_ptr<TCPBoostSocketServer<M, M2>>
+      create(boost::asio::io_service&, SystemWrapperPtrRef);
+    
+  private :
+    TCPBoostSocketServer(boost::asio::io_service&,
+			 SystemWrapperPtrRef,
+			 const std::string&,
+			 unsigned short);
+    
+    TCPBoostSocketServer(boost::asio::io_service&, SystemWrapperPtrRef);
+    
+  public :
+    virtual ~TCPBoostSocketServer() = default;
+    virtual bool open();
+    virtual bool close();
+    virtual const boost::asio::ip::tcp::socket& getDescriptor() const;
+    virtual bool send(const std::string&);
+    virtual std::string recv();
+    virtual std::string getAddress() const;
+    virtual unsigned short getPort() const;
+    virtual bool bind();
+    virtual bool listen();
+    virtual std::shared_ptr<ITCPSocket<boost::asio::ip::tcp::socket>> accept();
+    std::string getBuffer() const;
+    SystemWrapperPtrRef getSystemWrapperPtrRef();
 
-    private :
-      template <typename HandlerPolicy>
-      void acceptHandle(const std::shared_ptr<TCPBoostSocketServer<N, N2, T>>&,
-			const std::shared_ptr<TCPBoostSocket<N, N2>>&,
+  private :
+    template <typename HandlerPolicy>
+      void acceptHandle(const std::shared_ptr<TCPBoostSocketServer<N, N2>>&,
+			const std::shared_ptr
+			<ITCPSocket<boost::asio::ip::tcp::socket>>&,
 			const boost::system::error_code&);
-    };
 
-  template <std::size_t N, std::size_t N2, typename T>
-  template <std::size_t M, std::size_t M2, typename U>
-  std::shared_ptr<TCPBoostSocketServer<M, M2, U>>
-    TCPBoostSocketServer<N, N2, T>
-    ::create(boost::asio::io_service& ios,
-	     typename TCPBoostSocket<M, M2>
-	     ::SystemWrapperPtrRef systemWrapperPtrRef,
-	     const std::string& hostname,
-	     unsigned short port)
+    template <typename HandlerPolicy>
+      void sendHandle(const std::shared_ptr
+		      <ITCPSocket<boost::asio::ip::tcp::socket>>&,
+		      const boost::system::error_code&);
+    
+    template <typename HandlerPolicy>
+      void recvHandle(const std::shared_ptr
+		      <ITCPSocket<boost::asio::ip::tcp::socket>>&,
+		      const boost::system::error_code&);
+  };
+
+  template <std::size_t N, std::size_t N2>
+  template <std::size_t M, std::size_t M2>
+  std::shared_ptr<TCPBoostSocketServer<M, M2>>
+    TCPBoostSocketServer<N, N2>::create(boost::asio::io_service& ios,
+					SystemWrapperPtrRef systemWrapperPtrRef,
+					const std::string& hostname,
+					unsigned short port)
   {
     return std::shared_ptr
-      <TCPBoostSocketServer<M, M2, U>>
-      (new TCPBoostSocketServer<M, M2, U>(ios,
-					  systemWrapperPtrRef,
-					  hostname,
-					  port));
+      <TCPBoostSocketServer<M, M2>>
+      (new TCPBoostSocketServer<M, M2>(ios,
+				       systemWrapperPtrRef,
+				       hostname,
+				       port));
+  }
+
+  template <std::size_t N, std::size_t N2>
+  template <std::size_t M, std::size_t M2>
+  std::shared_ptr<TCPBoostSocketServer<M, M2>>
+    TCPBoostSocketServer<N, N2>::create(boost::asio::io_service& ios,
+					SystemWrapperPtrRef systemWrapperPtrRef)
+  {
+    return std::shared_ptr
+      <TCPBoostSocketServer<M, M2>>
+      (new TCPBoostSocketServer<M, M2>(ios, systemWrapperPtrRef));
   }
   
-  template <std::size_t N, std::size_t N2, typename T>
-  TCPBoostSocketServer<N, N2, T>
+  template <std::size_t N, std::size_t N2>
+  TCPBoostSocketServer<N, N2>
   ::TCPBoostSocketServer(boost::asio::io_service& ios,
-			 typename TCPBoostSocket<N, N2>
-			 ::SystemWrapperPtrRef systemWrapperPtrRef,
+			 SystemWrapperPtrRef systemWrapperPtrRef,
 			 const std::string& hostname,
 			 unsigned short port) :
-    TCPBoostSocket<N, N2>(ios, systemWrapperPtrRef),
+    _socket(ios),
     _acceptor(ios),
-    _endpoint(boost::asio::ip::address::from_string(hostname), port)
+    _endpoint(boost::asio::ip::address::from_string(hostname), port),
+    _timer(ios, boost::posix_time::seconds(N2)),
+    _systemWrapperPtrRef(systemWrapperPtrRef)
+  {
+  }
+  
+  template <std::size_t N, std::size_t N2>
+  TCPBoostSocketServer<N, N2>
+  ::TCPBoostSocketServer(boost::asio::io_service& ios,
+			 SystemWrapperPtrRef systemWrapperPtrRef) :
+    _socket(ios),
+    _acceptor(ios),
+    _endpoint(),
+    _timer(ios, boost::posix_time::seconds(N2)),
+    _systemWrapperPtrRef(systemWrapperPtrRef)
   {
   }
 
-  template <std::size_t N, std::size_t N2, typename T>
-  bool TCPBoostSocketServer<N, N2, T>::open()
+  template <std::size_t N, std::size_t N2>
+  bool TCPBoostSocketServer<N, N2>::open()
   {
     _acceptor.open(_endpoint.protocol());
     _acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
     return true;
   }
 
-  template <std::size_t N, std::size_t N2, typename T>
-  bool TCPBoostSocketServer<N, N2, T>::close()
+  template <std::size_t N, std::size_t N2>
+  bool TCPBoostSocketServer<N, N2>::close()
   {
-    return TCPBoostSocket<N, N2>::close();
+    _socket.close();
+    return true;
   }
 
-  template <std::size_t N, std::size_t N2, typename T>
-  const ::Descriptor& TCPBoostSocketServer<N, N2, T>::getDescriptor() const
+  template <std::size_t N, std::size_t N2>
+  const boost::asio::ip::tcp::socket&
+  TCPBoostSocketServer<N, N2>::getDescriptor() const
   {
-    return TCPBoostSocket<N, N2>::getDescriptor();
+    return _socket;
   }
   
-  template <std::size_t N, std::size_t N2, typename T>
-  bool TCPBoostSocketServer<N, N2, T>::send(const std::string& msg)
+  template <std::size_t N, std::size_t N2>
+  bool TCPBoostSocketServer<N, N2>::send(const std::string& msg)
   {
-    return TCPBoostSocket<N, N2>::send(msg);
+    boost::asio::async_write(_socket,
+			     boost::asio::buffer(msg),
+			     boost::bind(&TCPBoostSocketServer::sendHandle
+					 <Handler::AsyncWriteHandler<N, N2>>,
+					 this->shared_from_this(),
+					 this->shared_from_this(),
+					 boost::asio::placeholders::error));
+    return true;
   }
 
-  template <std::size_t N, std::size_t N2, typename T>
-  std::string TCPBoostSocketServer<N, N2, T>::recv()
+  template <std::size_t N, std::size_t N2>
+  std::string TCPBoostSocketServer<N, N2>::recv()
   {
-    return TCPBoostSocket<N, N2>::recv();
+    boost::asio::async_read(_socket,
+			    boost::asio::buffer(_buffer),
+			    boost::bind(&TCPBoostSocketServer::recvHandle
+					<Handler::AsyncReadHandler<N, N2>>,
+					this->shared_from_this(),
+					this->shared_from_this(),
+					boost::asio::placeholders::error));
+    _timer.expires_from_now(boost::posix_time::seconds(N2));
+    _timer.async_wait(boost::bind(&TCPBoostSocketServer::close,
+				  this->shared_from_this()));
+    return "";
   }
 
-  template <std::size_t N, std::size_t N2, typename T>
-  std::string TCPBoostSocketServer<N, N2, T>::getAddress() const
+  template <std::size_t N, std::size_t N2>
+  std::string TCPBoostSocketServer<N, N2>::getAddress() const
   {
-    return TCPBoostSocket<N, N2>::getAddress();
+    return _socket.remote_endpoint().address().to_string();
   }
 
-  template <std::size_t N, std::size_t N2, typename T>
-  unsigned short TCPBoostSocketServer<N, N2, T>::getPort() const
+  template <std::size_t N, std::size_t N2>
+  unsigned short TCPBoostSocketServer<N, N2>::getPort() const
   {
-    return TCPBoostSocket<N, N2>::getPort();
+    return _socket.remote_endpoint().port();
   }
   
-  template <std::size_t N, std::size_t N2, typename T>
-  bool TCPBoostSocketServer<N, N2, T>::bind()
+  template <std::size_t N, std::size_t N2>
+  bool TCPBoostSocketServer<N, N2>::bind()
   {
     _acceptor.bind(_endpoint);
     return true;
   }
   
-  template <std::size_t N, std::size_t N2, typename T>
-  bool TCPBoostSocketServer<N, N2, T>::listen()
+  template <std::size_t N, std::size_t N2>
+  bool TCPBoostSocketServer<N, N2>::listen()
   {
     _acceptor.listen();
     return true;
   }
   
-  template <std::size_t N, std::size_t N2, typename T>
-  T TCPBoostSocketServer<N, N2, T>::accept()
+  template <std::size_t N, std::size_t N2>
+  std::shared_ptr<ITCPSocket<boost::asio::ip::tcp::socket>>
+  TCPBoostSocketServer<N, N2>::accept()
   {
-    std::shared_ptr<TCPBoostSocket<N, N2>>	socketPtr =
-      TCPBoostSocket<N, N2>::template create<N, N2>
-      (this->_socket.get_io_service(), this->_systemWrapperPtrRef);
-
-    _acceptor.async_accept(socketPtr->getSocket(),
-			   boost
-			   ::bind(&TCPBoostSocketServer
-				  ::acceptHandle
-				  <Handler::AsyncAcceptHandler<N, N2, T>>,
-				  this,
-				  std::static_pointer_cast
-				  <TCPBoostSocketServer<N, N2, T>>
-				  (this->shared_from_this()),
-				  socketPtr,
-				  boost::asio::placeholders::error));
+    std::shared_ptr<ITCPSocket<boost::asio::ip::tcp::socket>>	socketPtr =
+      TCPBoostSocketServer<N, N2>::template create<N, N2>
+      (_socket.get_io_service(), _systemWrapperPtrRef);
+    
+    _acceptor.async_accept(const_cast<boost::asio::ip::tcp::socket&>
+			   (socketPtr->getDescriptor()),
+			   boost::bind(&TCPBoostSocketServer::acceptHandle
+				       <Handler::AsyncAcceptHandler<N, N2>>,
+				       this,
+				       this->shared_from_this(),
+				       socketPtr,
+				       boost::asio::placeholders::error));
     return socketPtr;
   }
 
-  template <std::size_t N, std::size_t N2, typename T>
+  template <std::size_t N, std::size_t N2>
+  std::string TCPBoostSocketServer<N, N2>::getBuffer() const
+  {
+    return std::string(_buffer.cbegin(), _buffer.cend());
+  }
+
+  template <std::size_t N, std::size_t N2>
+  typename TCPBoostSocketServer<N, N2>::SystemWrapperPtrRef
+  TCPBoostSocketServer<N, N2>::getSystemWrapperPtrRef()
+  {
+    return _systemWrapperPtrRef;
+  }
+  
+  template <std::size_t N, std::size_t N2>
   template <typename HandlerPolicy>
-  void TCPBoostSocketServer<N, N2, T>
+  void TCPBoostSocketServer<N, N2>
   ::acceptHandle(const std::shared_ptr
-		 <TCPBoostSocketServer<N, N2, T>>& serverSocketPtr,
-		 const std::shared_ptr<TCPBoostSocket<N, N2>>& socketPtr,
+		 <TCPBoostSocketServer<N, N2>>& serverSocketPtr,
+		 const std::shared_ptr<ITCPSocket<boost::asio::ip::tcp::socket>>&
+		 socketPtr,
 		 const boost::system::error_code& error)
   {
     HandlerPolicy(serverSocketPtr, socketPtr, error).acceptHandle();
+  }
+
+  template <std::size_t N, std::size_t N2>
+  template <typename HandlerPolicy>
+  void TCPBoostSocketServer<N, N2>
+  ::sendHandle(const std::shared_ptr
+	       <ITCPSocket<boost::asio::ip::tcp::socket>>& socketPtr,
+	       const boost::system::error_code& error)
+  {
+    HandlerPolicy(socketPtr, error).writeHandle();
+  }
+
+  template <std::size_t N, std::size_t N2>
+  template <typename HandlerPolicy>
+  void TCPBoostSocketServer<N, N2>
+  ::recvHandle(const std::shared_ptr
+	       <ITCPSocket<boost::asio::ip::tcp::socket>>& socketPtr,
+	       const boost::system::error_code& error)
+  {
+    HandlerPolicy(socketPtr, error).readHandle();
   }
 }
 

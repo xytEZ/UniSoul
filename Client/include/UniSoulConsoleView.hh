@@ -9,7 +9,7 @@ namespace View
   class UniSoulConsoleView : public AView<Observer::OutputResult>
   { 
   private :
-    static constexpr const char	*PROMPT_MESSAGE = "> ";
+    static const constexpr char	*PROMPT_MESSAGE = "?> ";
 
   private :
     Observer::OutputResult	_oRes;

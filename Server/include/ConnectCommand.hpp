@@ -5,7 +5,6 @@
 # include <boost/any.hpp>
 
 # include "UniSoulSystemWrapper.hh"
-# include "Descriptor.hh"
 # include "ConnectionStateFlag.hh"
 # include "ICommand.hpp"
 

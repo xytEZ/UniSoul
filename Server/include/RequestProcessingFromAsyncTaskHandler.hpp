@@ -14,13 +14,12 @@
 # include "RequestExecuteFromAsyncTaskHandler.hpp"
 # include "PacketSenderFromAsyncTaskHandler.hpp"
 # include "DisconnectFromAsyncTaskHandler.hpp"
-# include "BoostDescriptor.hh"
 # include "ConnectionStateFlag.hh"
 
 namespace Network
 {
-  template <std::size_t N, std::size_t N2>
-  class TCPBoostSocket;
+  template <typename T>
+  class ITCPSocket;
 }
 
 namespace Handler
@@ -29,12 +28,15 @@ namespace Handler
   class RequestProcessingFromAsyncTaskHandler
   {
   private :
-    std::shared_ptr<Network::TCPBoostSocket<N, N2>>	_socketPtr;
-    SerializationHandler<T>				_serializationHandler;
+    std::shared_ptr<Network::ITCPSocket
+    <boost::asio::ip::tcp::socket>>	_socketPtr;
+    
+    SerializationHandler<T>		_serializationHandler;
 
   public :
     RequestProcessingFromAsyncTaskHandler(const std::shared_ptr
-					  <Network::TCPBoostSocket<N, N2>>&);
+					  <Network::ITCPSocket
+					  <boost::asio::ip::tcp::socket>>&);
     
     ~RequestProcessingFromAsyncTaskHandler() = default;
     void requestProcessing() const;
@@ -53,7 +55,8 @@ namespace Handler
   template <typename T, typename U, typename V, std::size_t N, std::size_t N2>
   RequestProcessingFromAsyncTaskHandler<T, U, V, N, N2>::
   RequestProcessingFromAsyncTaskHandler(const std::shared_ptr
-					<Network::TCPBoostSocket<N, N2>>&
+					<Network::ITCPSocket
+					<boost::asio::ip::tcp::socket>>&
 					socketPtr) :
     _socketPtr(socketPtr),
     _serializationHandler()
@@ -68,15 +71,19 @@ namespace Handler
     try
       {
 	std::shared_ptr<Serializable::ASerializable<T>>	serializablePtr =
-	  _serializationHandler.deserialize(_socketPtr->getBuffer());
+	  _serializationHandler.deserialize
+	  (std::static_pointer_cast<Network::TCPBoostSocketServer<N, N2>>
+	   (_socketPtr)->getBuffer());
 	bool						registeredConnection =
 	  boost::any_cast
 	  <typename Wrapper::UniSoulSystemWrapper::ConnectionManager&>
-	  (_socketPtr->getSystemWrapperPtrRef()
+	  (std::static_pointer_cast<Network::TCPBoostSocketServer<N, N2>>
+	   (_socketPtr)->getSystemWrapperPtrRef()
 	   ->getContent()["ConnectionManager"])
 	  .findConnectionIf([this](const std::shared_ptr
 				   <Network::TCPConnection
-				   <Info::ClientInfo, ::Descriptor>>&
+				   <Info::ClientInfo,
+				   boost::asio::ip::tcp::socket>>&
 				   connectionPtr) -> bool
 			    {
 			      return connectionPtr
@@ -123,12 +130,15 @@ namespace Handler
   ::firstTimeValidRequestProcessing(const std::string& dataFromRequest) const
   {
     const constexpr char			DELIMITER = ';';
-    std::shared_ptr
-      <Network::TCPConnection<W, ::Descriptor>>	connectionPtr =
-      std::make_shared<Network::TCPConnection<W, ::Descriptor>>(_socketPtr);
+    
+    std::shared_ptr<Network::TCPConnection
+       <W, boost::asio::ip::tcp::socket>>	connectionPtr =
+      std::make_shared<Network::TCPConnection
+		       <W, boost::asio::ip::tcp::socket>>(_socketPtr);
+    
     std::stringstream				ss(dataFromRequest);
     std::string					str;
-
+    
     std::getline(ss, str, DELIMITER);
     connectionPtr->getClientInfo().firstName = str;
     std::getline(ss, str, DELIMITER);
@@ -137,7 +147,8 @@ namespace Handler
     connectionPtr->getClientInfo().email = str;
     boost::any_cast
       <typename Wrapper::UniSoulSystemWrapper::ConnectionManager&>
-      (_socketPtr->getSystemWrapperPtrRef()->getContent()["ConnectionManager"])
+      (std::static_pointer_cast<Network::TCPBoostSocketServer<N, N2>>
+       (_socketPtr)->getSystemWrapperPtrRef()->getContent()["ConnectionManager"])
       .addConnection(connectionPtr);
   }
   

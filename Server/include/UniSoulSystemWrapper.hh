@@ -7,6 +7,7 @@
 # include <vector>
 # include <utility>
 # include <boost/any.hpp>
+# include <boost/asio.hpp>
 
 # include "IWrapper.hpp"
 # include "ConnectionManager.hpp"
@@ -16,7 +17,6 @@
 # include "ClientCheckerManager.hh"
 # include "ClientInfo.hh"
 # include "TCPConnection.hpp"
-# include "BoostDescriptor.hh"
 # include "CommandType.hh"
 # include "ConnectionStateFlag.hh"
 
@@ -38,11 +38,12 @@ namespace Wrapper
   public :
     using ServerSocketPtr = std::shared_ptr
       <Network::ITCPSocketServer
-       <::Descriptor, std::shared_ptr<Network::ITCPSocket<::Descriptor>>>>;
+       <boost::asio::ip::tcp::socket,
+	std::shared_ptr<Network::ITCPSocket<boost::asio::ip::tcp::socket>>>>;
     
     using ConnectionManager = Network::Manager::ConnectionManager
-      <std::shared_ptr
-       <Network::TCPConnection<Info::ClientInfo, ::Descriptor>>>;
+      <std::shared_ptr<Network::TCPConnection
+		       <Info::ClientInfo, boost::asio::ip::tcp::socket>>>;
     
     using ClientCheckerManager = Persistence::Manager::ClientCheckerManager;
     using ChatRoomManager = Communication::Chat::ChatRoomManager;
