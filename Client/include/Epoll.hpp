@@ -159,10 +159,10 @@ namespace Network
 	  *reinterpret_cast<IMultiplexer::SocketCallback *>(_eventsRes[n]
 							    .data
 							    .ptr);
-	if (!(_eventRes[n].events & EPOLLERR)
+	if (!(_eventsRes[n].events & EPOLLERR)
 	    && !(_eventsRes[n].events & EPOLLHUP))
-	  socketCallback.callback(socketCallBack.socketPtr);
-	else if (_eventRes[n].events & EPOLLHUP)
+	  socketCallback.callback(socketCallback.socketPtr);
+	else if (_eventsRes[n].events & EPOLLHUP)
 	  closeSocket(socketCallback);
       }
   }
