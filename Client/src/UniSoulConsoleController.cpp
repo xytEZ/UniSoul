@@ -1,6 +1,7 @@
 #include <map>
 #include <functional>
 #include <algorithm>
+#include <iostream>
 
 #include "UniSoulConsoleController.hh"
 
@@ -12,6 +13,32 @@ namespace Controller
   }
   
   void UniSoulConsoleController::performAction(const std::string& input)
+  {    
+    if (!input.empty())
+      {
+	std::regex				regex("[\t ]+");
+	
+	std::sregex_token_iterator		it(input.begin(),
+						   input.end(),
+						   regex,
+						   -1);
+
+	std::vector<Parser::ParsedInput>	parsedInputArray;
+	std::string				errMsg;
+	
+	parsedInputArray = _parser.getParsedInput(it);
+	if (parsedInputArrayIsCorrect(parsedInputArray, errMsg))
+	  _modelPtr->execute(parsedInputArray);
+	else
+	  _modelPtr->notifyObservers({ true, errMsg });
+      }
+  }
+
+  bool
+  UniSoulConsoleController
+  ::parsedInputArrayIsCorrect(const std::vector<Parser::ParsedInput>&
+			      parsedInputArray,
+			      std::string& errMsg) const
   {
     static const std::map<Parser::ParsedState, std::function<const char *()>>
       FUNCS_ERR_MSG =
@@ -26,30 +53,20 @@ namespace Controller
 	  []() -> const char * { return "Excess argument."; } }
       };
     
-    if (!input.empty()
-	&& input.find_first_not_of(Parser::DELIMETERS) != std::string::npos)
-      {
-	std::vector<Parser::ParsedInput>			parsedInputArray;
-	std::vector<Parser::ParsedInput>::const_iterator	constIt;
-	std::string						errMsg;
-	
-	parsedInputArray = _parser.getParsedInput(input);
-	constIt = std::find_if
-	  (parsedInputArray.cbegin(),
-	   parsedInputArray.cend(),
-	   [&errMsg](const Parser::ParsedInput& parsedInput) -> bool
+    std::vector<Parser::ParsedInput>::const_iterator	constIt;
+    
+    constIt = std::find_if
+      (parsedInputArray.cbegin(),
+       parsedInputArray.cend(),
+       [&errMsg](const Parser::ParsedInput& parsedInput) -> bool
+       {
+	 if (FUNCS_ERR_MSG.find(parsedInput.state) != FUNCS_ERR_MSG.cend())
 	   {
-	     if (FUNCS_ERR_MSG.find(parsedInput.state) != FUNCS_ERR_MSG.end())
-	       {
-		 errMsg = FUNCS_ERR_MSG.at(parsedInput.state)();
-		 return true;
-	       }
-	     return false;
-	   });
-	if (constIt != parsedInputArray.cend())
-	  _modelPtr->notifyObservers({ true, errMsg });
-	else
-	  _modelPtr->execute(parsedInputArray);
-      }
+	     errMsg = FUNCS_ERR_MSG.at(parsedInput.state)();
+	     return true;
+	   }
+	 return false;
+       });
+    return constIt == parsedInputArray.cend();
   }
 }

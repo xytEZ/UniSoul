@@ -16,6 +16,10 @@ namespace Controller
     UniSoulConsoleController(const ModelPtr&);
     virtual ~UniSoulConsoleController() = default;
     virtual void performAction(const std::string&);
+
+  private :
+    bool parsedInputArrayIsCorrect(const std::vector<Parser::ParsedInput>&,
+				   std::string&) const;
   };
 }
 

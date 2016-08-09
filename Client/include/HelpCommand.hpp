@@ -1,8 +1,6 @@
 #ifndef HELP_COMMAND_HPP_
 # define HELP_COMMAND_HPP_
 
-# include <iostream>
-
 # include <tuple>
 
 # include "AppStateFlag.hh"
@@ -24,12 +22,13 @@ namespace Command
   {
     std::tuple<Args&...>	tuple = std::forward_as_tuple(args...);
 
-    std::get<1>(tuple)
+    std::get<3>(tuple)
       .append("Commands available :\n\n")
       .append("\t- Help\n")
       .append("\t- Quit\n")
       .append("\t- Connect\n")
-      .append("\t- Deconnect");
+      .append("\t- Deconnect\n")
+      .append("\t- Message [RECIPIENT] [CONTENT]");
     return App::State::RUNNING;
   }
 }

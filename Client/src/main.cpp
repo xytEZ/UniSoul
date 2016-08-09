@@ -46,7 +46,7 @@ int main()
     }
   catch (...)
     {
-      std::cerr << "Unknown exception has been thrown" << std::endl;
+      std::cerr << "Unknown exception has been thrown." << std::endl;
     }
   return 1;
 }

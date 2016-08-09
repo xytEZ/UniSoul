@@ -13,6 +13,7 @@
 #include "QuitCommand.hpp"
 #include "ConnectCommand.hpp"
 #include "DeconnectCommand.hpp"
+#include "MessageCommand.hpp"
 #include "UniSoulClient.hh"
 
 namespace Model
@@ -42,21 +43,36 @@ namespace Model
     _commandFactory.addCommand("Help",
 			       std::make_shared<Command::HelpCommand
 			       <App::State::Flag,
+			       std::unique_ptr<Network::IMultiplexer>,
+			       std::shared_ptr<Network::ITCPSocketClient<int>>,
 			       std::vector<Parser::ParsedInput>,
 			       std::string>>());
     _commandFactory.addCommand("Quit",
 			       std::make_shared<Command::QuitCommand
 			       <App::State::Flag,
+			       std::unique_ptr<Network::IMultiplexer>,
+			       std::shared_ptr<Network::ITCPSocketClient<int>>,
 			       std::vector<Parser::ParsedInput>,
 			       std::string>>());
     _commandFactory.addCommand("Connect",
 			       std::make_shared<Command::ConnectCommand
 			       <App::State::Flag,
+			       std::unique_ptr<Network::IMultiplexer>,
+			       std::shared_ptr<Network::ITCPSocketClient<int>>,
 			       std::vector<Parser::ParsedInput>,
 			       std::string>>());
     _commandFactory.addCommand("Deconnect",
 			       std::make_shared<Command::DeconnectCommand
 			       <App::State::Flag,
+			       std::unique_ptr<Network::IMultiplexer>,
+			       std::shared_ptr<Network::ITCPSocketClient<int>>,
+			       std::vector<Parser::ParsedInput>,
+			       std::string>>());
+    _commandFactory.addCommand("Message",
+			       std::make_shared<Command::MessageCommand
+			       <App::State::Flag,
+			       std::unique_ptr<Network::IMultiplexer>,
+			       std::shared_ptr<Network::ITCPSocketClient<int>>,
 			       std::vector<Parser::ParsedInput>,
 			       std::string>>());
   }
@@ -71,15 +87,17 @@ namespace Model
     Observer::OutputResult	oRes;
     std::string			retMsg;
     App::State::Flag		state;
-    
+
     try
       {
 	_commandExecutor
 	  .setCommandPtr(_commandFactory
 			 .getCommand(parsedInputArray[0].what));
 	state = _commandExecutor
-	  .execute(const_cast<std::vector
-		   <Parser::ParsedInput>&>(parsedInputArray),
+	  .execute(_multiplexerPtr,
+		   _tcpSocketClientPtr,
+		   const_cast<std::vector<Parser::ParsedInput>&>
+		   (parsedInputArray),
 		   retMsg);
 	oRes.start = (state == App::State::RUNNING);
 	oRes.text = std::move(retMsg);
@@ -89,6 +107,8 @@ namespace Model
 	oRes.start = true;
 	oRes.text = std::move(e.what());
       }
+    _multiplexerPtr->process();
+    _multiplexerPtr->execute();
     notifyObservers(oRes);
   }
 }

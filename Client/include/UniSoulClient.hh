@@ -27,32 +27,38 @@ namespace Model
   class UniSoulClient : public IModel<Observer::OutputResult>
   {
   private :
-    using MultiplexerPtr = std::unique_ptr<Network::IMultiplexer>;
-    using TCPSocketClientPtr = std::shared_ptr<Network::ITCPSocketClient<int>>;
     /*using UDPSocketClientPtr =
       std::shared_ptr<Network::IUDPSocketClient<int>>;*/
     
   private :
-    MultiplexerPtr				_multiplexerPtr;
-    TCPSocketClientPtr				_tcpSocketClientPtr;
-    //UDPSocketClientPtr			_udpSocketClientPtr;
+    std::unique_ptr<Network::IMultiplexer>	_multiplexerPtr;
+    
+    std::shared_ptr
+    <Network::ITCPSocketClient<int>>		_tcpSocketClientPtr;
+
+    /*std::shared_ptr
+      <Network::IUDPSocketClientLinux<int>>	_udpSocketClientPtr;*/
 
     Persistence::File
     ::PersistentDataFileInteractor
     <std::vector<std::string>>			_dataFileInteractor;
     
-    Command::CommandFactory<std::string,
-			    App::State::Flag,
-			    std::vector
-			    <Parser
-			     ::ParsedInput>,
-			    std::string>	_commandFactory;
+    Command::CommandFactory
+    <std::string,
+     App::State::Flag,
+     std::unique_ptr<Network::IMultiplexer>,
+     std::shared_ptr
+     <Network::ITCPSocketClient<int>>,
+     std::vector<Parser::ParsedInput>,
+     std::string>				_commandFactory;
     
-    Command::CommandExecutor<App::State::Flag,
-			     std::vector
-			     <Parser
-			      ::ParsedInput>,
-			     std::string>	_commandExecutor;
+    Command::CommandExecutor
+    <App::State::Flag,
+     std::unique_ptr<Network::IMultiplexer>,
+     std::shared_ptr
+     <Network::ITCPSocketClient<int>>,
+     std::vector<Parser::ParsedInput>,
+     std::string>				_commandExecutor;
     
   public :
     UniSoulClient(const std::string&, unsigned short);

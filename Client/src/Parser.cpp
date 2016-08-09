@@ -10,40 +10,35 @@ const std::map<std::string, std::vector<std::string>>
     { "Help", { } },
     { "Quit", { } },
     { "Connect", { } },
-    { "Deconnect", { } }
+    { "Deconnect", { } },
+    { "Message", { "^[a-zA-Z0-9]+$", ".+"} }
   };
 
 std::vector<Parser::ParsedInput>
-Parser::getParsedInput(const std::string& input) const
+Parser::getParsedInput(std::sregex_token_iterator& it) const
 {
   std::vector<Parser::ParsedInput>	parsedInputArray;
-  char					*inputCopy;
-  char					*tmp;
-  int					inputLength;
 
-  inputLength = input.length();
-  inputCopy = new char[inputLength + 1];
-  std::strncpy(inputCopy, input.c_str(), inputLength);
-  inputCopy[inputLength] = '\0';
-  if ((tmp = std::strtok(inputCopy, DELIMETERS)))
+  parsedInputArray.push_back(getParsedInputCommand(*it));
+  try
     {
-      std::string	cmd(tmp);
+      std::sregex_token_iterator	end;
+     
+      std::string			cmd(*it++); 
+      unsigned int			nbRequiredParam =
+	REGEX_COMMANDS.at(cmd).size();
+      unsigned int			n = 1;
 
-      parsedInputArray.push_back(getParsedInputCommand(cmd));
-      try
+      while (it != end)
 	{
-	  int	nbRequiredParam = REGEX_COMMANDS.at(cmd).size();
-	  int	n = 0;
-	  
-	  while ((tmp = std::strtok(nullptr, DELIMETERS)))
-	    parsedInputArray.push_back(getParsedInputParam(cmd, tmp, n++));
-	  if (n < nbRequiredParam)
-	    parsedInputArray
-	      .push_back({ Parser::ParsedState::MISSING_ARG, "" });
+	  parsedInputArray
+	    .push_back(getParsedInputParam(cmd, *it++, n - 1));
+	  ++n;
 	}
-      catch (const std::out_of_range&) { }
+      if (n < nbRequiredParam)
+	parsedInputArray.push_back({ Parser::ParsedState::MISSING_ARG, "" });
     }
-  delete[] inputCopy;
+  catch (const std::out_of_range&) { }
   return parsedInputArray;
 }
 

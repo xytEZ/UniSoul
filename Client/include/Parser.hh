@@ -4,6 +4,7 @@
 # include <vector>
 # include <map>
 # include <string>
+# include <regex>
 
 class Parser
 {
@@ -22,9 +23,6 @@ public :
     ParsedState     state;
     std::string     what;
   };
-
-public :
-  static constexpr const char	*DELIMETERS = " \t";
   
 private :
   static const std::map<std::string,
@@ -33,7 +31,7 @@ private :
 public :
   Parser() = default;
   ~Parser() = default;
-  std::vector<ParsedInput> getParsedInput(const std::string&) const;
+  std::vector<ParsedInput> getParsedInput(std::sregex_token_iterator&) const;
   
 private :
   ParsedInput getParsedInputCommand(const std::string&) const;
