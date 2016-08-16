@@ -22,7 +22,7 @@ namespace Command
   {
     std::tuple<Args&...>	tuple = std::forward_as_tuple(args...);
 
-    std::get<3>(tuple)
+    std::get<5>(tuple)
       .append("Commands available :\n\n")
       .append("\t- Help\n")
       .append("\t- Quit\n")

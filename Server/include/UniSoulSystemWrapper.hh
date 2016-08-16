@@ -10,15 +10,13 @@
 # include <boost/asio.hpp>
 
 # include "IWrapper.hpp"
-# include "ConnectionManager.hpp"
+# include "SocketManager.hpp"
 # include "CommandFactory.hpp"
 # include "CommandExecutor.hpp"
-# include "ChatRoomManager.hh"
-# include "ClientCheckerManager.hh"
-# include "ClientInfo.hh"
-# include "TCPConnection.hpp"
+# include "ChatRoom.hh"
+# include "ClientChecker.hh"
 # include "CommandType.hh"
-# include "ConnectionStateFlag.hh"
+# include "ConnectionState.hh"
 
 namespace Network
 {
@@ -41,22 +39,21 @@ namespace Wrapper
        <boost::asio::ip::tcp::socket,
 	std::shared_ptr<Network::ITCPSocket<boost::asio::ip::tcp::socket>>>>;
     
-    using ConnectionManager = Network::Manager::ConnectionManager
-      <std::shared_ptr<Network::TCPConnection
-		       <Info::ClientInfo, boost::asio::ip::tcp::socket>>>;
+    using SocketManager = Network::Manager::SocketManager
+      <boost::asio::ip::tcp::socket>;
     
-    using ClientCheckerManager = Persistence::Manager::ClientCheckerManager;
+    using ClientChecker = Persistence::ClientChecker;
     using ChatRoomManager = Communication::Chat::ChatRoomManager;
     
     using CommandFactory = Command::CommandFactory
       <Command::Type,
-       Network::ConnectionStateFlag,
+       Network::ConnectionState,
        std::unique_ptr<IWrapper<VariantMap>>,
        std::vector<std::string>,
        std::string>;
     
     using CommandExecutor = Command::CommandExecutor
-      <Network::ConnectionStateFlag,
+      <Network::ConnectionState,
        std::unique_ptr<IWrapper<VariantMap>>,
        std::vector<std::string>,
        std::string>;

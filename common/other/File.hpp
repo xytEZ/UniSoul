@@ -39,11 +39,12 @@ namespace Persistence
       std::ifstream	ifs;
       bool		isFound = false;
 
-      ifs.exceptions(std::ifstream::failbit | std::ifstream::badbit);
       try
 	{
+	  std::string	line;
+
 	  ifs.open(_fullName, std::ifstream::in);
-	  for (std::string line; ifs >> line;)
+	  while (std::getline(ifs, line))
 	    {
 	      if (line == data)
 		{
@@ -51,9 +52,12 @@ namespace Persistence
 		  break;
 		}
 	    }
+	  ifs.close();
 	}
-      catch (const std::ifstream::failure&) { }
-      ifs.close();
+      catch (const std::ifstream::failure&)
+	{
+	  throw;
+	}
       return isFound;
     }
     
@@ -68,15 +72,19 @@ namespace Persistence
       std::ifstream		ifs;
       std::vector<std::string>	datas;
 
-      ifs.exceptions(std::ifstream::failbit | std::ifstream::badbit);
       try
 	{
+	  std::string	line;
+	  
 	  ifs.open(_fullName, std::ifstream::in);
-	  for (std::string line; ifs >> line;)
+	  while (std::getline(ifs, line))
 	    datas.push_back(line);
+	  ifs.close();
 	}
-      catch (const std::ifstream::failure&) { }
-      ifs.close();
+      catch (const std::ifstream::failure&)
+	{
+	  throw;
+	}
       return datas;
     }
   }

@@ -5,7 +5,7 @@ project(Client)
 include_directories(
   include/
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/protocol/
-  ${CMAKE_CURRENT_SOURCE_DIR}/../common/serializable/
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/serialization/
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/tool/
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/packet/
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/other/
@@ -32,7 +32,7 @@ file(
   GLOB_RECURSE
   client_srcs
   src/*.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../common/serializable/*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/serialization/*.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/tool/*.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/packet/*.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/protocol/*.cpp

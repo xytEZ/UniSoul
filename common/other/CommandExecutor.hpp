@@ -1,7 +1,7 @@
 #ifndef COMMAND_EXECUTOR_HPP_
 # define COMMAND_EXECUTOR_HPP_
 
-# include "CommandNotFoundException.hh"
+# include "UnknownCommandException.hh"
 # include "ICommand.hpp"
 
 namespace Command
@@ -33,8 +33,7 @@ namespace Command
   T CommandExecutor<T, Args...>::execute(Args&... args) const
   {
     if (_commandPtr == nullptr)
-      throw new Exception::Command
-	::CommandNotFoundException("Unknown command.");
+      throw new Exception::Command::UnknownCommand("Unknown command");
     return _commandPtr->execute(args...);
   }
 }

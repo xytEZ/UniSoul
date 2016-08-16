@@ -13,35 +13,33 @@
 
 namespace Network
 {
-  template <std::size_t N>
+  template <int TIMEOUT, std::size_t N>
   class Epoll : public IMultiplexer
-  { 
+  {
+  private :
+    using SocketPtr = std::shared_ptr<Network::ISocket<int>>;
+    
   private :
     int						_epollFd;
     int						_resNbr;
     int						_nbrMax;
-    int						_timeOut;
     std::array<struct epoll_event, N>		_eventsRes;
     struct epoll_event				_events[2];
     IMultiplexer::ioCallback			_callbacks[2];
-    std::list<IMultiplexer::SocketCallback>	_polled;
+    std::list<IMultiplexer::SocketCallbackPtr>	_polled;
     
   public :
-    Epoll(const IMultiplexer::ioCallback&,
-	  const IMultiplexer::ioCallback&,
-	  int);
-    
+    Epoll(const IMultiplexer::ioCallback&, const IMultiplexer::ioCallback&);
     virtual ~Epoll();
-    virtual void addSocket(const IMultiplexer::SocketPtr&, IMultiplexer::Flag);
+    virtual void addSocket(const SocketPtr&, IMultiplexer::Flag);
     
-    virtual void addSocket(const IMultiplexer::SocketPtr&,
+    virtual void addSocket(const SocketPtr&,
 			   const IMultiplexer::ioCallback&,
 			   IMultiplexer::Flag);
     
-    virtual void addSockets(const std::list<IMultiplexer::SocketPtr>&,
-			    IMultiplexer::Flag);
+    virtual void addSockets(const std::list<SocketPtr>&, IMultiplexer::Flag);
     
-    virtual void addSockets(const std::list<IMultiplexer::SocketPtr>&,
+    virtual void addSockets(const std::list<SocketPtr>&,
 			    const IMultiplexer::ioCallback&,
 			    IMultiplexer::Flag);
     
@@ -50,14 +48,12 @@ namespace Network
     virtual void clear();
 
   private :
-    void closeSocket(const IMultiplexer::SocketCallback&);
+    void closeSocket(const IMultiplexer::SocketCallback *);
   };
 
-  template <std::size_t N>
-  Epoll<N>::Epoll(const IMultiplexer::ioCallback& read,
-		  const IMultiplexer::ioCallback& write,
-		  int timeOut) :
-    _timeOut(timeOut)
+  template <int TIMEOUT, std::size_t N>
+  Epoll<TIMEOUT, N>::Epoll(const IMultiplexer::ioCallback& read,
+			   const IMultiplexer::ioCallback& write)
   {
     if ((_epollFd = ::epoll_create(N)) == -1)
       throw std::system_error(errno, std::system_category());
@@ -67,141 +63,143 @@ namespace Network
     _callbacks[IMultiplexer::WRITE] = std::move(write);
   }
 
-  template <std::size_t N>
-  Epoll<N>::~Epoll()
+  template <int TIMEOUT, std::size_t N>
+  Epoll<TIMEOUT, N>::~Epoll()
   {
-    ::close(_epollFd);
+    if (::close(_epollFd) == -1)
+      throw std::system_error(errno, std::system_category());
   }
   
-  template <std::size_t N>
-  void Epoll<N>::addSocket(const IMultiplexer::SocketPtr& socketPtr,
-			   IMultiplexer::Flag flag)
+  template <int TIMEOUT, std::size_t N>
+  void Epoll<TIMEOUT, N>::addSocket(const SocketPtr& socketPtr,
+				    IMultiplexer::Flag flag)
   {
-    IMultiplexer::SocketCallback        socketCallback;
+    IMultiplexer::SocketCallbackPtr	socketCallbackPtr =
+      std::make_shared<IMultiplexer::SocketCallback>();
     
-    socketCallback.socketPtr = socketPtr;
-    socketCallback.callback = _callbacks[flag];
-    _events[flag].data.ptr = &socketCallback.socketPtr;
+    socketCallbackPtr->socketPtr = socketPtr;
+    socketCallbackPtr->callback = _callbacks[flag];
+    _events[flag].data.ptr = socketCallbackPtr.get();
     if (::epoll_ctl(_epollFd,
 		    EPOLL_CTL_ADD,
-		    socketCallback.socketPtr->getDescriptor(),
+		    socketCallbackPtr->socketPtr->getDescriptor(),
 		    &_events[flag]) == -1)
       throw std::system_error(errno, std::system_category());
-    _polled.push_back(std::move(socketCallback));
-  }
-
-  template <std::size_t N>
-  void Epoll<N>::addSocket(const IMultiplexer::SocketPtr& socketPtr,
-			   const IMultiplexer::ioCallback& callback,
-			   IMultiplexer::Flag flag)
-  {
-    IMultiplexer::SocketCallback        socketCallback;
-
-    socketCallback.socketPtr = socketPtr;
-    socketCallback.callback = callback;
-    _events[flag].data.ptr = &socketCallback.socketPtr;
-    if (::epoll_ctl(_epollFd,
-		    EPOLL_CTL_ADD,
-		    socketCallback.socketPtr->getDescriptor(),
-		    &_events[flag]) == -1)
-      throw std::system_error(errno, std::system_category());
-    _polled.push_back(std::move(socketCallback));
+    _polled.push_back(socketCallbackPtr);
   }
   
-  template <std::size_t N>
-  void Epoll<N>::addSockets(const std::list
-			    <IMultiplexer::SocketPtr>& socketsPtr,
+  template <int TIMEOUT, std::size_t N>
+  void Epoll<TIMEOUT, N>::addSocket(const SocketPtr& socketPtr,
+				    const IMultiplexer::ioCallback& callback,
+				    IMultiplexer::Flag flag)
+  {
+    IMultiplexer::SocketCallbackPtr	socketCallbackPtr =
+      std::make_shared<IMultiplexer::SocketCallback>();
+
+    socketCallbackPtr->socketPtr = socketPtr;
+    socketCallbackPtr->callback = callback;
+    _events[flag].data.ptr = socketCallbackPtr.get();
+    if (::epoll_ctl(_epollFd,
+		    EPOLL_CTL_ADD,
+		    socketCallbackPtr->socketPtr->getDescriptor(),
+		    &_events[flag]) == -1)
+      throw std::system_error(errno, std::system_category());
+    _polled.push_back(socketCallbackPtr);
+  }
+  
+  template <int TIMEOUT, std::size_t N>
+  void Epoll<TIMEOUT, N>::addSockets(const std::list<SocketPtr>& socketsPtr,
 			    IMultiplexer::Flag flag)
   {
     std::for_each(socketsPtr.cbegin(),
 		  socketsPtr.cend(),
-		  [this, flag](const IMultiplexer::SocketPtr& socketPtr)
-		  -> void
+		  [this, flag](const SocketPtr& socketPtr) -> void
 		  {
 		    addSocket(socketPtr, flag);
 		  });
   }
   
-  template <std::size_t N>
-  void Epoll<N>::addSockets(const std::list
-			    <IMultiplexer::SocketPtr>& socketsPtr,
-			    const IMultiplexer::ioCallback& callback,
-			    IMultiplexer::Flag flag)
+  template <int TIMEOUT, std::size_t N>
+  void Epoll<TIMEOUT, N>::addSockets(const std::list<SocketPtr>& socketsPtr,
+				     const IMultiplexer::ioCallback& callback,
+				     IMultiplexer::Flag flag)
   {
     std::for_each(socketsPtr.cbegin(),
 		  socketsPtr.cend(),
-		  [this, &callback, flag]
-		  (const IMultiplexer::SocketPtr& socketPtr) -> void
+		  [this, &callback, flag](const SocketPtr& socketPtr) -> void
 		  {
 		    addSocket(socketPtr, callback, flag);
 		  });
   }
   
-  template <std::size_t N>
-  int Epoll<N>::process()
+  template <int TIMEOUT, std::size_t N>
+  int Epoll<TIMEOUT, N>::process()
   {
     if ((_resNbr = ::epoll_wait(_epollFd,
 				_eventsRes.data(),
 				N,
-				_timeOut)) == -1)
+				TIMEOUT)) == -1)
       throw std::system_error(errno, std::system_category());
     return _resNbr;
   }
   
-  template <std::size_t N>
-  void Epoll<N>::execute()
+  template <int TIMEOUT, std::size_t N>
+  void Epoll<TIMEOUT, N>::execute()
   {
-    IMultiplexer::SocketCallback        socketCallback;
-    
+    IMultiplexer::SocketCallback	*socketCallback;
+
     for (int n = 0; n < _resNbr; ++n)
       {
-	socketCallback =
-	  *reinterpret_cast<IMultiplexer::SocketCallback *>(_eventsRes[n]
-							    .data
-							    .ptr);
+	socketCallback = 
+	  reinterpret_cast<IMultiplexer::SocketCallback *>
+	  (_eventsRes[n].data.ptr);
 	if (!(_eventsRes[n].events & EPOLLERR)
 	    && !(_eventsRes[n].events & EPOLLHUP))
-	  socketCallback.callback(socketCallback.socketPtr);
+	  socketCallback->callback(socketCallback->socketPtr);
 	else if (_eventsRes[n].events & EPOLLHUP)
 	  closeSocket(socketCallback);
       }
   }
-
-  template <std::size_t N>
-  void Epoll<N>::clear()
+  
+  template <int TIMEOUT, std::size_t N>
+  void Epoll<TIMEOUT, N>::clear()
   {
     std::for_each(_polled.cbegin(),
 		  _polled.cend(),
-		  [this](const IMultiplexer::SocketCallback& socketCallback)
+		  [this]
+		  (const IMultiplexer::SocketCallbackPtr& socketCallbackPtr)
 		  -> void
 		  {
 		    if (::epoll_ctl(_epollFd,
 				    EPOLL_CTL_DEL,
-				    socketCallback.socketPtr->getDescriptor(),
+				    socketCallbackPtr->socketPtr
+				    ->getDescriptor(),
 				    0) == -1)
 		      throw std::system_error(errno, std::system_category());
 		  });
     _polled.clear();
   }
 
-  template <std::size_t N>
-  void Epoll<N>::closeSocket(const IMultiplexer::SocketCallback& socketCallback)
+  template <int TIMEOUT, std::size_t N>
+  void
+  Epoll<TIMEOUT, N>
+  ::closeSocket(const IMultiplexer::SocketCallback *socketCallback)
   {
     if (::epoll_ctl(_epollFd,
 		    EPOLL_CTL_DEL,
-		    socketCallback.socketPtr->getDescriptor(),
+		    socketCallback->socketPtr->getDescriptor(),
 		    0) == -1)
       throw std::system_error(errno, std::system_category());
     std::remove_if(_polled.begin(),
 		   _polled.end(),
 		   [&socketCallback]
-		   (const IMultiplexer::SocketCallback& socketCallback2)
+		   (const IMultiplexer::SocketCallbackPtr& socketCallbackPtr)
 		   -> bool
 		   {
-		     return socketCallback.socketPtr
-		       == socketCallback2.socketPtr;
+		     return socketCallbackPtr->socketPtr
+		       == socketCallback->socketPtr;
 		   });
-    socketCallback.socketPtr->close();
+    socketCallback->socketPtr->close();
   }
 }
 

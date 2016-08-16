@@ -1,33 +1,20 @@
 #include <iostream>
 #include <memory>
 
-#include "ObserverOutputResult.hh"
-#include "UniSoulClient.hh"
+#include "UniSoulClient.hpp"
 #include "UniSoulConsoleController.hh"
 #include "UniSoulConsoleView.hh"
 
-namespace
-{
-  template <typename T>
-  using ModelPtr = std::shared_ptr<Model::IModel<T>>;
-
-  template <typename T>
-  using ControllerPtr = std::shared_ptr<Controller::AController<T>>;
-
-  template <typename T>
-  using ViewPtr = std::shared_ptr<View::AView<T>>;
-  
-  constexpr const char			HOSTNAME[] = "127.0.0.1";
-  constexpr const unsigned short	PORT = 4242;
-}
-
 int main()
 {
-  ModelPtr<Observer::OutputResult>	modelPtr =
-    std::make_shared<Model::UniSoulClient>(HOSTNAME, PORT);
-  ControllerPtr<Observer::OutputResult>	controllerPtr =
+  constexpr const char			HOSTNAME[] = "127.0.0.1";
+  constexpr const unsigned short	PORT = 4242;
+  
+  std::shared_ptr<Model::IModel<View::ViewState>>		modelPtr =
+    std::make_shared<Model::UniSoulClient<View::ViewState>>(HOSTNAME, PORT);
+  std::shared_ptr<Controller::AController<View::ViewState>>	controllerPtr =
     std::make_shared<Controller::UniSoulConsoleController>(modelPtr);
-  ViewPtr<Observer::OutputResult>	viewPtr =
+  std::shared_ptr<View::AView<View::ViewState>>			viewPtr =
     std::make_shared<View::UniSoulConsoleView>(controllerPtr);
   
   modelPtr->addObserver(viewPtr);

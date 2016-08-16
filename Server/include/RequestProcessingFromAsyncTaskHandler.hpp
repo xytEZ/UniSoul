@@ -8,30 +8,26 @@
 # include <vector>
 # include <string>
 # include <algorithm>
+# include <utility>
 # include <boost/archive/archive_exception.hpp>
 
-# include "SerializationHandler.hpp"
+# include "SerializationTool.hpp"
 # include "RequestExecuteFromAsyncTaskHandler.hpp"
 # include "PacketSenderFromAsyncTaskHandler.hpp"
 # include "DisconnectFromAsyncTaskHandler.hpp"
-# include "ConnectionStateFlag.hh"
+# include "ConnectionState.hh"
 
 namespace Network
 {
   template <typename T>
   class ITCPSocket;
-}
-
-namespace Handler
-{
-  template <typename T, typename U, typename V, std::size_t N, std::size_t N2>
+  
+  template <typename T, typename U, std::size_t N, std::size_t N2>
   class RequestProcessingFromAsyncTaskHandler
   {
   private :
     std::shared_ptr<Network::ITCPSocket
-    <boost::asio::ip::tcp::socket>>	_socketPtr;
-    
-    SerializationHandler<T>		_serializationHandler;
+    <boost::asio::ip::tcp::socket>>		_socketPtr;
 
   public :
     RequestProcessingFromAsyncTaskHandler(const std::shared_ptr
@@ -42,122 +38,103 @@ namespace Handler
     void requestProcessing() const;
 
   private :
-    void validRequestProcessing(const std::shared_ptr
-				<Serializable::ASerializable<T>>&,
-				bool) const;
-    
-    template <typename W>
+    void validRequestProcessing(const T&, bool) const;
     void firstTimeValidRequestProcessing(const std::string&) const;
-    
     void noValidRequestProcessing() const;
   };
 
-  template <typename T, typename U, typename V, std::size_t N, std::size_t N2>
-  RequestProcessingFromAsyncTaskHandler<T, U, V, N, N2>::
+  template <typename T, typename U, std::size_t N, std::size_t N2>
+  RequestProcessingFromAsyncTaskHandler<T, U, N, N2>::
   RequestProcessingFromAsyncTaskHandler(const std::shared_ptr
 					<Network::ITCPSocket
 					<boost::asio::ip::tcp::socket>>&
 					socketPtr) :
-    _socketPtr(socketPtr),
-    _serializationHandler()
+    _socketPtr(socketPtr)
   {
   }
 
-  template <typename T, typename U, typename V, std::size_t N, std::size_t N2>
-  void RequestProcessingFromAsyncTaskHandler<T, U, V, N, N2>
+  template <typename T, typename U, std::size_t N, std::size_t N2>
+  void RequestProcessingFromAsyncTaskHandler<T, U, N, N2>
   ::requestProcessing() const
   {
+    T	serializable;
     
     try
       {
-	std::shared_ptr<Serializable::ASerializable<T>>	serializablePtr =
-	  _serializationHandler.deserialize
+	serializable = 
+	  Serialization::Tool::deserialize<T>
 	  (std::static_pointer_cast<Network::TCPBoostSocketServer<N, N2>>
 	   (_socketPtr)->getBuffer());
-	bool						registeredConnection =
-	  boost::any_cast
-	  <typename Wrapper::UniSoulSystemWrapper::ConnectionManager&>
+	
+	bool	registeredConnection =
+	  !boost::any_cast
+	  <typename Wrapper::UniSoulSystemWrapper::SocketManager&>
 	  (std::static_pointer_cast<Network::TCPBoostSocketServer<N, N2>>
 	   (_socketPtr)->getSystemWrapperPtrRef()
-	   ->getContent()["ConnectionManager"])
-	  .findConnectionIf([this](const std::shared_ptr
-				   <Network::TCPConnection
-				   <Info::ClientInfo,
-				   boost::asio::ip::tcp::socket>>&
-				   connectionPtr) -> bool
-			    {
-			      return connectionPtr
-				->getSocketPtr() == _socketPtr;
-			    });
+	   ->getContent()["SocketManager"])
+	  .findSocketPtrIf([this]
+			   (const std::pair<std::string, std::shared_ptr
+			    <Network::ISocket<boost::asio::ip::tcp::socket>>>&
+			    pairSocketPtr) -> bool
+			   {
+			     return pairSocketPtr.second == _socketPtr;
+			   });
 	
-	validRequestProcessing(serializablePtr, registeredConnection);
+	validRequestProcessing(serializable, registeredConnection);
       }
-    catch (const Exception::SerializationException&)
+    catch (const Exception::Serialization::SerializationFail&)
       {
 	noValidRequestProcessing();
       }
+    delete[] serializable.data;
   }
 
-  template <typename T, typename U, typename V, std::size_t N, std::size_t N2>
-  void RequestProcessingFromAsyncTaskHandler<T, U, V, N, N2>
-  ::validRequestProcessing(const std::shared_ptr
-			   <Serializable::ASerializable<T>>&
-			   serializablePtr,
-			   bool registeredConnection) const
+  template <typename T, typename U, std::size_t N, std::size_t N2>
+  void RequestProcessingFromAsyncTaskHandler<T, U, N, N2>
+  ::validRequestProcessing(const T& serializable, bool registeredConnection)
+    const
   {
     std::vector<std::string>		datas;
     std::stringstream			ss;
-    Network::ConnectionStateFlag	state;
+    Network::ConnectionState		state;
 
     state = RequestExecuteFromAsyncTaskHandler<T, N, N2>
-      (_socketPtr, serializablePtr).requestExecute(datas);
+      (_socketPtr, serializable).requestExecute(datas);
     std::copy(datas.cbegin(),
 	      datas.cend(),
-	      std::ostream_iterator<std::string>(ss, "|"));
-    PacketSenderFromAsyncTaskHandler<T, U, V, N, N2>
-      (_socketPtr, _serializationHandler).packetSuccess(ss.str());
-    if (state)
+	      std::ostream_iterator<std::string>(ss));
+    PacketSenderFromAsyncTaskHandler<T, U, N, N2>
+      (_socketPtr).successPacket(ss.str());
+    if (state == Network::ConnectionState::DISCONNECTION
+	|| state == Network::ConnectionState::REFUSED_CONNECTION)
       DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr)
 	.disconnect(registeredConnection);
     else if (registeredConnection)
-      firstTimeValidRequestProcessing<Info::ClientInfo>
-	(serializablePtr->getSerializableComponent().data);
+      firstTimeValidRequestProcessing
+	(serializable.data);
   }
 
-  template <typename T, typename U, typename V, std::size_t N, std::size_t N2>
-  template <typename W>
-  void RequestProcessingFromAsyncTaskHandler<T, U, V, N, N2>
+  template <typename T, typename U, std::size_t N, std::size_t N2>
+  void RequestProcessingFromAsyncTaskHandler<T, U, N, N2>
   ::firstTimeValidRequestProcessing(const std::string& dataFromRequest) const
   {
     const constexpr char			DELIMITER = ';';
-    
-    std::shared_ptr<Network::TCPConnection
-       <W, boost::asio::ip::tcp::socket>>	connectionPtr =
-      std::make_shared<Network::TCPConnection
-		       <W, boost::asio::ip::tcp::socket>>(_socketPtr);
-    
     std::stringstream				ss(dataFromRequest);
     std::string					str;
-    
+
     std::getline(ss, str, DELIMITER);
-    connectionPtr->getClientInfo().firstName = str;
-    std::getline(ss, str, DELIMITER);
-    connectionPtr->getClientInfo().lastName = str;
-    std::getline(ss, str, DELIMITER);
-    connectionPtr->getClientInfo().email = str;
     boost::any_cast
-      <typename Wrapper::UniSoulSystemWrapper::ConnectionManager&>
+      <typename Wrapper::UniSoulSystemWrapper::SocketManager&>
       (std::static_pointer_cast<Network::TCPBoostSocketServer<N, N2>>
-       (_socketPtr)->getSystemWrapperPtrRef()->getContent()["ConnectionManager"])
-      .addConnection(connectionPtr);
+       (_socketPtr)->getSystemWrapperPtrRef()
+       ->getContent()["SocketManager"]).addSocketPtr(str, _socketPtr);
   }
   
-  template <typename T, typename U, typename V, std::size_t N, std::size_t N2>
-  void RequestProcessingFromAsyncTaskHandler<T, U, V, N, N2>
+  template <typename T, typename U, std::size_t N, std::size_t N2>
+  void RequestProcessingFromAsyncTaskHandler<T, U, N, N2>
   ::noValidRequestProcessing() const
   {
-    PacketSenderFromAsyncTaskHandler<T, U, V, N, N2>
-      (_socketPtr, _serializationHandler).packetError();
+    PacketSenderFromAsyncTaskHandler<T, U, N, N2>(_socketPtr).errorPacket();
   }
 }
 

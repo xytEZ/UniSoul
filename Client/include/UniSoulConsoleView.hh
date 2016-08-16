@@ -1,18 +1,25 @@
 #ifndef UNI_SOUL_CONSOLE_VIEW_HH_
 # define UNI_SOUL_CONSOLE_VIEW_HH_
 
-# include "ObserverOutputResult.hh"
 # include "AView.hpp"
 
 namespace View
 {
-  class UniSoulConsoleView : public AView<Observer::OutputResult>
-  { 
+  struct ViewState
+  {
+    bool	start;
+    std::string	text;
+
+    void set(bool, const std::string&);
+  };
+  
+  class UniSoulConsoleView : public AView<ViewState>
+  {
   private :
     static const constexpr char	*PROMPT_MESSAGE = "?> ";
 
   private :
-    Observer::OutputResult	_oRes;
+    ViewState	_viewState;
     
   public :
     UniSoulConsoleView(const ControllerPtr&);
@@ -21,7 +28,7 @@ namespace View
     virtual void launch();
     virtual void display();
     virtual void close();
-    virtual void update(const Observer::OutputResult&);
+    virtual void update(const ViewState&);
   };
 }
 

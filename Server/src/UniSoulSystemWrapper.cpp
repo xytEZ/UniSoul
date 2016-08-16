@@ -1,7 +1,7 @@
 #include "PersistentDataFileInteractor.hpp"
 #include "File.hpp"
 #include "ConnectCommand.hpp"
-#include "DeconnectCommand.hpp"
+#include "DisconnectCommand.hpp"
 #include "UniSoulSystemWrapper.hh"
 
 namespace Wrapper
@@ -11,13 +11,13 @@ namespace Wrapper
     _components
   {
     { "ServerSocket", std::move(serverSocketPtr) },
-      { "ConnectionManager", ConnectionManager() },
-	{ "ClientCheckerManager", ClientCheckerManager
+      { "SocketManager", SocketManager() },
+	{ "ClientChecker", ClientChecker
 	    (std::make_unique
 	     <Persistence::File::PersistentDataFileInteractor<bool>>
 	     (std::make_unique
 	      <Persistence::File::File<bool>>
-	      ("../../other/user/users.txt"))) },
+	      ("../../common/user/users.txt"))) },
 	  { "ChatRoomManager", ChatRoomManager() },
 	    { "CommandExecutor", CommandExecutor() }
   }
@@ -26,13 +26,13 @@ namespace Wrapper
     
     cf.addCommand(Command::Type::CONNECT,
 		  std::make_shared<Command::ConnectCommand
-		  <Network::ConnectionStateFlag,
+		  <Network::ConnectionState,
 		  std::unique_ptr<IWrapper<VariantMap>>,
 		  std::vector<std::string>,
 		  std::string>>());
-    cf.addCommand(Command::Type::DECONNECT,
-		  std::make_shared<Command::DeconnectCommand
-		  <Network::ConnectionStateFlag,
+    cf.addCommand(Command::Type::DISCONNECT,
+		  std::make_shared<Command::DisconnectCommand
+		  <Network::ConnectionState,
 		  std::unique_ptr<IWrapper<VariantMap>>,
 		  std::vector<std::string>,
 		  std::string>>());

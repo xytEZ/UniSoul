@@ -5,7 +5,7 @@
 # include <utility>
 # include <algorithm>
 # include <iostream>
-# include "CommandNotFoundException.hh"
+# include "UnknownCommandException.hh"
 # include "ICommand.hpp"
 
 namespace Command
@@ -38,8 +38,7 @@ namespace Command
   ::getCommand(const T& key)
   {
     if (_commands.find(key) == _commands.cend())
-      throw new Exception::Command
-	::CommandNotFoundException("Unknown command.");
+      throw new Exception::Command::UnknownCommand("Unknown command");
     return _commands[std::move(key)];
   }
   

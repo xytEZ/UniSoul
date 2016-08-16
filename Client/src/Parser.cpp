@@ -10,8 +10,9 @@ const std::map<std::string, std::vector<std::string>>
     { "Help", { } },
     { "Quit", { } },
     { "Connect", { } },
-    { "Deconnect", { } },
-    { "Message", { "^[a-zA-Z0-9]+$", ".+"} }
+    { "Disconnect", { } },
+    { "Message", { "^[a-zA-Z0-9]+$", ".+"} },
+    { "Status", { } }
   };
 
 std::vector<Parser::ParsedInput>
@@ -27,14 +28,10 @@ Parser::getParsedInput(std::sregex_token_iterator& it) const
       std::string			cmd(*it++); 
       unsigned int			nbRequiredParam =
 	REGEX_COMMANDS.at(cmd).size();
-      unsigned int			n = 1;
+      unsigned int			n = 0;
 
       while (it != end)
-	{
-	  parsedInputArray
-	    .push_back(getParsedInputParam(cmd, *it++, n - 1));
-	  ++n;
-	}
+	parsedInputArray.push_back(getParsedInputParam(cmd, *it++, n++));
       if (n < nbRequiredParam)
 	parsedInputArray.push_back({ Parser::ParsedState::MISSING_ARG, "" });
     }

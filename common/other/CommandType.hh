@@ -7,7 +7,8 @@ namespace Command
     {
       NONE = 0,
       CONNECT = 1,
-      DECONNECT = 2
+      DISCONNECT = 2,
+      MESSAGE = 3
     };
 }
 

@@ -5,9 +5,15 @@
 
 namespace View
 {
+  void ViewState::set(bool start, const std::string& text)
+  {
+    this->start = start;
+    this->text = std::move(text);
+  }
+  
   UniSoulConsoleView::UniSoulConsoleView(const ControllerPtr& controllerPtr) :
     AView(controllerPtr),
-    _oRes { true, "" }
+    _viewState { true, "" }
   {
   }
   
@@ -20,7 +26,7 @@ namespace View
   {
     std::string	input;
     
-    while (_oRes.start)
+    while (_viewState.start)
       {
 	std::cout << PROMPT_MESSAGE;
 	std::getline(std::cin, input);
@@ -30,7 +36,7 @@ namespace View
 
   void UniSoulConsoleView::display()
   {
-    std::cout << _oRes.text << std::endl;
+    std::cout << _viewState.text << std::endl;
   }
 
   void UniSoulConsoleView::close()
@@ -38,10 +44,10 @@ namespace View
     std::cout << "Thank you for using UniSoul client. Good bye." << std::endl;
   }
 
-  void UniSoulConsoleView::update(const Observer::OutputResult& arg)
+  void UniSoulConsoleView::update(const ViewState& viewState)
   {
-    _oRes = arg;
-    if (_oRes.start)
+    _viewState = std::move(viewState);
+    if (_viewState.start)
       display();
   }
 }

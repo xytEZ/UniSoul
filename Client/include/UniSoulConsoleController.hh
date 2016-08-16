@@ -1,13 +1,13 @@
 #ifndef UNI_SOUL_CONSOLE_CONTROLLER_HH_
 # define UNI_SOUL_CONSOLE_CONTROLLER_HH_
 
-# include "ObserverOutputResult.hh"
 # include "Parser.hh"
+# include "UniSoulConsoleView.hh"
 # include "AController.hpp"
 
 namespace Controller
 {
-  class UniSoulConsoleController : public AController<Observer::OutputResult>
+  class UniSoulConsoleController : public AController<View::ViewState>
   {
   private :
     Parser	_parser;

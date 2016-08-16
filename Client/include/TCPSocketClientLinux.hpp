@@ -19,7 +19,7 @@
 
 namespace Network
 {
-  template <std::size_t N>
+  template <std::size_t N = 256>
   class TCPSocketClientLinux : public ITCPSocketClient<int>
   {
   private :
@@ -62,7 +62,9 @@ namespace Network
   template <std::size_t N>
   bool TCPSocketClientLinux<N>::close()
   {
-    return !::close(_fd);
+    if (::shutdown(_fd, SHUT_RDWR) == -1)
+      throw std::system_error(errno, std::system_category());
+    return true;
   }
   
   template <std::size_t N>
@@ -82,13 +84,14 @@ namespace Network
   template <std::size_t N>
   std::string TCPSocketClientLinux<N>::recv()
   {
-    _buffer.fill(0);
-    if (::recv(_fd,
-	       _buffer.data(),
-	       N,
-	       MSG_DONTWAIT | MSG_PEEK | MSG_TRUNC) == -1)
+    ssize_t	bytesTransferred;
+    
+    if ((bytesTransferred = ::recv(_fd,
+				   _buffer.data(),
+				   N,
+				   MSG_DONTWAIT)) == -1)
       throw std::system_error(errno, std::system_category());
-    return std::string(_buffer.cbegin(), _buffer.cend());
+    return std::string(_buffer.data(), bytesTransferred);
   }
 
   template <std::size_t N>

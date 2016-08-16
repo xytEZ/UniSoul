@@ -2,6 +2,7 @@
 # define ASYNC_WRITE_HANDLER_HPP_
 
 # include <memory>
+# include <utility>
 # include <boost/system/error_code.hpp>
 
 # include "DisconnectFromAsyncTaskHandler.hpp"
@@ -10,10 +11,7 @@ namespace Network
 {
   template <typename T>
   class ITCPSocket;
-}
-
-namespace Handler
-{
+  
   template <std::size_t N, std::size_t N2>
   class AsyncWriteHandler
   {
@@ -47,17 +45,17 @@ namespace Handler
   {
     bool	registeredConnection =
       boost::any_cast
-      <typename Wrapper::UniSoulSystemWrapper::ConnectionManager&>
+      <typename Wrapper::UniSoulSystemWrapper::SocketManager&>
       (std::static_pointer_cast<Network::TCPBoostSocketServer<N, N2>>
        (_socketPtr)->getSystemWrapperPtrRef()
-       ->getContent()["ConnectionManager"])
-      .findConnectionIf([this](const std::shared_ptr
-			       <Network::TCPConnection
-			       <Info::ClientInfo, boost::asio::ip::tcp::socket>>&
-			       connectionPtr) -> bool
-			{
-			  return connectionPtr->getSocketPtr() == _socketPtr;
-			});
+       ->getContent()["SocketManager"])
+      .findSocketPtrIf([this]
+		       (const std::pair<std::string, std::shared_ptr
+			<Network::ISocket<boost::asio::ip::tcp::socket>>>&
+			pairSocketPtr) -> bool
+		       {
+			 return pairSocketPtr.second == _socketPtr;
+		       });
     if (_error || !registeredConnection)
       DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr)
 	.disconnect(registeredConnection);

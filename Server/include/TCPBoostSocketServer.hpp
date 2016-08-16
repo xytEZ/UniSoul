@@ -20,7 +20,7 @@
 
 namespace Network
 { 
-  template <std::size_t N, std::size_t N2>
+  template <std::size_t N = 256, std::size_t N2 = 60>
   class TCPBoostSocketServer :
     public ITCPSocketServer<boost::asio::ip::tcp::socket,
 			    std::shared_ptr
@@ -38,10 +38,11 @@ namespace Network
     boost::asio::ip::tcp::endpoint	_endpoint;
     boost::asio::deadline_timer		_timer;
     boost::array<char, N>		_buffer;
+    std::size_t				_bytesTransferred;
     SystemWrapperPtrRef			_systemWrapperPtrRef;
       
   public :
-    template <std::size_t M, std::size_t M2>
+    template <std::size_t M = 256, std::size_t M2 = 60>
       static std::shared_ptr<TCPBoostSocketServer<M, M2>>
       create(boost::asio::io_service&,
 	     SystemWrapperPtrRef,
@@ -49,7 +50,7 @@ namespace Network
 	     unsigned short);
     
   private :
-    template <std::size_t M, std::size_t M2>
+    template <std::size_t M = 256, std::size_t M2 = 60>
       static std::shared_ptr<TCPBoostSocketServer<M, M2>>
       create(boost::asio::io_service&, SystemWrapperPtrRef);
     
@@ -86,19 +87,22 @@ namespace Network
     template <typename HandlerPolicy>
       void sendHandle(const std::shared_ptr
 		      <ITCPSocket<boost::asio::ip::tcp::socket>>&,
-		      const boost::system::error_code&);
+		      const boost::system::error_code&,
+		      std::size_t);
     
     template <typename HandlerPolicy>
       void recvHandle(const std::shared_ptr
 		      <ITCPSocket<boost::asio::ip::tcp::socket>>&,
-		      const boost::system::error_code&);
+		      const boost::system::error_code&,
+		      std::size_t);
   };
 
   template <std::size_t N, std::size_t N2>
   template <std::size_t M, std::size_t M2>
   std::shared_ptr<TCPBoostSocketServer<M, M2>>
     TCPBoostSocketServer<N, N2>::create(boost::asio::io_service& ios,
-					SystemWrapperPtrRef systemWrapperPtrRef,
+					SystemWrapperPtrRef
+					systemWrapperPtrRef,
 					const std::string& hostname,
 					unsigned short port)
   {
@@ -172,26 +176,31 @@ namespace Network
   template <std::size_t N, std::size_t N2>
   bool TCPBoostSocketServer<N, N2>::send(const std::string& msg)
   {
-    boost::asio::async_write(_socket,
-			     boost::asio::buffer(msg),
-			     boost::bind(&TCPBoostSocketServer::sendHandle
-					 <Handler::AsyncWriteHandler<N, N2>>,
-					 this->shared_from_this(),
-					 this->shared_from_this(),
-					 boost::asio::placeholders::error));
+    boost::asio::async_write
+      (_socket,
+       boost::asio::buffer(msg, msg.size()),
+       boost::bind(&TCPBoostSocketServer::sendHandle
+		   <Network::AsyncWriteHandler<N, N2>>,
+		   this->shared_from_this(),
+		   this->shared_from_this(),
+		   boost::asio::placeholders::error,
+		   boost::asio::placeholders::bytes_transferred));
     return true;
   }
 
   template <std::size_t N, std::size_t N2>
   std::string TCPBoostSocketServer<N, N2>::recv()
   {
-    boost::asio::async_read(_socket,
-			    boost::asio::buffer(_buffer),
-			    boost::bind(&TCPBoostSocketServer::recvHandle
-					<Handler::AsyncReadHandler<N, N2>>,
-					this->shared_from_this(),
-					this->shared_from_this(),
-					boost::asio::placeholders::error));
+    _buffer.assign(0);
+    boost::asio::async_read
+      (_socket,
+       boost::asio::buffer(_buffer),
+       boost::bind(&TCPBoostSocketServer::recvHandle
+		   <Network::AsyncReadHandler<N, N2>>,
+		   this->shared_from_this(),
+		   this->shared_from_this(),
+		   boost::asio::placeholders::error,
+		   boost::asio::placeholders::bytes_transferred));
     _timer.expires_from_now(boost::posix_time::seconds(N2));
     _timer.async_wait(boost::bind(&TCPBoostSocketServer::close,
 				  this->shared_from_this()));
@@ -235,7 +244,7 @@ namespace Network
     _acceptor.async_accept(const_cast<boost::asio::ip::tcp::socket&>
 			   (socketPtr->getDescriptor()),
 			   boost::bind(&TCPBoostSocketServer::acceptHandle
-				       <Handler::AsyncAcceptHandler<N, N2>>,
+				       <Network::AsyncAcceptHandler<N, N2>>,
 				       this,
 				       this->shared_from_this(),
 				       socketPtr,
@@ -246,9 +255,9 @@ namespace Network
   template <std::size_t N, std::size_t N2>
   std::string TCPBoostSocketServer<N, N2>::getBuffer() const
   {
-    return std::string(_buffer.cbegin(), _buffer.cend());
+    return std::string(_buffer.data(), _bytesTransferred);
   }
-
+  
   template <std::size_t N, std::size_t N2>
   typename TCPBoostSocketServer<N, N2>::SystemWrapperPtrRef
   TCPBoostSocketServer<N, N2>::getSystemWrapperPtrRef()
@@ -261,7 +270,8 @@ namespace Network
   void TCPBoostSocketServer<N, N2>
   ::acceptHandle(const std::shared_ptr
 		 <TCPBoostSocketServer<N, N2>>& serverSocketPtr,
-		 const std::shared_ptr<ITCPSocket<boost::asio::ip::tcp::socket>>&
+		 const std::shared_ptr<ITCPSocket
+		 <boost::asio::ip::tcp::socket>>&
 		 socketPtr,
 		 const boost::system::error_code& error)
   {
@@ -273,7 +283,8 @@ namespace Network
   void TCPBoostSocketServer<N, N2>
   ::sendHandle(const std::shared_ptr
 	       <ITCPSocket<boost::asio::ip::tcp::socket>>& socketPtr,
-	       const boost::system::error_code& error)
+	       const boost::system::error_code& error,
+	       std::size_t)
   {
     HandlerPolicy(socketPtr, error).writeHandle();
   }
@@ -283,8 +294,10 @@ namespace Network
   void TCPBoostSocketServer<N, N2>
   ::recvHandle(const std::shared_ptr
 	       <ITCPSocket<boost::asio::ip::tcp::socket>>& socketPtr,
-	       const boost::system::error_code& error)
+	       const boost::system::error_code& error,
+	       std::size_t bytes_transferred)
   {
+    _bytesTransferred = bytes_transferred;
     HandlerPolicy(socketPtr, error).readHandle();
   }
 }

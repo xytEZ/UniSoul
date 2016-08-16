@@ -8,16 +8,12 @@
 # include "DisconnectFromAsyncTaskHandler.hpp"
 # include "RequestProcessingFromAsyncTaskHandler.hpp"
 # include "UniSoulPacketFactory.hh"
-# include "UniSoulNetworkProtocolSerializable.hh"
 
 namespace Network
 {
   template <typename T>
   class ITCPSocket;
-}
-
-namespace Handler
-{
+  
   template <std::size_t N, std::size_t N2>
   class AsyncReadHandler
   {
@@ -49,31 +45,29 @@ namespace Handler
   template <std::size_t N, std::size_t N2>
   void AsyncReadHandler<N, N2>::readHandle() const
   {
-    if (_error)
+    if (!_error)
+      {
 	RequestProcessingFromAsyncTaskHandler
 	  <Network::Protocol::UniSoulPacket,
 	   Factory::UniSoulPacketFactory,
-	   Serializable::UniSoulNetworkProtocolSerializable,
 	   N,
 	   N2>
 	  (_socketPtr).requestProcessing();
+      }
     else
       DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr)
 	.disconnect
 	(boost::any_cast
-	 <typename Wrapper::UniSoulSystemWrapper::ConnectionManager&>
+	 <typename Wrapper::UniSoulSystemWrapper::SocketManager&>
 	 (std::static_pointer_cast<Network::TCPBoostSocketServer<N, N2>>
 	  (_socketPtr)->getSystemWrapperPtrRef()
-	  ->getContent()["ConnectionManager"])
-	 .findConnectionIf([this]
-			   (const std::shared_ptr
-			    <Network::TCPConnection
-			    <Info::ClientInfo,
-			    boost::asio::ip::tcp::socket>>&
-			    connectionPtr) -> bool
+	  ->getContent()["SocketManager"])
+	 .findSocketPtrIf([this]
+			  (const std::pair<std::string, std::shared_ptr
+			   <Network::ISocket<boost::asio::ip::tcp::socket>>>&
+			   pairSocketPtr) -> bool
 			   {
-			     return connectionPtr
-			       ->getSocketPtr() == _socketPtr;
+			     return pairSocketPtr.second == _socketPtr;
 			   }));
   }
 }

@@ -11,8 +11,10 @@ namespace Network
 { 
   class IMultiplexer
   {
-  public :
+  private :
     using SocketPtr = std::shared_ptr<Network::ISocket<int>>;
+    
+  public :
     using ioCallback = std::function<void(const SocketPtr&)>;
     
   public :
@@ -27,6 +29,9 @@ namespace Network
 	READ,
 	WRITE
       };
+
+  public :
+    using SocketCallbackPtr = std::shared_ptr<SocketCallback>;
 
   public :
     virtual ~IMultiplexer() = default;

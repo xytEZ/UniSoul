@@ -3,15 +3,16 @@
 
 namespace Network
 {
-  namespace Server
+  struct ServerMessage
   {
-    namespace Message
-    {
-      const char *ERROR = "An error is occured. Try again.";
-      const char *CONNECTION = "You are connected to the server.";
-      const char *DECONNECTION = "Goodbye!";
-    }
-  }
+    static const char *ERROR;
+    static const char *ACCEPTED_CONNECTION;
+    static const char *REFUSED_CONNECTION;
+    static const char *DISCONNECTION;
+
+    ServerMessage() = delete;
+    ~ServerMessage() = delete;
+  };
 }
 
 #endif /* !SERVER_MESSAGE_HH_ */

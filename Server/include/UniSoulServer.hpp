@@ -8,21 +8,19 @@
 # include <boost/any.hpp>
 
 # include "IApp.hh"
-# include "BoostServiceWrapper.hh"
 # include "TCPBoostSocketServer.hpp"
 
 namespace App
 {
-  template <typename T, std::size_t N = 128, std::size_t N2 = 5>
+  template <typename T>
   class UniSoulServer : public IApp
   {    
   private :
-    using LibraryServiceWrapperPtr = std::unique_ptr<Wrapper::IWrapper<T>>;
     using SystemWrapperPtr =
       std::unique_ptr<Wrapper::IWrapper<std::map<std::string, boost::any>>>;
-
+    
   private :
-    LibraryServiceWrapperPtr	_libraryServiceWrapperPtr;
+    T				_networkService;
     SystemWrapperPtr		_systemWrapperPtr;
     
   public :
@@ -33,24 +31,22 @@ namespace App
     virtual bool close();
   };
 
-  template <typename T, std::size_t N, std::size_t N2>
-  UniSoulServer<T, N, N2>::UniSoulServer(const std::string& hostname,
-					 unsigned short port) :
-    _libraryServiceWrapperPtr(std::make_unique
-			      <Wrapper::BoostServiceWrapper>()),
+  template <typename T>
+  UniSoulServer<T>::UniSoulServer(const std::string& hostname,
+				  unsigned short port) :
     _systemWrapperPtr(std::make_unique
 		      <Wrapper::UniSoulSystemWrapper>
-		      (Network::TCPBoostSocketServer<N, N2>
-		       ::template create<N, N2>
-		       (_libraryServiceWrapperPtr->getContent(),
+		      (Network::TCPBoostSocketServer<>
+		       ::template create<>
+		       (_networkService,
 			_systemWrapperPtr,
 			hostname,
 			port)))
   {
   }
   
-  template <typename T, std::size_t N, std::size_t N2>
-  bool UniSoulServer<T, N, N2>::init()
+  template <typename T>
+  bool UniSoulServer<T>::init()
   {
     boost::any_cast
       <typename Wrapper::UniSoulSystemWrapper::ServerSocketPtr&>
@@ -64,31 +60,30 @@ namespace App
     return true;
   }
   
-  template <typename T, std::size_t N, std::size_t N2>
-  bool UniSoulServer<T, N, N2>::run()
+  template <typename T>
+  bool UniSoulServer<T>::run()
   {
     boost::any_cast
       <typename Wrapper::UniSoulSystemWrapper::ServerSocketPtr&>
       (_systemWrapperPtr->getContent()["ServerSocket"])->accept();
-    _libraryServiceWrapperPtr->getContent().run();
+    _networkService.run();
     return true;
   }
 
-  template <typename T, std::size_t N, std::size_t N2>
-  bool UniSoulServer<T, N, N2>::close()
+  template <typename T>
+  bool UniSoulServer<T>::close()
   {
     boost::any_cast
       <typename Wrapper::UniSoulSystemWrapper::ServerSocketPtr&>
       (_systemWrapperPtr->getContent()["ServerSocket"])->close();
     boost::any_cast
-      <typename Wrapper::UniSoulSystemWrapper::ConnectionManager&>
-      (_systemWrapperPtr->getContent()["ConnectionManager"])
-      .apply([](const std::shared_ptr
-		<Network::TCPConnection
-		<Info::ClientInfo,
-		boost::asio::ip::tcp::socket>>& connectionPtr) -> void
+      <typename Wrapper::UniSoulSystemWrapper::SocketManager&>
+      (_systemWrapperPtr->getContent()["SocketManager"])
+      .apply([](const std::pair<std::string, std::shared_ptr
+		<Network::ISocket<boost::asio::ip::tcp::socket>>>&
+		pairSocketPtr) -> void
 	     {
-	       connectionPtr->getSocketPtr()->close();
+	       pairSocketPtr.second->close();
 	     });
     return true;
   }

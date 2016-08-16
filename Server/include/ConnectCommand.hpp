@@ -5,7 +5,8 @@
 # include <boost/any.hpp>
 
 # include "UniSoulSystemWrapper.hh"
-# include "ConnectionStateFlag.hh"
+# include "ConnectionState.hh"
+# include "ServerMessage.hh"
 # include "ICommand.hpp"
 
 namespace Command
@@ -23,13 +24,19 @@ namespace Command
   T ConnectCommand<T, Args...>::execute(Args&... args) const
   {
     std::tuple<Args&...>	tuple = std::forward_as_tuple(args...);
+    Network::ConnectionState	state =
+      boost::any_cast
+      <typename Wrapper::UniSoulSystemWrapper::ClientChecker&>
+      (std::get<0>(tuple)->getContent()["ClientChecker"])
+      .check(std::get<2>(tuple)) ?
+      Network::ConnectionState::ACCEPTED_CONNECTION :
+      Network::ConnectionState::REFUSED_CONNECTION;
     
-    return boost::any_cast
-      <typename Wrapper::UniSoulSystemWrapper::ClientCheckerManager&>
-      (std::get<0>(tuple)->getContent()["ClientCheckerManager"])
-      .checkClient(std::get<2>(tuple)) ?
-      Network::ConnectionStateFlag::LOG_IN :
-      Network::ConnectionStateFlag::LOG_OUT;
+    std::get<1>(tuple).push_back
+      (state == Network::ConnectionState::ACCEPTED_CONNECTION ?
+       Network::ServerMessage::ACCEPTED_CONNECTION :
+       Network::ServerMessage::REFUSED_CONNECTION);
+    return state;
   }
 }
 

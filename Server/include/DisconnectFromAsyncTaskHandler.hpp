@@ -3,19 +3,15 @@
 
 # include <cstddef>
 # include <memory>
+# include <utility>
 
 # include "UniSoulSystemWrapper.hh"
-# include "ClientInfo.hh"
-# include "TCPConnection.hpp"
 
 namespace Network
 {
   template <typename T>
   class ITCPSocket;
-}
-
-namespace Handler
-{
+  
   template <std::size_t N, std::size_t N2>
   class DisconnectFromAsyncTaskHandler
   {
@@ -44,18 +40,17 @@ namespace Handler
   {
     if (registeredConnection)
       boost::any_cast
-	<typename Wrapper::UniSoulSystemWrapper::ConnectionManager&>
+	<typename Wrapper::UniSoulSystemWrapper::SocketManager&>
 	(std::static_pointer_cast<Network::TCPBoostSocketServer<N, N2>>
 	 (_socketPtr)->getSystemWrapperPtrRef()
-	 ->getContent()["ConnectionManager"])
-	.deleteConnectionIf
-	([this](const std::shared_ptr
-		<Network::TCPConnection
-		<Info::ClientInfo,
-		boost::asio::ip::tcp::socket>>& connectionPtr) -> bool
+	 ->getContent()["SocketManager"])
+	.deleteSocketPtrIf
+	([this](const std::pair<std::string, std::shared_ptr
+		<Network::ISocket<boost::asio::ip::tcp::socket>>>&
+		pairSocketPtr) -> bool
 	 {
-	 return connectionPtr->getSocketPtr() == _socketPtr;
-       });
+	   return pairSocketPtr.second == _socketPtr;
+	 });
     _socketPtr->close();
   }
 }

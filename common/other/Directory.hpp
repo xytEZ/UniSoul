@@ -66,8 +66,8 @@ namespace Persistence
     {
     }
 
-    std::vector<std::string> Directory<std::vector<std::string>>
-    ::find(const std::string&) const
+    std::vector<std::string>
+    Directory<std::vector<std::string>>::find(const std::string&) const
     {
       std::vector<std::string>	datas;
       

@@ -14,7 +14,7 @@ namespace Factory
 
     uniSoulPacket.communication = communication;
     uniSoulPacket.command = command;
-    uniSoulPacket.data = new char[dataLen];
+    uniSoulPacket.data = new char[dataLen + 1];
     std::strncpy(uniSoulPacket.data, data, dataLen);
     uniSoulPacket.data[dataLen] = '\0';
     return uniSoulPacket;

@@ -18,7 +18,7 @@ namespace Persistence
       PersistentDataFileInteractor(const FilePtr<T>&);
       virtual ~PersistentDataFileInteractor() = default;
       virtual void init();
-      virtual T find(const std::string&) const;
+      virtual T find(const std::string& = "") const;
       virtual void close();
     };
 

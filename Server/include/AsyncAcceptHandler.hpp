@@ -5,19 +5,14 @@
 # include <memory>
 # include <boost/system/error_code.hpp>
 
+# include "ITCPSocket.hpp"
 # include "UniSoulSystemWrapper.hh"
-# include "ClientInfo.hh"
-# include "TCPConnection.hpp"
-# include "ConnectionManager.hpp"
 
 namespace Network
 {
   template <std::size_t N, std::size_t N2>
   class TCPBoostSocketServer;
-}
-
-namespace Handler
-{
+  
   template <std::size_t N, std::size_t N2>
   class AsyncAcceptHandler
   {

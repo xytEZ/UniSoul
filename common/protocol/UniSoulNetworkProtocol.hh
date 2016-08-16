@@ -1,6 +1,8 @@
 #ifndef UNI_SOUL_NETWORK_PROTOCOL_HH_
 # define UNI_SOUL_NETWORK_PROTOCOL_HH_
 
+# include <boost/serialization/serialization.hpp>
+
 namespace Network
 { 
   namespace Protocol
@@ -17,6 +19,13 @@ namespace Network
       Communication		communication;
       unsigned short int	command;
       char			*data;
+      
+    private :
+      friend class boost::serialization::access;
+
+    private :
+      template <class Archive>
+      void serialize(Archive&, const unsigned int);
     };
   }
 }
