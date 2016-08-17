@@ -8,7 +8,7 @@
 
 namespace Network
 {
-  template <std::size_t N>
+  template <std::size_t N = 256>
   class UDPSocketClientLinux : public IUDPSocketClient<int>
   {
   private :

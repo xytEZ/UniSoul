@@ -73,11 +73,11 @@ namespace Network
 	   (_socketPtr)->getSystemWrapperPtrRef()
 	   ->getContent()["SocketManager"])
 	  .findSocketPtrIf([this]
-			   (const std::pair<std::string, std::shared_ptr
-			    <Network::ISocket<boost::asio::ip::tcp::socket>>>&
-			    pairSocketPtr) -> bool
+			   (const std::shared_ptr
+			    <Network::ISocket<boost::asio::ip::tcp::socket>>&
+			    socketPtr) -> bool
 			   {
-			     return pairSocketPtr.second == _socketPtr;
+			     return socketPtr == _socketPtr;
 			   });
 	
 	validRequestProcessing(serializable, registeredConnection);
@@ -123,11 +123,12 @@ namespace Network
     std::string					str;
 
     std::getline(ss, str, DELIMITER);
+    _socketPtr->setRecipient(str);
     boost::any_cast
       <typename Wrapper::UniSoulSystemWrapper::SocketManager&>
       (std::static_pointer_cast<Network::TCPBoostSocketServer<N, N2>>
        (_socketPtr)->getSystemWrapperPtrRef()
-       ->getContent()["SocketManager"]).addSocketPtr(str, _socketPtr);
+       ->getContent()["SocketManager"]).addSocketPtr(_socketPtr);
   }
   
   template <typename T, typename U, std::size_t N, std::size_t N2>

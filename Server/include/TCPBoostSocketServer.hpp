@@ -39,6 +39,7 @@ namespace Network
     boost::asio::deadline_timer		_timer;
     boost::array<char, N>		_buffer;
     std::size_t				_bytesTransferred;
+    std::string				_recipient;
     SystemWrapperPtrRef			_systemWrapperPtrRef;
       
   public :
@@ -71,6 +72,8 @@ namespace Network
     virtual std::string recv();
     virtual std::string getAddress() const;
     virtual unsigned short getPort() const;
+    virtual const std::string& getRecipient() const;
+    virtual void setRecipient(const std::string&);
     virtual bool bind();
     virtual bool listen();
     virtual std::shared_ptr<ITCPSocket<boost::asio::ip::tcp::socket>> accept();
@@ -217,6 +220,18 @@ namespace Network
   unsigned short TCPBoostSocketServer<N, N2>::getPort() const
   {
     return _socket.remote_endpoint().port();
+  }
+
+  template <std::size_t N, std::size_t N2>
+  const std::string& TCPBoostSocketServer<N, N2>::getRecipient() const
+  {
+    return _recipient;
+  }
+
+  template <std::size_t N, std::size_t N2>
+  void TCPBoostSocketServer<N, N2>::setRecipient(const std::string& recipient)
+  {
+    _recipient = recipient;
   }
   
   template <std::size_t N, std::size_t N2>

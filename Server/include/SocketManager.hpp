@@ -3,7 +3,7 @@
 
 # include <iostream>
 # include <memory>
-# include <map>
+# include <list>
 # include <algorithm>
 # include <functional>
 # include <utility>
@@ -20,10 +20,9 @@ namespace Network
     {
     private :
       using SocketPtr = std::shared_ptr<Network::ISocket<T>>;
-      using PairSocketPtr = std::pair<std::string, SocketPtr>;
-      using PredPairSocketPtr = std::function<bool(const PairSocketPtr&)>;
-      using FuncPairSocketPtr = std::function<void(const PairSocketPtr&)>;
-      using SocketsPtr = std::map<std::string, SocketPtr>;
+      using PredSocketPtr = std::function<bool(const SocketPtr&)>;
+      using FuncSocketPtr = std::function<void(const SocketPtr&)>;
+      using SocketsPtr = std::list<SocketPtr>;
       
     private :
       SocketsPtr	_socketsPtr;
@@ -31,45 +30,40 @@ namespace Network
     public :
       SocketManager() = default;
       ~SocketManager() = default;
-      void addSocketPtr(const std::string&, const SocketPtr&);
-      void deleteSocketPtr(const std::string&);
-      void deleteSocketPtrIf(const PredPairSocketPtr&);
-      bool findSocketPtrIf(const PredPairSocketPtr&) const;
-      void apply(const FuncPairSocketPtr&);
+      void addSocketPtr(const SocketPtr&);
+      void deleteSocketPtr(const SocketPtr&);
+      void deleteSocketPtrIf(const PredSocketPtr&);
+      bool findSocketPtrIf(const PredSocketPtr&) const;
+      void apply(const FuncSocketPtr&);
     };
     
     template <typename T>
-    void SocketManager<T>::addSocketPtr(const std::string& name,
-					const SocketPtr& socketPtr)
+    void SocketManager<T>::addSocketPtr(const SocketPtr& socketPtr)
     {
-      _socketsPtr[name] = std::move(socketPtr);
+      _socketsPtr.push_back(std::move(socketPtr));
     }
   
     template <typename T>
-    void SocketManager<T>::deleteSocketPtr(const std::string& name)
+    void SocketManager<T>::deleteSocketPtr(const SocketPtr& socketPtr)
     {
-      _socketsPtr.erase(name);
+      _socketsPtr.remove(socketPtr);
     }
 
     template <typename T>
-    void SocketManager<T>::deleteSocketPtrIf(const PredPairSocketPtr& pred)
+    void SocketManager<T>::deleteSocketPtrIf(const PredSocketPtr& pred)
     {
-      typename SocketsPtr::iterator	begin = _socketsPtr.begin();
-      typename SocketsPtr::iterator	end = _socketsPtr.end();
-      
-      while ((begin = std::find_if(begin, end, pred)) != end)
-	_socketsPtr.erase(begin++);
+      _socketsPtr.remove_if(pred);
     }
     
     template <typename T>
-    bool SocketManager<T>::findSocketPtrIf(const PredPairSocketPtr& pred) const
+    bool SocketManager<T>::findSocketPtrIf(const PredSocketPtr& pred) const
     {
       return std::find_if(_socketsPtr.cbegin(), _socketsPtr.cend(), pred)
 	!= _socketsPtr.cend();
     }
     
     template <typename T>
-    void SocketManager<T>::apply(const FuncPairSocketPtr& func)
+    void SocketManager<T>::apply(const FuncSocketPtr& func)
     {
       std::for_each(_socketsPtr.begin(), _socketsPtr.end(), func);
     }

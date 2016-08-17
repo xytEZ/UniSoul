@@ -4,6 +4,10 @@
 # include <tuple>
 
 # include "AppStateFlag.hh"
+# include "CommandType.hh"
+# include "ErrorWithConnectionException.hh"
+# include "ITCPSocket.hpp"
+# include "SerializationTool.hpp"
 # include "ICommand.hpp"
 
 namespace Command
@@ -22,7 +26,17 @@ namespace Command
   {
     std::tuple<Args&...>	tuple = std::forward_as_tuple(args...);
 
-    std::get<1>(tuple)["Server"]->close();
+    try
+      {
+	std::get<1>(tuple)->send
+	  (Serialization::Tool::template serialize
+	   <Network::Protocol::UniSoulPacket>
+	   (std::get<3>(tuple).create
+	    (Network::Protocol::Communication::TCP,
+	     Command::Type::DISCONNECT,
+	     "")));
+      }
+    catch (const Exception::Serialization::SerializationFail&) { }
     return App::State::Flag::RUNNING;
   }
 }

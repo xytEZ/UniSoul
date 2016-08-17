@@ -35,8 +35,7 @@ namespace Model
   {
   private :
     using MultiplexerPtr = std::unique_ptr<Network::IMultiplexer>;
-    using SocketPtr = std::shared_ptr<Network::ISocket<int>>;
-    using SocketsPtr = std::map<std::string, SocketPtr>;
+    using TCPSocketClientPtr = std::shared_ptr<Network::ITCPSocketClient<int>>;
     using ParsedInputs = std::vector<Parser::ParsedInput>;
     using PacketFactory = Factory::UniSoulPacketFactory;
 
@@ -46,7 +45,7 @@ namespace Model
 
   private :
     MultiplexerPtr		_multiplexerPtr;
-    SocketsPtr			_socketsPtr;
+    TCPSocketClientPtr		_serverSocketPtr;
     DataFileInteractor		_dataFileInteractor;
     PacketFactory		_packetFactory;
 
@@ -54,7 +53,7 @@ namespace Model
     <std::string,
      App::State::Flag,
      MultiplexerPtr,
-     SocketsPtr,
+     TCPSocketClientPtr,
      DataFileInteractor,
      PacketFactory,
      ParsedInputs,
@@ -63,7 +62,7 @@ namespace Model
     Command::CommandExecutor
     <App::State::Flag,
      MultiplexerPtr,
-     SocketsPtr,
+     TCPSocketClientPtr,
      DataFileInteractor,
      PacketFactory,
      ParsedInputs,
@@ -86,19 +85,21 @@ namespace Model
     _multiplexerPtr = std::make_unique<Network::Epoll<300, 42>>
       (std::bind(&Network::TCPCallbackRead::read, std::placeholders::_1),
        std::bind(&Network::TCPCallbackWrite::write, std::placeholders::_1));
-    _socketsPtr["Server"] =
+    _serverSocketPtr =
       std::make_unique<Network::TCPSocketClientLinux<>>(hostname, port);
 
-    /*_socketPtr["Voice"] =
+    /*_socketPtr["VoIP"] =
       std::make_unique<Network::UDPSocketClientLinux<128>>();*/
 #else
 # error "Can't config Client. Unknown operating system."
 #endif
+
+    _serverSocketPtr->setRecipient("Server");
     _commandFactory.addCommand("Help",
 			       std::make_shared<Command::HelpCommand
 			       <App::State::Flag,
 			       MultiplexerPtr,
-			       SocketsPtr,
+			       TCPSocketClientPtr,
 			       DataFileInteractor,
 			       PacketFactory,
 			       ParsedInputs,
@@ -107,7 +108,7 @@ namespace Model
 			       std::make_shared<Command::QuitCommand
 			       <App::State::Flag,
 			       MultiplexerPtr,
-			       SocketsPtr,
+			       TCPSocketClientPtr,
 			       DataFileInteractor,
 			       PacketFactory,
 			       ParsedInputs,
@@ -116,7 +117,7 @@ namespace Model
 			       std::make_shared<Command::ConnectCommand
 			       <App::State::Flag,
 			       MultiplexerPtr,
-			       SocketsPtr,
+			       TCPSocketClientPtr,
 			       DataFileInteractor,
 			       PacketFactory,
 			       ParsedInputs,
@@ -125,7 +126,7 @@ namespace Model
 			       std::make_shared<Command::DisconnectCommand
 			       <App::State::Flag,
 			       MultiplexerPtr,
-			       SocketsPtr,
+			       TCPSocketClientPtr,
 			       DataFileInteractor,
 			       PacketFactory,
 			       ParsedInputs,
@@ -134,7 +135,7 @@ namespace Model
 			       std::make_shared<Command::MessageCommand
 			       <App::State::Flag,
 			       MultiplexerPtr,
-			       SocketsPtr,
+			       TCPSocketClientPtr,
 			       DataFileInteractor,
 			       PacketFactory,
 			       ParsedInputs,
@@ -143,7 +144,7 @@ namespace Model
 			       std::make_shared<Command::StatusCommand
 			       <App::State::Flag,
 			       MultiplexerPtr,
-			       SocketsPtr,
+			       TCPSocketClientPtr,
 			       DataFileInteractor,
 			       PacketFactory,
 			       ParsedInputs,
@@ -169,7 +170,7 @@ namespace Model
 			     .getCommand(parsedInputArray[0].what));
 	    state = _commandExecutor
 	      .execute(_multiplexerPtr,
-		       _socketsPtr,
+		       _serverSocketPtr,
 		       _dataFileInteractor,
 		       _packetFactory,
 		       const_cast<ParsedInputs&>(parsedInputArray),

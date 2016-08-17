@@ -24,6 +24,7 @@ namespace Command
     std::tuple<Args&...>	tuple = std::forward_as_tuple(args...);
 
     std::get<1>(tuple).push_back(Network::ServerMessage::DISCONNECTION);
+    std::cout << "qsdqsd" << std::endl;
     return Network::ConnectionState::DISCONNECTION;
   }
 }

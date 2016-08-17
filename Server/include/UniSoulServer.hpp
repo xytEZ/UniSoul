@@ -79,11 +79,11 @@ namespace App
     boost::any_cast
       <typename Wrapper::UniSoulSystemWrapper::SocketManager&>
       (_systemWrapperPtr->getContent()["SocketManager"])
-      .apply([](const std::pair<std::string, std::shared_ptr
-		<Network::ISocket<boost::asio::ip::tcp::socket>>>&
-		pairSocketPtr) -> void
+      .apply([](const std::shared_ptr
+		<Network::ISocket<boost::asio::ip::tcp::socket>>&
+		socketPtr) -> void
 	     {
-	       pairSocketPtr.second->close();
+	       socketPtr->close();
 	     });
     return true;
   }

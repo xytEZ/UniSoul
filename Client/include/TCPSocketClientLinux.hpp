@@ -28,6 +28,7 @@ namespace Network
     struct sockaddr_in	_serverAddr;
     unsigned short	_port;
     std::array<char, N>	_buffer;
+    std::string		_recipient;
     
   public :
     TCPSocketClientLinux(const std::string&, unsigned short);
@@ -39,6 +40,8 @@ namespace Network
     virtual std::string recv();
     virtual std::string getAddress() const;
     virtual unsigned short getPort() const;
+    virtual const std::string& getRecipient() const;
+    virtual void setRecipient(const std::string&);
     virtual bool connect();
   };
 
@@ -116,6 +119,18 @@ namespace Network
 		      reinterpret_cast<socklen_t *>(&addrLen)) == -1)
       throw std::system_error(errno, std::system_category());
     return (::ntohs(_clientAddr.sin_port));
+  }
+
+  template <std::size_t N>
+  const std::string& TCPSocketClientLinux<N>::getRecipient() const
+  {
+    return _recipient;
+  }
+
+  template <std::size_t N>
+  void TCPSocketClientLinux<N>::setRecipient(const std::string& recipient)
+  {
+    _recipient = recipient;
   }
 
   template <std::size_t N>

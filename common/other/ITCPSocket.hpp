@@ -15,6 +15,8 @@ namespace Network
     virtual std::string recv() = 0;
     virtual std::string getAddress() const = 0;
     virtual unsigned short getPort() const = 0;
+    virtual const std::string& getRecipient() const = 0;
+    virtual void setRecipient(const std::string&) = 0;
   };
 }
 

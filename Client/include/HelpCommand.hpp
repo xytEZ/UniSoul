@@ -27,8 +27,9 @@ namespace Command
       .append("\t- Help\n")
       .append("\t- Quit\n")
       .append("\t- Connect\n")
-      .append("\t- Deconnect\n")
-      .append("\t- Message [RECIPIENT] [CONTENT]");
+      .append("\t- Diconnect\n")
+      .append("\t- Message [RECIPIENT] [CONTENT]\n")
+      .append("\t- Status\n");
     return App::State::RUNNING;
   }
 }

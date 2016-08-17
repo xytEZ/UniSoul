@@ -63,11 +63,11 @@ namespace Network
 	  (_socketPtr)->getSystemWrapperPtrRef()
 	  ->getContent()["SocketManager"])
 	 .findSocketPtrIf([this]
-			  (const std::pair<std::string, std::shared_ptr
-			   <Network::ISocket<boost::asio::ip::tcp::socket>>>&
-			   pairSocketPtr) -> bool
+			  (const std::shared_ptr
+			   <Network::ISocket<boost::asio::ip::tcp::socket>>&
+			   socketPtr) -> bool
 			   {
-			     return pairSocketPtr.second == _socketPtr;
+			     return socketPtr == _socketPtr;
 			   }));
   }
 }

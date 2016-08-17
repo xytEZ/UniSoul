@@ -3,7 +3,6 @@
 
 # include <tuple>
 # include <memory>
-# include <stdexcept>
 
 # include "AppStateFlag.hh"
 # include "ErrorWithConnectionException.hh"
@@ -28,19 +27,37 @@ namespace Command
     
     try
       {
-	std::static_pointer_cast<Network::ITCPSocket<int>>
-	  (std::get<1>(tuple).at(std::get<4>(tuple)[1].what))
-	  ->send(Serialization::Tool::template serialize
-		 <Network::Protocol::UniSoulPacket>
-		  (std::get<3>(tuple).create
-		   (Network::Protocol::Communication::TCP,
-		    std::get<4>(tuple)[1].what == "Server" ?
-		    Command::Type::MESSAGE : Command::Type::NONE,
-		    std::get<4>(tuple)[2].what.c_str())));
-      }
-    catch (const std::out_of_range&)
-      {
-	throw Exception::Network::ErrorWithConnection("Unknown recipient");
+	if (std::find_if(std::get<0>(tuple)->getSocketCallbacksPtr().cbegin(),
+			 std::get<0>(tuple)->getSocketCallbacksPtr().cend(),
+			 [&tuple]
+			 (const Network::IMultiplexer::SocketCallbackPtr&
+			  socketCallbackPtr) -> bool
+			 {
+			   std::shared_ptr
+			     <Network::ITCPSocket<int>>	tcpSocketPtr =
+			     std::dynamic_pointer_cast
+			     <Network::ITCPSocket<int>>
+			     (socketCallbackPtr->socketPtr);
+			
+			   if (tcpSocketPtr
+			       && tcpSocketPtr->getRecipient()
+			       == std::get<4>(tuple)[1].what)
+			     {
+			       tcpSocketPtr->send
+				 (Serialization::Tool::template serialize
+				  <Network::Protocol::UniSoulPacket>
+				  (std::get<3>(tuple).create
+				   (Network::Protocol::Communication::TCP,
+				    std::get<4>(tuple)[1].what == "Server" ?
+				    Command::Type::MESSAGE
+				    : Command::Type::NONE,
+				    std::get<4>(tuple)[2].what.c_str())));
+			       return true;
+			     }
+			   return false;
+			 })
+	    == std::get<0>(tuple)->getSocketCallbacksPtr().cend())
+	  throw Exception::Network::ErrorWithConnection("Unknown recipient");
       }
     catch (const Exception::Serialization::SerializationFail&)
       {
