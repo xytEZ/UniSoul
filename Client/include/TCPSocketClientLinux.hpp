@@ -24,9 +24,7 @@ namespace Network
   {
   private :
     int			_fd;
-    struct sockaddr_in	_clientAddr;
-    struct sockaddr_in	_serverAddr;
-    unsigned short	_port;
+    struct sockaddr_in	_addr;
     std::array<char, N>	_buffer;
     std::string		_recipient;
     
@@ -49,9 +47,9 @@ namespace Network
   TCPSocketClientLinux<N>::TCPSocketClientLinux(const std::string& hostname,
 						unsigned short port)
   {
-    _serverAddr.sin_addr.s_addr = ::inet_addr(hostname.c_str());
-    _serverAddr.sin_family = AF_INET;
-    _serverAddr.sin_port = ::htons(port);
+    _addr.sin_addr.s_addr = ::inet_addr(hostname.c_str());
+    _addr.sin_family = AF_INET;
+    _addr.sin_port = ::htons(port);
   }
   
   template <std::size_t N>
@@ -100,25 +98,13 @@ namespace Network
   template <std::size_t N>
   std::string TCPSocketClientLinux<N>::getAddress() const
   {
-    int	addrLen = sizeof(_clientAddr);
-
-    if (::getsockname(_fd,
-		      (struct sockaddr *)&_clientAddr,
-		      reinterpret_cast<socklen_t *>(&addrLen)) == -1)
-      throw std::system_error(errno, std::system_category());
-    return ::inet_ntoa(_clientAddr.sin_addr);
+    return ::inet_ntoa(_addr.sin_addr);
   }
   
   template <std::size_t N>
   unsigned short TCPSocketClientLinux<N>::getPort() const
   {
-    int	addrLen = sizeof(_clientAddr);
-
-    if (::getsockname(_fd,
-		      (struct sockaddr *)&_clientAddr,
-		      reinterpret_cast<socklen_t *>(&addrLen)) == -1)
-      throw std::system_error(errno, std::system_category());
-    return (::ntohs(_clientAddr.sin_port));
+    return ::ntohs(_addr.sin_port);
   }
 
   template <std::size_t N>
@@ -137,8 +123,8 @@ namespace Network
   bool TCPSocketClientLinux<N>::connect()
   {
     if (::connect(_fd,
-		  (struct sockaddr *)&_serverAddr,
-		  sizeof(_serverAddr)) == -1)
+		  (struct sockaddr *)&_addr,
+		  sizeof(_addr)) == -1)
       throw std::system_error(errno, std::system_category());
     return true;
   }

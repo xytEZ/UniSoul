@@ -32,7 +32,7 @@ namespace Command
       Network::ConnectionState::ACCEPTED_CONNECTION :
       Network::ConnectionState::REFUSED_CONNECTION;
     
-    std::get<1>(tuple).push_back
+    std::get<3>(tuple) = 
       (state == Network::ConnectionState::ACCEPTED_CONNECTION ?
        Network::ServerMessage::ACCEPTED_CONNECTION :
        Network::ServerMessage::REFUSED_CONNECTION);

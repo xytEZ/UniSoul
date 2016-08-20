@@ -204,7 +204,6 @@ namespace Network
 		   this->shared_from_this(),
 		   boost::asio::placeholders::error,
 		   boost::asio::placeholders::bytes_transferred));
-    _timer.expires_from_now(boost::posix_time::seconds(N2));
     _timer.async_wait(boost::bind(&TCPBoostSocketServer::close,
 				  this->shared_from_this()));
     return "";

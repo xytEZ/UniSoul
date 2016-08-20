@@ -33,12 +33,13 @@ namespace View
 	_controllerPtr->performAction(input);
       }
   }
-
+  
   void UniSoulConsoleView::display()
   {
+    
     std::cout << _viewState.text << std::endl;
   }
-
+  
   void UniSoulConsoleView::close()
   {
     std::cout << "Thank you for using UniSoul client. Good bye." << std::endl;

@@ -3,8 +3,9 @@
 
 # include <tuple>
 # include <memory>
+# include <cstring>
 
-# include "AppStateFlag.hh"
+# include "AppState.hh"
 # include "ErrorWithConnectionException.hh"
 # include "CommandType.hh"
 # include "ICommand.hpp"
@@ -38,7 +39,7 @@ namespace Command
 			     std::dynamic_pointer_cast
 			     <Network::ITCPSocket<int>>
 			     (socketCallbackPtr->socketPtr);
-			
+			   
 			   if (tcpSocketPtr
 			       && tcpSocketPtr->getRecipient()
 			       == std::get<4>(tuple)[1].what)
@@ -63,7 +64,14 @@ namespace Command
       {
 	throw Exception::Network::ErrorWithConnection("Sending error");
       }
-    return App::State::Flag::RUNNING;
+    catch (const std::system_error& e)
+      {
+	if (!std::strcmp(e.what(), "Broken pipe"))
+	  throw Exception::Network
+	    ::ErrorWithConnection("Error with remote connection");
+	throw Exception::Network::ErrorWithConnection(e.what());
+      }
+    return App::State::RUNNING;
   }
 }
 

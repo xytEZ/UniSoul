@@ -8,7 +8,8 @@ namespace Command
       NONE = 0,
       CONNECT = 1,
       DISCONNECT = 2,
-      MESSAGE = 3
+      MESSAGE = 3,
+      GET_USER = 4
     };
 }
 

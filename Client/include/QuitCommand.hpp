@@ -1,7 +1,7 @@
 #ifndef QUIT_COMMAND_HPP_
 # define QUIT_COMMAND_HPP_
 
-# include "AppStateFlag.hh"
+# include "AppState.hh"
 # include "ICommand.hpp"
 
 namespace Command

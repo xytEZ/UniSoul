@@ -44,7 +44,8 @@ namespace Network
   void AsyncWriteHandler<N, N2>::writeHandle() const
   {
     bool	registeredConnection =
-      boost::any_cast
+      static_cast<bool>
+      (boost::any_cast
       <typename Wrapper::UniSoulSystemWrapper::SocketManager&>
       (std::static_pointer_cast<Network::TCPBoostSocketServer<N, N2>>
        (_socketPtr)->getSystemWrapperPtrRef()
@@ -55,7 +56,8 @@ namespace Network
 			socketPtr) -> bool
 		       {
 			 return socketPtr == _socketPtr;
-		       });
+		       }));
+    
     if (_error || !registeredConnection)
       DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr)
 	.disconnect(registeredConnection);

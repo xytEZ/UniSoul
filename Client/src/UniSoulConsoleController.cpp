@@ -2,6 +2,7 @@
 #include <functional>
 #include <algorithm>
 #include <iostream>
+#include <stdexcept>
 
 #include "UniSoulConsoleController.hh"
 
@@ -53,20 +54,17 @@ namespace Controller
 	  []() -> const char * { return "Excess argument."; } }
       };
     
-    std::vector<Parser::ParsedInput>::const_iterator	constIt;
-    
-    constIt = std::find_if
+    return std::find_if
       (parsedInputArray.cbegin(),
        parsedInputArray.cend(),
        [&errMsg](const Parser::ParsedInput& parsedInput) -> bool
        {
-	 if (FUNCS_ERR_MSG.find(parsedInput.state) != FUNCS_ERR_MSG.cend())
+	 try
 	   {
 	     errMsg = FUNCS_ERR_MSG.at(parsedInput.state)();
-	     return true;
 	   }
-	 return false;
-       });
-    return constIt == parsedInputArray.cend();
+	 catch (const std::out_of_range&) { return false; }
+	 return true;
+       }) == parsedInputArray.cend();
   }
 }

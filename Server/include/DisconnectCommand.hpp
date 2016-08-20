@@ -22,9 +22,8 @@ namespace Command
   T DisconnectCommand<T, Args...>::execute(Args&... args) const
   {
     std::tuple<Args&...>	tuple = std::forward_as_tuple(args...);
-
-    std::get<1>(tuple).push_back(Network::ServerMessage::DISCONNECTION);
-    std::cout << "qsdqsd" << std::endl;
+    
+    std::get<3>(tuple) = Network::ServerMessage::DISCONNECTION;
     return Network::ConnectionState::DISCONNECTION;
   }
 }

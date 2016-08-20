@@ -5,11 +5,18 @@ namespace Network
 {
   struct ServerMessage
   {
-    static const char *ERROR;
-    static const char *ACCEPTED_CONNECTION;
-    static const char *REFUSED_CONNECTION;
-    static const char *DISCONNECTION;
-
+    static constexpr const char *ERROR =
+      "An error is occurred. Try again, please";
+    
+    static constexpr const char *ACCEPTED_CONNECTION =
+      "Accepted connection. Welcome to the server";
+    
+    static constexpr const char *REFUSED_CONNECTION =
+      "Refused connection. Try again, please";
+    
+    static constexpr const char *DISCONNECTION =
+      "Goodbye and see you soon";
+    
     ServerMessage() = delete;
     ~ServerMessage() = delete;
   };

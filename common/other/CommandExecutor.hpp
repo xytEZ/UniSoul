@@ -33,7 +33,7 @@ namespace Command
   T CommandExecutor<T, Args...>::execute(Args&... args) const
   {
     if (_commandPtr == nullptr)
-      throw new Exception::Command::UnknownCommand("Unknown command");
+      throw Exception::Command::UnknownCommand("Unknown command");
     return _commandPtr->execute(args...);
   }
 }

@@ -13,7 +13,7 @@
 
 # include "CommandFactory.hpp"
 # include "CommandExecutor.hpp"
-# include "AppStateFlag.hh"
+# include "AppState.hh"
 # include "PersistentDataFileInteractor.hpp"
 # include "Parser.hh"
 # include "File.hpp"
@@ -26,6 +26,8 @@
 # include "DisconnectCommand.hpp"
 # include "MessageCommand.hpp"
 # include "StatusCommand.hpp"
+# include "CreateConnectionCommand.hpp"
+# include "GetUserCommand.hpp"
 # include "IModel.hpp"
 
 namespace Model
@@ -51,7 +53,7 @@ namespace Model
 
     Command::CommandFactory
     <std::string,
-     App::State::Flag,
+     App::State,
      MultiplexerPtr,
      TCPSocketClientPtr,
      DataFileInteractor,
@@ -60,7 +62,7 @@ namespace Model
      std::string>		_commandFactory;
     
     Command::CommandExecutor
-    <App::State::Flag,
+    <App::State,
      MultiplexerPtr,
      TCPSocketClientPtr,
      DataFileInteractor,
@@ -79,14 +81,14 @@ namespace Model
 				  unsigned short port) :
     _dataFileInteractor(std::make_shared
 			<Persistence::File::File<std::vector<std::string>>>
-			("../../common/user/user1.txt"))
+			("common/user/user2.txt"))
   {
 #if defined(linux) || defined(__linux)
-    _multiplexerPtr = std::make_unique<Network::Epoll<300, 42>>
+    _multiplexerPtr = std::make_unique<Network::Epoll<400, 42>>
       (std::bind(&Network::TCPCallbackRead::read, std::placeholders::_1),
        std::bind(&Network::TCPCallbackWrite::write, std::placeholders::_1));
     _serverSocketPtr =
-      std::make_unique<Network::TCPSocketClientLinux<>>(hostname, port);
+      std::make_shared<Network::TCPSocketClientLinux<>>(hostname, port);
 
     /*_socketPtr["VoIP"] =
       std::make_unique<Network::UDPSocketClientLinux<128>>();*/
@@ -97,7 +99,7 @@ namespace Model
     _serverSocketPtr->setRecipient("Server");
     _commandFactory.addCommand("Help",
 			       std::make_shared<Command::HelpCommand
-			       <App::State::Flag,
+			       <App::State,
 			       MultiplexerPtr,
 			       TCPSocketClientPtr,
 			       DataFileInteractor,
@@ -106,7 +108,7 @@ namespace Model
 			       std::string>>());
     _commandFactory.addCommand("Quit",
 			       std::make_shared<Command::QuitCommand
-			       <App::State::Flag,
+			       <App::State,
 			       MultiplexerPtr,
 			       TCPSocketClientPtr,
 			       DataFileInteractor,
@@ -115,7 +117,7 @@ namespace Model
 			       std::string>>());
     _commandFactory.addCommand("Connect",
 			       std::make_shared<Command::ConnectCommand
-			       <App::State::Flag,
+			       <App::State,
 			       MultiplexerPtr,
 			       TCPSocketClientPtr,
 			       DataFileInteractor,
@@ -124,7 +126,7 @@ namespace Model
 			       std::string>>());
     _commandFactory.addCommand("Disconnect",
 			       std::make_shared<Command::DisconnectCommand
-			       <App::State::Flag,
+			       <App::State,
 			       MultiplexerPtr,
 			       TCPSocketClientPtr,
 			       DataFileInteractor,
@@ -133,7 +135,7 @@ namespace Model
 			       std::string>>());
     _commandFactory.addCommand("Message",
 			       std::make_shared<Command::MessageCommand
-			       <App::State::Flag,
+			       <App::State,
 			       MultiplexerPtr,
 			       TCPSocketClientPtr,
 			       DataFileInteractor,
@@ -142,7 +144,27 @@ namespace Model
 			       std::string>>());
     _commandFactory.addCommand("Status",
 			       std::make_shared<Command::StatusCommand
-			       <App::State::Flag,
+			       <App::State,
+			       MultiplexerPtr,
+			       TCPSocketClientPtr,
+			       DataFileInteractor,
+			       PacketFactory,
+			       ParsedInputs,
+			       std::string>>());
+    _commandFactory.addCommand("CreateConnection",
+			       std::make_shared
+			       <Command::CreateConnectionCommand
+			       <App::State,
+			       MultiplexerPtr,
+			       TCPSocketClientPtr,
+			       DataFileInteractor,
+			       PacketFactory,
+			       ParsedInputs,
+			       std::string>>());
+    _commandFactory.addCommand("GetUser",
+			       std::make_shared
+			       <Command::GetUserCommand
+			       <App::State,
 			       MultiplexerPtr,
 			       TCPSocketClientPtr,
 			       DataFileInteractor,
@@ -162,8 +184,8 @@ namespace Model
       {
 	try
 	  {
-	    std::string		retMsg;
-	    App::State::Flag     state;
+	    std::string	retMsg;
+	    App::State  state;
 	    
 	    _commandExecutor
 	      .setCommandPtr(_commandFactory
@@ -185,16 +207,8 @@ namespace Model
 	  {
 	    viewState.set(true, std::move(e.what()));
 	  }
-	catch (const std::system_error& e)
-	  {
-	    viewState.set(true, std::move(e.what()));
-	  }
 	_multiplexerPtr->process();
 	_multiplexerPtr->execute();
-      }
-    catch (const Exception::Network::ErrorWithConnection& e)
-      {
-	viewState.set(true, std::move(e.what()));
       }
     catch (const std::system_error& e)
       {
@@ -205,3 +219,4 @@ namespace Model
 }
 
 #endif /* !UNI_SOUL_CLIENT_HPP_ */
+

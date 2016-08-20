@@ -30,7 +30,7 @@ namespace Network
 				       const T&);
     
     RequestExecuteFromAsyncTaskHandler() = default;
-    Network::ConnectionState requestExecute(std::vector<std::string>&);
+    Network::ConnectionState requestExecute(std::string&);
   };
 
   template <typename T, std::size_t N, std::size_t N2>
@@ -47,7 +47,7 @@ namespace Network
 
   template <typename T, std::size_t N, std::size_t N2>
   Network::ConnectionState RequestExecuteFromAsyncTaskHandler<T, N, N2>
-  ::requestExecute(std::vector<std::string>& datas)
+  ::requestExecute(std::string& retMsg)
   {
     std::string	dataFromPacket(_serializable.data);
     
@@ -62,15 +62,17 @@ namespace Network
 		      <Network::TCPBoostSocketServer<N, N2>>
 		      (_socketPtr)->getSystemWrapperPtrRef()
 		      ->getContent()["CommandFactory"])
-		     .getCommand(static_cast<Command::Type>
-				 (_serializable.command)));
+		     .getCommand(Command::Type(_serializable.command)));
     return boost::any_cast
       <typename Wrapper::UniSoulSystemWrapper::CommandExecutor&>
       (std::static_pointer_cast<Network::TCPBoostSocketServer<N, N2>>
        (_socketPtr)->getSystemWrapperPtrRef()
        ->getContent()["CommandExecutor"])
       .execute(std::static_pointer_cast<Network::TCPBoostSocketServer<N, N2>>
-	       (_socketPtr)->getSystemWrapperPtrRef(), datas, dataFromPacket);
+	       (_socketPtr)->getSystemWrapperPtrRef(),
+	       const_cast<std::string&>(_socketPtr->getRecipient()),
+	       dataFromPacket,
+	       retMsg);
   }
 }
 

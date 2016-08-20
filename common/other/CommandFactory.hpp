@@ -38,7 +38,7 @@ namespace Command
   ::getCommand(const T& key)
   {
     if (_commands.find(key) == _commands.cend())
-      throw new Exception::Command::UnknownCommand("Unknown command");
+      throw Exception::Command::UnknownCommand("Unknown command");
     return _commands[std::move(key)];
   }
   

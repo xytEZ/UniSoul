@@ -3,6 +3,7 @@
 
 # include <tuple>
 
+# include "AppState.hh"
 # include "ICommand.hpp"
 
 namespace Command
@@ -14,6 +15,10 @@ namespace Command
     StatusCommand() = default;
     virtual ~StatusCommand() = default;
     virtual T execute(Args&...) const;
+
+  private :
+    void establishedConnectionsStatus(std::tuple<Args&...>&) const;
+    void emptyStatus(std::tuple<Args&...>&) const;
   };
 
   template <typename T, typename... Args>
@@ -22,37 +27,48 @@ namespace Command
     std::tuple<Args&...>	tuple(std::forward_as_tuple(args...));
     
     if (std::get<0>(tuple)->getSocketCallbacksPtr().size())
-      {
-	std::get<5>(tuple)
-	  .append("Established connection with :");
-	std::for_each(std::get<0>(tuple)->getSocketCallbacksPtr().cbegin(),
-		      std::get<0>(tuple)->getSocketCallbacksPtr().cend(),
-		      [&tuple]
-		      (const Network::IMultiplexer::SocketCallbackPtr&
-		       socketCallbackPtr) -> void
-		      {
-			std::shared_ptr
-			  <Network::ITCPSocket<int>>	tcpSocketPtr =
-			  std::dynamic_pointer_cast<Network::ITCPSocket<int>>
-			  (socketCallbackPtr->socketPtr);
-			
-			if (tcpSocketPtr)
-			  {
-			    std::get<5>(tuple)
-			      .append("\n\t- \"")
-			      .append(tcpSocketPtr->getRecipient())
-			      .append("\" (")
-			      .append(tcpSocketPtr->getAddress())
-			      .append(":")
-			      .append(std::to_string(tcpSocketPtr->getPort()))
-			      .append(")");
-			  }
-		      });
-      }
+      establishedConnectionsStatus(tuple);
     else
-      std::get<5>(tuple)
-	.append("Awaiting the establishment of a connection...");
-    return App::State::Flag::RUNNING;
+      emptyStatus(tuple);
+    return App::State::RUNNING;
+  }
+  
+  template <typename T, typename... Args>
+  void StatusCommand<T, Args...>
+  ::establishedConnectionsStatus(std::tuple<Args&...>& tuple) const
+  {
+    std::get<5>(tuple)
+      .append("Established connection with :");
+    std::for_each(std::get<0>(tuple)->getSocketCallbacksPtr().cbegin(),
+		  std::get<0>(tuple)->getSocketCallbacksPtr().cend(),
+		  [&tuple]
+		  (const Network::IMultiplexer::SocketCallbackPtr&
+		   socketCallbackPtr) -> void
+		  {
+		    std::shared_ptr<Network::ITCPSocket<int>>	tcpSocketPtr =
+		      std::dynamic_pointer_cast<Network::ITCPSocket<int>>
+		      (socketCallbackPtr->socketPtr);
+		    
+		    if (tcpSocketPtr)
+		      {
+			std::get<5>(tuple)
+			  .append("\n\t- ")
+			  .append(tcpSocketPtr->getRecipient())
+			  .append(" (")
+			  .append(tcpSocketPtr->getAddress())
+			  .append(" ")
+			  .append(std::to_string(tcpSocketPtr->getPort()))
+			  .append(")");
+		      }
+		  });
+  }
+  
+  template <typename T, typename... Args>
+  void
+  StatusCommand<T, Args...>::emptyStatus(std::tuple<Args&...>& tuple) const
+  {
+    std::get<5>(tuple)
+      .append("Awaiting the establishment of a connection...");
   }
 }
 

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstring>
 
 #include "SerializationFailException.hh"
 #include "ErrorWithConnectionException.hh"
@@ -13,13 +14,15 @@ namespace Network
   {
     try
       {
+	std::shared_ptr<Network::ITCPSocket<int>>	tcpSocketPtr =
+	  std::static_pointer_cast<Network::ITCPSocket<int>>(socketPtr);
+	
 	Network::Protocol::UniSoulPacket	packet =
 	  Serialization::Tool::template deserialize
-	  <Network::Protocol::UniSoulPacket>
-	  (std::static_pointer_cast<Network::ITCPSocket<int>>(socketPtr)
-	   ->recv());
+	  <Network::Protocol::UniSoulPacket>(tcpSocketPtr->recv());
 
-	std::cout << packet.data;
+	if (std::strcmp(packet.data, ""))
+	  std::cout << tcpSocketPtr->getRecipient() << " : " << packet.data;
 	delete[] packet.data;
       }
     catch (const Exception::Serialization::SerializationFail&)

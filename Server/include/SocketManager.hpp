@@ -1,12 +1,10 @@
 #ifndef SOCKET_MANAGER_HPP_
 # define SOCKET_MANAGER_HPP_
 
-# include <iostream>
 # include <memory>
 # include <list>
 # include <algorithm>
 # include <functional>
-# include <utility>
 
 namespace Network
 {
@@ -26,21 +24,21 @@ namespace Network
       
     private :
       SocketsPtr	_socketsPtr;
-
+      
     public :
       SocketManager() = default;
       ~SocketManager() = default;
       void addSocketPtr(const SocketPtr&);
       void deleteSocketPtr(const SocketPtr&);
       void deleteSocketPtrIf(const PredSocketPtr&);
-      bool findSocketPtrIf(const PredSocketPtr&) const;
+      SocketPtr findSocketPtrIf(const PredSocketPtr&);
       void apply(const FuncSocketPtr&);
     };
     
     template <typename T>
     void SocketManager<T>::addSocketPtr(const SocketPtr& socketPtr)
     {
-      _socketsPtr.push_back(std::move(socketPtr));
+      _socketsPtr.push_back(socketPtr);
     }
   
     template <typename T>
@@ -56,10 +54,13 @@ namespace Network
     }
     
     template <typename T>
-    bool SocketManager<T>::findSocketPtrIf(const PredSocketPtr& pred) const
+    typename SocketManager<T>::SocketPtr
+    SocketManager<T>::findSocketPtrIf(const PredSocketPtr& pred)
     {
-      return std::find_if(_socketsPtr.cbegin(), _socketsPtr.cend(), pred)
-	!= _socketsPtr.cend();
+      typename SocketsPtr::const_iterator	it
+	= std::find_if(_socketsPtr.cbegin(), _socketsPtr.cend(), pred);
+
+      return it != _socketsPtr.cend() ? *it : nullptr;
     }
     
     template <typename T>

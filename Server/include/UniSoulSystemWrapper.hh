@@ -4,7 +4,6 @@
 # include <memory>
 # include <map>
 # include <string>
-# include <vector>
 # include <utility>
 # include <boost/any.hpp>
 # include <boost/asio.hpp>
@@ -49,13 +48,15 @@ namespace Wrapper
       <Command::Type,
        Network::ConnectionState,
        std::unique_ptr<IWrapper<VariantMap>>,
-       std::vector<std::string>,
+       std::string,
+       std::string,
        std::string>;
     
     using CommandExecutor = Command::CommandExecutor
       <Network::ConnectionState,
        std::unique_ptr<IWrapper<VariantMap>>,
-       std::vector<std::string>,
+       std::string,
+       std::string,
        std::string>;
     
   private :

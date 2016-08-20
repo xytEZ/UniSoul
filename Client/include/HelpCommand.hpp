@@ -3,7 +3,7 @@
 
 # include <tuple>
 
-# include "AppStateFlag.hh"
+# include "AppState.hh"
 # include "ICommand.hpp"
 
 namespace Command
@@ -28,8 +28,10 @@ namespace Command
       .append("\t- Quit\n")
       .append("\t- Connect\n")
       .append("\t- Diconnect\n")
-      .append("\t- Message [RECIPIENT] [CONTENT]\n")
-      .append("\t- Status\n");
+      .append("\t- Message [LOGIN] [CONTENT]\n")
+      .append("\t- Status\n")
+      .append("\t- CreateConnection [LOGIN] [ADDRESS] [PORT]\n")
+      .append("\t- GetUser [LOGIN]\n");
     return App::State::RUNNING;
   }
 }

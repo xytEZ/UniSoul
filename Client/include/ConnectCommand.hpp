@@ -2,8 +2,9 @@
 # define CONNECT_COMMAND_HPP_
 
 # include <tuple>
+# include <cstring>
 
-# include "AppStateFlag.hh"
+# include "AppState.hh"
 # include "CommandType.hh"
 # include "ErrorWithConnectionException.hh"
 # include "ITCPSocketClient.hpp"
@@ -20,6 +21,10 @@ namespace Command
     ConnectCommand() = default;
     virtual ~ConnectCommand() = default;
     virtual T execute(Args&...) const;
+
+  private :
+    void inspectQuery(std::tuple<Args&...>&) const;
+    void initConnection(std::tuple<Args&...>&) const;
   };
 
   template <typename T, typename... Args>
@@ -27,6 +32,15 @@ namespace Command
   {
     std::tuple<Args&...>	tuple(std::forward_as_tuple(args...));
     
+    inspectQuery(tuple);
+    initConnection(tuple);
+    return App::State::RUNNING;
+  }
+
+  template <typename T, typename... Args>
+  void
+  ConnectCommand<T, Args...>::inspectQuery(std::tuple<Args&...>& tuple) const
+  {
     if (std::find_if(std::get<0>(tuple)->getSocketCallbacksPtr().cbegin(),
 		     std::get<0>(tuple)->getSocketCallbacksPtr().cend(),
 		     [&tuple]
@@ -44,36 +58,45 @@ namespace Command
 			 : false;
 		     }) != std::get<0>(tuple)->getSocketCallbacksPtr().cend())
       throw Exception::Network
-      ::ErrorWithConnection("Already connected to the server");
+	::ErrorWithConnection("Already connected to the server");
+  }
+
+  template <typename T, typename... Args>
+  void
+  ConnectCommand<T, Args...>::initConnection(std::tuple<Args&...>& tuple) const
+  {
     try
       {
 	std::string		identifier(std::get<2>(tuple).find()[0]);
-	
+
 	std::get<1>(tuple)->open();
 	std::get<1>(tuple)->connect();
 	std::get<0>(tuple)->addSocket(std::get<1>(tuple));
-	try
-	  {
-	    std::get<1>(tuple)->send
-	      (Serialization::Tool::template serialize
-	       <Network::Protocol::UniSoulPacket>
-	       (std::get<3>(tuple).create
-		(Network::Protocol::Communication::TCP,
-		 Command::Type::CONNECT,
-		 identifier.c_str())));
-	  }
-	catch (const Exception::Serialization::SerializationFail&)
-	  {
-	    throw Exception::Network
-	      ::ErrorWithConnection("Authentification sending error");
-	  }
+	std::get<1>(tuple)->send
+	  (Serialization::Tool::template serialize
+	   <Network::Protocol::UniSoulPacket>
+	   (std::get<3>(tuple).create
+	    (Network::Protocol::Communication::TCP,
+	     Command::Type::CONNECT,
+	     identifier.c_str())));
       }
     catch (const std::ifstream::failure&)
       {
 	throw Exception::Network
 	  ::ErrorWithConnection("Untraceable identifier");
       }
-    return App::State::Flag::RUNNING;
+    catch (const Exception::Serialization::SerializationFail&)
+      {
+	throw Exception::Network
+	  ::ErrorWithConnection("Authentification sending error");
+      }
+    catch (const std::system_error& e)
+      {
+	if (!std::strcmp(e.what(), "Broken pipe"))
+	  throw Exception::Network
+	    ::ErrorWithConnection("Error with remote connection");
+	throw Exception::Network::ErrorWithConnection(e.what());
+      }
   }
 }
 

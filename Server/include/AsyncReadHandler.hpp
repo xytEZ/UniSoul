@@ -30,6 +30,10 @@ namespace Network
     
     ~AsyncReadHandler() = default;
     void readHandle() const;
+
+  private :
+    void requestProcessing() const;
+    void disconnectClient() const;
   };
 
   template <std::size_t N, std::size_t N2>
@@ -46,29 +50,41 @@ namespace Network
   void AsyncReadHandler<N, N2>::readHandle() const
   {
     if (!_error)
-      {
-	RequestProcessingFromAsyncTaskHandler
-	  <Network::Protocol::UniSoulPacket,
-	   Factory::UniSoulPacketFactory,
-	   N,
-	   N2>
-	  (_socketPtr).requestProcessing();
-      }
+      requestProcessing();
     else
-      DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr)
-	.disconnect
-	(boost::any_cast
-	 <typename Wrapper::UniSoulSystemWrapper::SocketManager&>
-	 (std::static_pointer_cast<Network::TCPBoostSocketServer<N, N2>>
-	  (_socketPtr)->getSystemWrapperPtrRef()
-	  ->getContent()["SocketManager"])
-	 .findSocketPtrIf([this]
-			  (const std::shared_ptr
-			   <Network::ISocket<boost::asio::ip::tcp::socket>>&
-			   socketPtr) -> bool
-			   {
-			     return socketPtr == _socketPtr;
-			   }));
+      disconnectClient();
+  }
+
+  template <std::size_t N, std::size_t N2>
+  void AsyncReadHandler<N, N2>::requestProcessing() const
+  {
+    if (!RequestProcessingFromAsyncTaskHandler
+	<Network::Protocol::UniSoulPacket,
+	Factory::UniSoulPacketFactory,
+	N,
+	N2>
+	(_socketPtr).requestProcessing())
+      _socketPtr->recv();
+  }
+  
+  template <std::size_t N, std::size_t N2>
+  void AsyncReadHandler<N, N2>::disconnectClient() const
+  {
+    DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr)
+      .disconnect
+      (static_cast<bool>
+       (boost::any_cast
+       <typename Wrapper::UniSoulSystemWrapper::SocketManager&>
+       (std::static_pointer_cast<Network::TCPBoostSocketServer<N, N2>>
+	(_socketPtr)->getSystemWrapperPtrRef()
+	->getContent()["SocketManager"])
+       .findSocketPtrIf([this]
+			(const std::shared_ptr
+			 <Network::ISocket<boost::asio::ip::tcp::socket>>&
+			 socketPtr) -> bool
+			{
+			  return socketPtr == _socketPtr;
+			})));
   }
 }
 

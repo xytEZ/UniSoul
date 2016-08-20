@@ -42,8 +42,10 @@ namespace Persistence
       try
 	{
 	  std::string	line;
-
+	  
 	  ifs.open(_fullName, std::ifstream::in);
+	  if (!ifs.is_open())
+	    throw std::ifstream::failure("Error on opening file");
 	  while (std::getline(ifs, line))
 	    {
 	      if (line == data)
@@ -77,6 +79,8 @@ namespace Persistence
 	  std::string	line;
 	  
 	  ifs.open(_fullName, std::ifstream::in);
+	  if (!ifs.is_open())
+	    throw std::ifstream::failure("Error on opening file");
 	  while (std::getline(ifs, line))
 	    datas.push_back(line);
 	  ifs.close();

@@ -61,9 +61,9 @@ namespace Network
   {
     if ((_epollFd = ::epoll_create(N)) == -1)
       throw std::system_error(errno, std::system_category());
-    _events[IMultiplexer::READ].events = EPOLLIN | EPOLLPRI;
+    _events[IMultiplexer::READ].events = EPOLLIN | EPOLLPRI | EPOLLRDHUP;
     _callbacks[IMultiplexer::READ] = std::move(read);
-    _events[IMultiplexer::WRITE].events = EPOLLOUT;
+    _events[IMultiplexer::WRITE].events = EPOLLOUT | EPOLLRDHUP;
     _callbacks[IMultiplexer::WRITE] = std::move(write);
   }
 
@@ -113,7 +113,7 @@ namespace Network
   
   template <int TIMEOUT, std::size_t N>
   void Epoll<TIMEOUT, N>::addSockets(const SocketsPtr& socketsPtr,
-			    IMultiplexer::Flag flag)
+				     IMultiplexer::Flag flag)
   {
     std::for_each(socketsPtr.cbegin(),
 		  socketsPtr.cend(),
@@ -157,8 +157,10 @@ namespace Network
 	socketCallback = 
 	  reinterpret_cast<IMultiplexer::SocketCallback *>
 	  (_eventsRes[n].data.ptr);
+	
 	if (!(_eventsRes[n].events & EPOLLERR)
-	    && !(_eventsRes[n].events & EPOLLHUP))
+	    && !(_eventsRes[n].events & EPOLLHUP)
+	    && !(_eventsRes[n].events & EPOLLRDHUP))
 	  socketCallback->callback(socketCallback->socketPtr);
 	else
 	  closeSocket(socketCallback);
@@ -194,15 +196,13 @@ namespace Network
 		    socketCallback->socketPtr->getDescriptor(),
 		    0) == -1)
       throw std::system_error(errno, std::system_category());
-    std::remove_if(_polled.begin(),
-		   _polled.end(),
-		   [&socketCallback]
-		   (const IMultiplexer::SocketCallbackPtr& socketCallbackPtr)
-		   -> bool
-		   {
-		     return socketCallbackPtr->socketPtr
-		       == socketCallback->socketPtr;
-		   });
+    _polled.remove_if([&socketCallback]
+		      (const IMultiplexer::SocketCallbackPtr&
+		       socketCallbackPtr) -> bool
+		      {
+			return socketCallbackPtr->socketPtr
+			  == socketCallback->socketPtr;
+		      });
     socketCallback->socketPtr->close();
   }
 
