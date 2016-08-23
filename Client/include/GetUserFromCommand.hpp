@@ -1,31 +1,31 @@
-#ifndef DISCONNECT_COMMAND_HPP_
-# define DISCONNECT_COMMAND_HPP_
+#ifndef GET_USER_FROM_COMMAND_HPP_
+# define GET_USER_FROM_COMMAND_HPP_
 
 # include <tuple>
+# include <cstring>
 
 # include "AppState.hh"
-# include "CommandType.hh"
-# include "ErrorWithConnectionException.hh"
-# include "ITCPSocket.hpp"
 # include "SerializationTool.hpp"
+# include "ErrorWithConnectionException.hh"
+# include "CommandType.hh"
 # include "ICommand.hpp"
 
 namespace Command
 {
   template <typename T, typename... Args>
-  class DisconnectCommand : public ICommand<T, Args...>
+  class GetUserFromCommand : public ICommand<T, Args...>
   {
   public :
-    DisconnectCommand() = default;
-    virtual ~DisconnectCommand() = default;
+    GetUserFromCommand() = default;
+    virtual ~GetUserFromCommand() = default;
     virtual T execute(Args&...) const;
   };
 
   template <typename T, typename... Args>
-  T DisconnectCommand<T, Args...>::execute(Args&... args) const
+  T GetUserFromCommand<T, Args...>::execute(Args&... args) const
   {
     std::tuple<Args&...>	tuple = std::forward_as_tuple(args...);
-
+    
     try
       {
 	if (std::find_if(std::get<0>(tuple)->getSocketCallbacksPtr().cbegin(),
@@ -39,7 +39,7 @@ namespace Command
 			     std::dynamic_pointer_cast
 			     <Network::ITCPSocket<int>>
 			     (socketCallbackPtr->socketPtr);
-			   
+
 			   if (tcpSocketPtr
 			       && tcpSocketPtr->getRemoteConnectionInfo().login
 			       == std::get<4>(tuple)[1].what)
@@ -49,8 +49,8 @@ namespace Command
 				  <Network::Protocol::UniSoulPacket>
 				  (std::get<3>(tuple).create
 				   (Network::Protocol::Communication::TCP,
-				    Command::Type::DISCONNECT,
-				    "")));
+				    Command::Type::GET_USER_FROM,
+				    std::get<4>(tuple)[2].what.c_str())));
 			       return true;
 			     }
 			   return false;
@@ -75,4 +75,4 @@ namespace Command
   }
 }
 
-#endif /* !DISCONNECT_COMMAND_HPP_ */
+#endif /* GET_USER_FROM_COMMAND_HPP_ */

@@ -1,15 +1,10 @@
 #ifndef TCP_CALLBACK_WRITE_HH_
 # define TCP_CALLBACK_WRITE_HH_
 
-# include <memory>
-
-# include "ISocket.hpp"
+# include "IMultiplexer.hh"
 
 namespace Network
-{
-  template <typename T>
-  class ISocket;
-  
+{  
   struct TCPCallbackWrite
   {
   private :
@@ -18,7 +13,7 @@ namespace Network
   public :
     TCPCallbackWrite() = delete;
     ~TCPCallbackWrite() = delete;
-    static void write(const SocketPtr&);
+    static void write(const SocketPtr&, Network::IMultiplexer&);
   };
 }
 

@@ -45,13 +45,13 @@ namespace Controller
       FUNCS_ERR_MSG =
       {
 	{ Parser::ParsedState::INVALID_CMD,
-	  []() -> const char * { return "Command is invalid."; } },
+	  []() -> const char * { return "Command is invalid\n"; } },
 	{ Parser::ParsedState::INVALID_ARG,
-	  []() -> const char * { return "Argument(s) is invalid."; } },
+	  []() -> const char * { return "Argument(s) is invalid\n"; } },
 	{ Parser::ParsedState::MISSING_ARG,
-	  []() -> const char * { return "Argument(s) is missing."; } },
+	  []() -> const char * { return "Argument(s) is missing\n"; } },
 	{ Parser::ParsedState::EXCESS_ARG,
-	  []() -> const char * { return "Excess argument."; } }
+	  []() -> const char * { return "Excess argument\n"; } }
       };
     
     return std::find_if

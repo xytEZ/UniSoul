@@ -15,6 +15,7 @@
 # include <netdb.h>
 # include <netinet/in.h>
 
+# include "RemoteConnectionInfo.hh"
 # include "ITCPSocketClient.hpp"
 
 namespace Network
@@ -23,13 +24,20 @@ namespace Network
   class TCPSocketClientLinux : public ITCPSocketClient<int>
   {
   private :
-    int			_fd;
-    struct sockaddr_in	_addr;
-    std::array<char, N>	_buffer;
-    std::string		_recipient;
+    int				_fd;
+    struct sockaddr_in		_addr;
+    std::array<char, N>		_buffer;
+    RemoteConnectionInfo	_remoteConnectionInfo;
     
   public :
-    TCPSocketClientLinux(const std::string&, unsigned short);
+    TCPSocketClientLinux(const std::string&,
+			 unsigned short,
+			 const RemoteConnectionInfo& = RemoteConnectionInfo());
+    
+    TCPSocketClientLinux(int,
+			 struct sockaddr_in,
+			 const RemoteConnectionInfo& = RemoteConnectionInfo());
+    
     virtual ~TCPSocketClientLinux() = default;
     virtual bool open();
     virtual bool close();
@@ -38,18 +46,32 @@ namespace Network
     virtual std::string recv();
     virtual std::string getAddress() const;
     virtual unsigned short getPort() const;
-    virtual const std::string& getRecipient() const;
-    virtual void setRecipient(const std::string&);
+    virtual const RemoteConnectionInfo& getRemoteConnectionInfo() const;
+    virtual void setRemoteConnectionInfo(const RemoteConnectionInfo&);
     virtual bool connect();
   };
-
+  
   template <std::size_t N>
-  TCPSocketClientLinux<N>::TCPSocketClientLinux(const std::string& hostname,
-						unsigned short port)
+  TCPSocketClientLinux<N>
+  ::TCPSocketClientLinux(const std::string& hostname,
+			 unsigned short port,
+			 const RemoteConnectionInfo& remoteConnectionInfo) :
+    _remoteConnectionInfo(remoteConnectionInfo)
   {
     _addr.sin_addr.s_addr = ::inet_addr(hostname.c_str());
     _addr.sin_family = AF_INET;
     _addr.sin_port = ::htons(port);
+  }
+  
+  template <std::size_t N>
+  TCPSocketClientLinux<N>
+  ::TCPSocketClientLinux(int fd,
+			 struct sockaddr_in addr,
+			 const RemoteConnectionInfo& remoteConnectionInfo) :
+    _fd(fd),
+    _addr(addr),
+    _remoteConnectionInfo(remoteConnectionInfo)
+  {
   }
   
   template <std::size_t N>
@@ -108,15 +130,17 @@ namespace Network
   }
 
   template <std::size_t N>
-  const std::string& TCPSocketClientLinux<N>::getRecipient() const
+  const RemoteConnectionInfo&
+  TCPSocketClientLinux<N>::getRemoteConnectionInfo() const
   {
-    return _recipient;
+    return _remoteConnectionInfo;
   }
 
   template <std::size_t N>
-  void TCPSocketClientLinux<N>::setRecipient(const std::string& recipient)
+  void TCPSocketClientLinux<N>
+  ::setRemoteConnectionInfo(const RemoteConnectionInfo& remoteConnectionInfo)
   {
-    _recipient = recipient;
+    _remoteConnectionInfo = remoteConnectionInfo;
   }
 
   template <std::size_t N>

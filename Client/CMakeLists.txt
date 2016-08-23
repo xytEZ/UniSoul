@@ -4,11 +4,12 @@ project(Client)
 
 include_directories(
   include/
-  ${CMAKE_CURRENT_SOURCE_DIR}/../common/protocol/
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/serialization/
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/tool/
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/packet/
-  ${CMAKE_CURRENT_SOURCE_DIR}/../common/other/
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/network/
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/command/
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/persistence/
   )
 
 add_definitions(-W -Wall -Wextra -std=c++14)
@@ -19,15 +20,6 @@ if (NOT Boost_FOUND)
   message(FATAL_ERROR "Boost not found !")
 endif()
 
-
-find_package(Qt5Widgets REQUIRED)
-
-if (NOT Qt5Widgets_FOUND)
-  message(FATAL_ERROR "Qt5Widgets not found !")
-endif()
-
-include_directories(${Qt5Widgets_INCLUDE_DIRS})
-
 file(
   GLOB_RECURSE
   client_srcs
@@ -35,8 +27,9 @@ file(
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/serialization/*.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/tool/*.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/packet/*.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../common/protocol/*.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../common/other/*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/network/*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/command/*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/persistence/*.cpp
   )
 
 add_executable(client ${client_srcs})
@@ -52,4 +45,4 @@ set_target_properties(
   RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_CURRENT_SOURCE_DIR}/../
   )
-target_link_libraries(client Qt5::Widgets ${Boost_LIBRARIES})
+target_link_libraries(client ${Boost_LIBRARIES})

@@ -9,12 +9,11 @@ const std::map<std::string, std::vector<std::string>>
   {
     { "Help", { } },
     { "Quit", { } },
-    { "Connect", { } },
-    { "Disconnect", { } },
+    { "CreateConnection", { "^[a-zA-Z0-9]+$", ".+" , ".+" } },
+    { "Disconnect", { "^[a-zA-Z0-9]+$" } },
     { "Message", { "^[a-zA-Z0-9]+$", ".+"} },
     { "Status", { } },
-    { "CreateConnection", { ".+", ".+" , ".+" } },
-    { "GetUser", { ".+" } }
+    { "GetUserFrom", { "^[a-zA-Z0-9]+$", "^[a-zA-Z0-9]+$" } }
   };
 
 std::vector<Parser::ParsedInput>

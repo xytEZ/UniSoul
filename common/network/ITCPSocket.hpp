@@ -2,6 +2,8 @@
 # define ITCP_SOCKET_HPP_
 
 # include <string>
+
+# include "RemoteConnectionInfo.hh"
 # include "ISocket.hpp"
 
 namespace Network
@@ -15,8 +17,8 @@ namespace Network
     virtual std::string recv() = 0;
     virtual std::string getAddress() const = 0;
     virtual unsigned short getPort() const = 0;
-    virtual const std::string& getRecipient() const = 0;
-    virtual void setRecipient(const std::string&) = 0;
+    virtual const RemoteConnectionInfo& getRemoteConnectionInfo() const = 0;
+    virtual void setRemoteConnectionInfo(const RemoteConnectionInfo&) = 0;
   };
 }
 

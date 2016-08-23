@@ -29,6 +29,7 @@ namespace Network
 				       <boost::asio::ip::tcp::socket>>&,
 				       const T&);
     
+
     RequestExecuteFromAsyncTaskHandler() = default;
     Network::ConnectionState requestExecute(std::string&);
   };
@@ -49,7 +50,7 @@ namespace Network
   Network::ConnectionState RequestExecuteFromAsyncTaskHandler<T, N, N2>
   ::requestExecute(std::string& retMsg)
   {
-    std::string	dataFromPacket(_serializable.data);
+    std::string	data(_serializable.data);
     
     boost::any_cast
       <typename Wrapper::UniSoulSystemWrapper::CommandExecutor&>
@@ -70,8 +71,8 @@ namespace Network
        ->getContent()["CommandExecutor"])
       .execute(std::static_pointer_cast<Network::TCPBoostSocketServer<N, N2>>
 	       (_socketPtr)->getSystemWrapperPtrRef(),
-	       const_cast<std::string&>(_socketPtr->getRecipient()),
-	       dataFromPacket,
+	       _socketPtr,
+	       data,
 	       retMsg);
   }
 }

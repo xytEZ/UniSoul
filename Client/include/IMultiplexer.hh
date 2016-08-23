@@ -16,7 +16,7 @@ namespace Network
     using SocketsPtr = std::list<SocketPtr>;
     
   public :
-    using ioCallback = std::function<void(const SocketPtr&)>;
+    using ioCallback = std::function<void(const SocketPtr&, IMultiplexer&)>;
     
   public :
     struct SocketCallback
@@ -48,7 +48,8 @@ namespace Network
     virtual void addSockets(const SocketsPtr&,
 			    const ioCallback&,
 			    Flag = Flag::READ) = 0;
-    
+
+    virtual void closeSocket(const SocketPtr&) = 0;
     virtual int process() = 0;
     virtual void execute() = 0;
     virtual void clear() = 0;

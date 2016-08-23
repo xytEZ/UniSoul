@@ -22,7 +22,7 @@ namespace Command
   {
     std::tuple<Args&...>	tuple = std::forward_as_tuple(args...);
     
-    std::cout << std::get<1>(tuple)
+    std::cout << std::get<1>(tuple)->getRemoteConnectionInfo().login
 	      << " : "
 	      << std::get<2>(tuple)
 	      << std::endl;

@@ -11,6 +11,7 @@
 # include <utility>
 # include <boost/archive/archive_exception.hpp>
 
+# include "ComplementaryFunction.hpp"
 # include "SerializationTool.hpp"
 # include "RequestExecuteFromAsyncTaskHandler.hpp"
 # include "PacketSenderFromAsyncTaskHandler.hpp"
@@ -39,7 +40,7 @@ namespace Network
 
   private :
     bool validRequestProcessing(const T&, bool) const;
-    void firstTimeValidRequestProcessing(const std::string&) const;
+    bool firstTimeValidRequestProcessing(const std::string&) const;
     void noValidRequestProcessing() const;
   };
 
@@ -100,6 +101,7 @@ namespace Network
   {
     std::string			retMsg;
     Network::ConnectionState	state;
+    bool			socketIsClosed = false;
 
     state = RequestExecuteFromAsyncTaskHandler<T, N, N2>
       (_socketPtr, serializable).requestExecute(retMsg);
@@ -107,31 +109,37 @@ namespace Network
       (_socketPtr).successPacket(retMsg);
     if (state == Network::ConnectionState::DISCONNECTION
 	|| state == Network::ConnectionState::REFUSED_CONNECTION)
-      {
-	DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr)
-	  .disconnect(registeredConnection);
-	return true;
-      }
+      socketIsClosed = DisconnectFromAsyncTaskHandler<N, N2>(_socketPtr)
+	.disconnect(registeredConnection);
     else if (!registeredConnection)
-      firstTimeValidRequestProcessing(serializable.data);
-    return false;
+      socketIsClosed = firstTimeValidRequestProcessing(serializable.data);
+    return socketIsClosed;
   }
 
   template <typename T, typename U, std::size_t N, std::size_t N2>
-  void RequestProcessingFromAsyncTaskHandler<T, U, N, N2>
+  bool RequestProcessingFromAsyncTaskHandler<T, U, N, N2>
   ::firstTimeValidRequestProcessing(const std::string& dataFromRequest) const
   {
     constexpr const char	DELIMITER = ';';
+    RemoteConnectionInfo	remoteConnectionInfo;
     std::stringstream		ss(dataFromRequest);
-    std::string			str;
+    std::string			s;
 
-    std::getline(ss, str, DELIMITER);
-    _socketPtr->setRecipient(str);
+    std::getline(ss, s, DELIMITER);
+    remoteConnectionInfo.login = std::move(s);
+    ss.str(dataFromRequest.substr(dataFromRequest.find('|') + 1));
+    std::getline(ss, s, DELIMITER);
+    remoteConnectionInfo.listeningAddress = std::move(s);
+    std::getline(ss, s, DELIMITER);
+    remoteConnectionInfo.listeningPort =
+      Tool::convert_string_to<unsigned short>(std::move(s));
+    _socketPtr->setRemoteConnectionInfo(std::move(remoteConnectionInfo));
     boost::any_cast
       <typename Wrapper::UniSoulSystemWrapper::SocketManager&>
       (std::static_pointer_cast<Network::TCPBoostSocketServer<N, N2>>
        (_socketPtr)->getSystemWrapperPtrRef()
        ->getContent()["SocketManager"]).addSocketPtr(_socketPtr);
+    return !true;
   }
   
   template <typename T, typename U, std::size_t N, std::size_t N2>

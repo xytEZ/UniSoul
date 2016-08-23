@@ -20,7 +20,7 @@
 
 namespace Network
 { 
-  template <std::size_t N = 256, std::size_t N2 = 60>
+  template <std::size_t N = 256, std::size_t N2 = 300>
   class TCPBoostSocketServer :
     public ITCPSocketServer<boost::asio::ip::tcp::socket,
 			    std::shared_ptr
@@ -39,29 +39,35 @@ namespace Network
     boost::asio::deadline_timer		_timer;
     boost::array<char, N>		_buffer;
     std::size_t				_bytesTransferred;
-    std::string				_recipient;
+    RemoteConnectionInfo		_remoteConnectionInfo;
     SystemWrapperPtrRef			_systemWrapperPtrRef;
       
   public :
-    template <std::size_t M = 256, std::size_t M2 = 60>
+    template <std::size_t M = 256, std::size_t M2 = 300>
       static std::shared_ptr<TCPBoostSocketServer<M, M2>>
       create(boost::asio::io_service&,
 	     SystemWrapperPtrRef,
 	     const std::string&,
-	     unsigned short);
+	     unsigned short,
+	     const RemoteConnectionInfo& = RemoteConnectionInfo());
     
   private :
-    template <std::size_t M = 256, std::size_t M2 = 60>
+    template <std::size_t M = 256, std::size_t M2 = 300>
       static std::shared_ptr<TCPBoostSocketServer<M, M2>>
-      create(boost::asio::io_service&, SystemWrapperPtrRef);
+      create(boost::asio::io_service&,
+	     SystemWrapperPtrRef,
+	     const RemoteConnectionInfo& = RemoteConnectionInfo());
     
   private :
     TCPBoostSocketServer(boost::asio::io_service&,
 			 SystemWrapperPtrRef,
 			 const std::string&,
-			 unsigned short);
+			 unsigned short,
+			 const RemoteConnectionInfo&);
     
-    TCPBoostSocketServer(boost::asio::io_service&, SystemWrapperPtrRef);
+    TCPBoostSocketServer(boost::asio::io_service&,
+			 SystemWrapperPtrRef,
+			 const RemoteConnectionInfo&);
     
   public :
     virtual ~TCPBoostSocketServer() = default;
@@ -72,8 +78,8 @@ namespace Network
     virtual std::string recv();
     virtual std::string getAddress() const;
     virtual unsigned short getPort() const;
-    virtual const std::string& getRecipient() const;
-    virtual void setRecipient(const std::string&);
+    virtual const RemoteConnectionInfo& getRemoteConnectionInfo() const;
+    virtual void setRemoteConnectionInfo(const RemoteConnectionInfo&);
     virtual bool bind();
     virtual bool listen();
     virtual std::shared_ptr<ITCPSocket<boost::asio::ip::tcp::socket>> accept();
@@ -103,29 +109,35 @@ namespace Network
   template <std::size_t N, std::size_t N2>
   template <std::size_t M, std::size_t M2>
   std::shared_ptr<TCPBoostSocketServer<M, M2>>
-    TCPBoostSocketServer<N, N2>::create(boost::asio::io_service& ios,
-					SystemWrapperPtrRef
-					systemWrapperPtrRef,
-					const std::string& hostname,
-					unsigned short port)
+    TCPBoostSocketServer<N, N2>
+    ::create(boost::asio::io_service& ios,
+	     SystemWrapperPtrRef systemWrapperPtrRef,
+	     const std::string& hostname,
+	     unsigned short port,
+	     const RemoteConnectionInfo& remoteConnectionInfo)
   {
     return std::shared_ptr
       <TCPBoostSocketServer<M, M2>>
       (new TCPBoostSocketServer<M, M2>(ios,
 				       systemWrapperPtrRef,
 				       hostname,
-				       port));
+				       port,
+				       remoteConnectionInfo));
   }
 
   template <std::size_t N, std::size_t N2>
   template <std::size_t M, std::size_t M2>
   std::shared_ptr<TCPBoostSocketServer<M, M2>>
-    TCPBoostSocketServer<N, N2>::create(boost::asio::io_service& ios,
-					SystemWrapperPtrRef systemWrapperPtrRef)
+    TCPBoostSocketServer<N, N2>
+    ::create(boost::asio::io_service& ios,
+	     SystemWrapperPtrRef systemWrapperPtrRef,
+	     const RemoteConnectionInfo& remoteConnectionInfo)
   {
     return std::shared_ptr
       <TCPBoostSocketServer<M, M2>>
-      (new TCPBoostSocketServer<M, M2>(ios, systemWrapperPtrRef));
+      (new TCPBoostSocketServer<M, M2>(ios,
+				       systemWrapperPtrRef,
+				       remoteConnectionInfo));
   }
   
   template <std::size_t N, std::size_t N2>
@@ -133,11 +145,13 @@ namespace Network
   ::TCPBoostSocketServer(boost::asio::io_service& ios,
 			 SystemWrapperPtrRef systemWrapperPtrRef,
 			 const std::string& hostname,
-			 unsigned short port) :
+			 unsigned short port,
+			 const RemoteConnectionInfo& remoteConnectionInfo) :
     _socket(ios),
     _acceptor(ios),
     _endpoint(boost::asio::ip::address::from_string(hostname), port),
     _timer(ios, boost::posix_time::seconds(N2)),
+    _remoteConnectionInfo(remoteConnectionInfo),
     _systemWrapperPtrRef(systemWrapperPtrRef)
   {
   }
@@ -145,11 +159,13 @@ namespace Network
   template <std::size_t N, std::size_t N2>
   TCPBoostSocketServer<N, N2>
   ::TCPBoostSocketServer(boost::asio::io_service& ios,
-			 SystemWrapperPtrRef systemWrapperPtrRef) :
+			 SystemWrapperPtrRef systemWrapperPtrRef,
+			 const RemoteConnectionInfo& remoteConnectionInfo) :
     _socket(ios),
     _acceptor(ios),
     _endpoint(),
     _timer(ios, boost::posix_time::seconds(N2)),
+    _remoteConnectionInfo(remoteConnectionInfo),
     _systemWrapperPtrRef(systemWrapperPtrRef)
   {
   }
@@ -204,8 +220,8 @@ namespace Network
 		   this->shared_from_this(),
 		   boost::asio::placeholders::error,
 		   boost::asio::placeholders::bytes_transferred));
-    _timer.async_wait(boost::bind(&TCPBoostSocketServer::close,
-				  this->shared_from_this()));
+    /*_timer.async_wait(boost::bind(&TCPBoostSocketServer::close,
+      this->shared_from_this()));*/
     return "";
   }
 
@@ -222,15 +238,17 @@ namespace Network
   }
 
   template <std::size_t N, std::size_t N2>
-  const std::string& TCPBoostSocketServer<N, N2>::getRecipient() const
+  const RemoteConnectionInfo&
+  TCPBoostSocketServer<N, N2>::getRemoteConnectionInfo() const
   {
-    return _recipient;
+    return _remoteConnectionInfo;
   }
 
   template <std::size_t N, std::size_t N2>
-  void TCPBoostSocketServer<N, N2>::setRecipient(const std::string& recipient)
+  void TCPBoostSocketServer<N, N2>
+  ::setRemoteConnectionInfo(const RemoteConnectionInfo& remoteConnectionInfo)
   {
-    _recipient = recipient;
+    _remoteConnectionInfo = remoteConnectionInfo;
   }
   
   template <std::size_t N, std::size_t N2>

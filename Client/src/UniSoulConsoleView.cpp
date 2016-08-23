@@ -36,8 +36,7 @@ namespace View
   
   void UniSoulConsoleView::display()
   {
-    
-    std::cout << _viewState.text << std::endl;
+    std::cout << _viewState.text;
   }
   
   void UniSoulConsoleView::close()

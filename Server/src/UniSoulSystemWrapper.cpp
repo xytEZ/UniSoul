@@ -1,9 +1,9 @@
 #include "PersistentDataFileInteractor.hpp"
 #include "File.hpp"
-#include "ConnectCommand.hpp"
+#include "CreateConnectionCommand.hpp"
 #include "DisconnectCommand.hpp"
 #include "MessageCommand.hpp"
-#include "GetUserCommand.hpp"
+#include "GetUserFromCommand.hpp"
 #include "UniSoulSystemWrapper.hh"
 
 namespace Wrapper
@@ -26,32 +26,32 @@ namespace Wrapper
   {
     CommandFactory    cf;
     
-    cf.addCommand(Command::Type::CONNECT,
-		  std::make_shared<Command::ConnectCommand
+    cf.addCommand(Command::Type::CREATE_CONNECTION,
+		  std::make_shared<Command::CreateConnectionCommand
 		  <Network::ConnectionState,
 		  std::unique_ptr<IWrapper<VariantMap>>,
-		  std::string,
+		  TCPSocketPtr,
 		  std::string,
 		  std::string>>());
     cf.addCommand(Command::Type::DISCONNECT,
 		  std::make_shared<Command::DisconnectCommand
 		  <Network::ConnectionState,
 		  std::unique_ptr<IWrapper<VariantMap>>,
-		  std::string,
+		  TCPSocketPtr,
 		  std::string,
 		  std::string>>());
     cf.addCommand(Command::Type::MESSAGE,
 		  std::make_shared<Command::MessageCommand
 		  <Network::ConnectionState,
 		  std::unique_ptr<IWrapper<VariantMap>>,
-		  std::string,
+		  TCPSocketPtr,
 		  std::string,
 		  std::string>>());
-    cf.addCommand(Command::Type::GET_USER,
-		  std::make_shared<Command::GetUserCommand
+    cf.addCommand(Command::Type::GET_USER_FROM,
+		  std::make_shared<Command::GetUserFromCommand
 		  <Network::ConnectionState,
 		  std::unique_ptr<IWrapper<VariantMap>>,
-		  std::string,
+		  TCPSocketPtr,
 		  std::string,
 		  std::string>>());
     _components["CommandFactory"] = std::move(cf);

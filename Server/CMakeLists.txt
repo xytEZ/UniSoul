@@ -4,11 +4,12 @@ project(Server)
 
 include_directories(
   include/
-  ${CMAKE_CURRENT_SOURCE_DIR}/../common/protocol/
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/serialization/
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/tool/
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/packet/
-  ${CMAKE_CURRENT_SOURCE_DIR}/../common/other/
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/network/
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/command/
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/persistence/
   )
 
 add_definitions(-W -Wall -Wextra -std=c++14)
@@ -26,8 +27,9 @@ file(
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/serialization/*.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/tool/*.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/packet/*.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../common/protocol/*.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../common/other/*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/network/*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/command/*.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/persistence/*.cpp
   )
 
 add_executable(server ${server_srcs})

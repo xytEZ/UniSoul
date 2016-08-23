@@ -4,7 +4,9 @@
 # include <tuple>
 # include <cstring>
 
-# include "ComplementaryFunction.hpp"
+# include "RemoteConnectionInfo.hh"
+# include "CommandType.hh"
+# include "SerializationTool.hpp"
 # include "ErrorWithConnectionException.hh"
 # include "ITCPSocketClient.hpp"
 # include "IMultiplexer.hh"
@@ -32,17 +34,7 @@ namespace Command
     std::tuple<Args&...>	tuple = std::forward_as_tuple(args...);
 
     inspectQuery(tuple);
-    try
-      {
-	initConnection(tuple);
-      }
-    catch (const std::system_error& e)
-      {
-	if (!std::strcmp(e.what(), "Broken pipe"))
-	  throw Exception::Network
-	    ::ErrorWithConnection("Error with remote connection");
-	throw Exception::Network::ErrorWithConnection(e.what());
-      }
+    initConnection(tuple);
     return App::State::RUNNING;
   }
   
@@ -50,34 +42,28 @@ namespace Command
   void CreateConnectionCommand<T, Args...>
   ::inspectQuery(std::tuple<Args&...>& tuple) const
   {
-    if (std::get<1>(tuple)->getRecipient() == std::get<4>(tuple)[1].what
-	|| (std::get<1>(tuple)->getAddress() == std::get<4>(tuple)[2].what
-	    && std::get<1>(tuple)->getPort()
-	    == Tool::convert_string_to<unsigned short>
-	    (std::get<4>(tuple)[3].what)))
-      throw Exception::Network
-	::ErrorWithConnection("The login or IP address is reserved");
-    std::for_each(std::get<0>(tuple)->getSocketCallbacksPtr().cbegin(),
-		  std::get<0>(tuple)->getSocketCallbacksPtr().cend(),
-		  [&tuple]
-		  (const Network::IMultiplexer::SocketCallbackPtr&
-		   socketCallbackPtr) -> void
-		  {
-		    std::shared_ptr<Network::ITCPSocket<int>>	tcpSocketPtr =
-		      std::dynamic_pointer_cast<Network::ITCPSocket<int>>
-		      (socketCallbackPtr->socketPtr);
-		    
-		    if (tcpSocketPtr
-			&& (tcpSocketPtr->getRecipient()
-			    == std::get<4>(tuple)[1].what
-			    || (tcpSocketPtr->getAddress()
-				== std::get<4>(tuple)[2].what
-				&& tcpSocketPtr->getPort()
-				== Tool::convert_string_to<unsigned short>
-				(std::get<4>(tuple)[3].what))))
-		      throw Exception::Network::ErrorWithConnection
-			("The login or IP address is already used");
-		  });
+    if (std::find_if(std::get<0>(tuple)->getSocketCallbacksPtr().cbegin(),
+		     std::get<0>(tuple)->getSocketCallbacksPtr().cend(),
+		     [&tuple]
+		     (const Network::IMultiplexer::SocketCallbackPtr&
+		      socketCallbackPtr) -> bool
+		     {
+		       std::shared_ptr
+			 <Network::ITCPSocket<int>>	tcpSocketPtr =
+			 std::dynamic_pointer_cast<Network::ITCPSocket<int>>
+			 (socketCallbackPtr->socketPtr);
+		       
+		       return tcpSocketPtr
+			 && (tcpSocketPtr->getRemoteConnectionInfo().login
+			     == std::get<4>(tuple)[1].what
+			     || (tcpSocketPtr->getAddress()
+				 == std::get<4>(tuple)[2].what
+				 && tcpSocketPtr->getPort()
+				 == Tool::convert_string_to<unsigned short>
+				 (std::get<4>(tuple)[3].what)));
+		     }) != std::get<0>(tuple)->getSocketCallbacksPtr().cend())
+      throw Exception::Network::ErrorWithConnection
+	("Login or endpoint already in use\n");
   }
   
   template <typename T, typename... Args>
@@ -89,15 +75,56 @@ namespace Command
     
 #if defined(linux) || defined(__linux)
     tcpSocketPtr = std::make_shared<Network::TCPSocketClientLinux<>>
-      (std::get<4>(tuple)[1].what,
-       Tool::convert_string_to<unsigned short>(std::get<4>(tuple)[2].what));
+      (std::get<4>(tuple)[2].what,
+       Tool::convert_string_to<unsigned short>(std::get<4>(tuple)[3].what),
+       Network::RemoteConnectionInfo
+       (std::get<4>(tuple)[1].what,
+	std::get<4>(tuple)[2].what,
+	Tool::convert_string_to<unsigned short>(std::get<4>(tuple)[3].what)));
 #else
-# error "Can't create the connection. Unknown operating system."
+# error "Can't create the socket. Unknown operating system."
 #endif
-    
-    tcpSocketPtr->open();
-    tcpSocketPtr->connect();
-    std::get<0>(tuple)->addSocket(tcpSocketPtr);
+
+    try
+      {
+	std::vector<std::string>	data(std::get<2>(tuple).find());
+	std::string			identifier
+	  (std::accumulate(data.cbegin(), data.cend(), std::string()));
+	
+	tcpSocketPtr->open();
+	tcpSocketPtr->connect();
+	tcpSocketPtr->send
+	  (Serialization::Tool::template serialize
+	   <Network::Protocol::UniSoulPacket>
+	   (std::get<3>(tuple).create
+	    (Network::Protocol::Communication::TCP,
+	     Command::Type::CREATE_CONNECTION,
+	     std::string(identifier
+			 + '|'
+			 + std::get<1>(tuple)->getAddress()
+			 + ';'
+			 + std::to_string(std::get<1>(tuple)->getPort()))
+			 .c_str())));
+	std::get<0>(tuple)->addSocket(tcpSocketPtr);
+      }
+    catch (const std::ifstream::failure&)
+      {
+	throw Exception::Network
+	  ::ErrorWithConnection("Untraceable identifier\n");
+      }
+    catch (const Exception::Serialization::SerializationFail&)
+      {
+	throw Exception::Network
+	  ::ErrorWithConnection("Authentification sending error\n");
+      }
+    catch (const std::system_error& e)
+      {
+	if (!std::strcmp(e.what(), "Broken pipe"))
+	  throw Exception::Network
+	    ::ErrorWithConnection("Error with remote connection\n");
+	throw Exception::Network::ErrorWithConnection(std::string(e.what())
+						      + '\n');
+      }
   }
 }
 

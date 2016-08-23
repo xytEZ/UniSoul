@@ -41,7 +41,7 @@ namespace Command
 			     (socketCallbackPtr->socketPtr);
 			   
 			   if (tcpSocketPtr
-			       && tcpSocketPtr->getRecipient()
+			       && tcpSocketPtr->getRemoteConnectionInfo().login
 			       == std::get<4>(tuple)[1].what)
 			     {
 			       tcpSocketPtr->send
@@ -49,27 +49,27 @@ namespace Command
 				  <Network::Protocol::UniSoulPacket>
 				  (std::get<3>(tuple).create
 				   (Network::Protocol::Communication::TCP,
-				    std::get<4>(tuple)[1].what == "Server" ?
-				    Command::Type::MESSAGE
-				    : Command::Type::NONE,
+				    Command::Type::MESSAGE,
 				    std::get<4>(tuple)[2].what.c_str())));
 			       return true;
 			     }
 			   return false;
 			 })
 	    == std::get<0>(tuple)->getSocketCallbacksPtr().cend())
-	  throw Exception::Network::ErrorWithConnection("Unknown recipient");
+	  throw Exception::Network
+	    ::ErrorWithConnection("Unknown remote connection\n");
       }
     catch (const Exception::Serialization::SerializationFail&)
       {
-	throw Exception::Network::ErrorWithConnection("Sending error");
+	throw Exception::Network::ErrorWithConnection("Sending error\n");
       }
     catch (const std::system_error& e)
       {
 	if (!std::strcmp(e.what(), "Broken pipe"))
 	  throw Exception::Network
-	    ::ErrorWithConnection("Error with remote connection");
-	throw Exception::Network::ErrorWithConnection(e.what());
+	    ::ErrorWithConnection("Error with remote connection\n");
+	throw Exception::Network::ErrorWithConnection(std::string(e.what())
+						      + '\n');
       }
     return App::State::RUNNING;
   }

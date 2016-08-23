@@ -1,3 +1,4 @@
-jle3;abcd1234;Jonathan;LERRO;
-hor4;passwd1234;Helio;ORRALD;
-pga;babadf;Paul;GAMEIRO;
+jle3;abcd1234;Jonathan;LERRO
+hor4;passwd1234;Helio;ORRALD
+pga;babadf;Paul;GAMEIRO
+am10;ghaf42;Alexandre;MARIE

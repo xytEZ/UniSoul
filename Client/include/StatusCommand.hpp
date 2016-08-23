@@ -26,7 +26,7 @@ namespace Command
   {
     std::tuple<Args&...>	tuple(std::forward_as_tuple(args...));
     
-    if (std::get<0>(tuple)->getSocketCallbacksPtr().size())
+    if (std::get<0>(tuple)->getSocketCallbacksPtr().size() - 1)
       establishedConnectionsStatus(tuple);
     else
       emptyStatus(tuple);
@@ -49,18 +49,26 @@ namespace Command
 		      std::dynamic_pointer_cast<Network::ITCPSocket<int>>
 		      (socketCallbackPtr->socketPtr);
 		    
-		    if (tcpSocketPtr)
+		    if (tcpSocketPtr
+			&& tcpSocketPtr->getRemoteConnectionInfo().login
+			!= "Listening endpoint")
 		      {
 			std::get<5>(tuple)
 			  .append("\n\t- ")
-			  .append(tcpSocketPtr->getRecipient())
+			  .append(tcpSocketPtr->getRemoteConnectionInfo()
+				  .login)
 			  .append(" (")
-			  .append(tcpSocketPtr->getAddress())
+			  .append(tcpSocketPtr->getRemoteConnectionInfo()
+				  .listeningAddress)
 			  .append(" ")
-			  .append(std::to_string(tcpSocketPtr->getPort()))
+			  .append(std::to_string(tcpSocketPtr
+						 ->getRemoteConnectionInfo()
+						 .listeningPort))
 			  .append(")");
 		      }
 		  });
+    std::get<5>(tuple)
+      .append("\n");
   }
   
   template <typename T, typename... Args>
@@ -68,7 +76,7 @@ namespace Command
   StatusCommand<T, Args...>::emptyStatus(std::tuple<Args&...>& tuple) const
   {
     std::get<5>(tuple)
-      .append("Awaiting the establishment of a connection...");
+      .append("Awaiting the establishment of a connection...\n");
   }
 }
 

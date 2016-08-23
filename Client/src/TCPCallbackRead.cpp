@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstring>
 
+#include "CommandType.hh"
 #include "SerializationFailException.hh"
 #include "ErrorWithConnectionException.hh"
 #include "SerializationTool.hpp"
@@ -10,7 +11,8 @@
 
 namespace Network
 { 
-  void TCPCallbackRead::read(const SocketPtr& socketPtr)
+  void TCPCallbackRead::read(const SocketPtr& socketPtr,
+			     Network::IMultiplexer& multiplexer)
   {
     try
       {
@@ -22,7 +24,11 @@ namespace Network
 	  <Network::Protocol::UniSoulPacket>(tcpSocketPtr->recv());
 
 	if (std::strcmp(packet.data, ""))
-	  std::cout << tcpSocketPtr->getRecipient() << " : " << packet.data;
+	  std::cout << tcpSocketPtr->getRemoteConnectionInfo().login
+		    << " : "
+		    << packet.data << std::endl;
+	else if (packet.command == Command::Type::DISCONNECT)
+	  multiplexer.closeSocket(socketPtr);
 	delete[] packet.data;
       }
     catch (const Exception::Serialization::SerializationFail&)

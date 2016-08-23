@@ -1,13 +1,10 @@
 #ifndef TCP_CALLBACK_READ_HH_
 # define TCP_CALLBACK_READ_HH_
 
-# include <memory>
+# include "IMultiplexer.hh"
 
 namespace Network
-{
-  template <typename T>
-  class ISocket;
-  
+{  
   struct TCPCallbackRead
   {
   private :
@@ -16,7 +13,7 @@ namespace Network
   public :
     TCPCallbackRead() = delete;
     ~TCPCallbackRead() = delete;
-    static void read(const SocketPtr&);
+    static void read(const SocketPtr&, Network::IMultiplexer&);
   };
 }
 

@@ -23,7 +23,7 @@ namespace Network
     DisconnectFromAsyncTaskHandler(const std::shared_ptr<Network::ITCPSocket
 				   <boost::asio::ip::tcp::socket>>&);
     ~DisconnectFromAsyncTaskHandler() = default;
-    void disconnect(bool) const;
+    bool disconnect(bool) const;
   };
 
   template <std::size_t N, std::size_t N2>
@@ -35,7 +35,7 @@ namespace Network
   }
       
   template <std::size_t N, std::size_t N2>
-  void DisconnectFromAsyncTaskHandler<N, N2>
+  bool DisconnectFromAsyncTaskHandler<N, N2>
   ::disconnect(bool registeredConnection) const
   {
     if (registeredConnection)
@@ -52,6 +52,7 @@ namespace Network
 	   return socketPtr == _socketPtr;
 	 });
     _socketPtr->close();
+    return true;
   }
 }
 

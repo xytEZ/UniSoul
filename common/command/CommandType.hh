@@ -6,10 +6,10 @@ namespace Command
   enum Type
     {
       NONE = 0,
-      CONNECT = 1,
+      CREATE_CONNECTION = 1,
       DISCONNECT = 2,
       MESSAGE = 3,
-      GET_USER = 4
+      GET_USER_FROM = 4
     };
 }
 

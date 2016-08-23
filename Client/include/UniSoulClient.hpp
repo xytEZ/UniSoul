@@ -7,10 +7,12 @@
 # if defined(linux) || defined(__linux)
 #  include "Epoll.hpp"
 #  include "TCPSocketClientLinux.hpp"
+#  include "TCPSocketServerLinux.hpp"
 # else
 #  error "Can't config client. Unknown operating system."
 # endif
 
+# include "RemoteConnectionInfo.hh"
 # include "CommandFactory.hpp"
 # include "CommandExecutor.hpp"
 # include "AppState.hh"
@@ -20,14 +22,14 @@
 # include "UniSoulPacketFactory.hh"
 # include "TCPCallbackRead.hh"
 # include "TCPCallbackWrite.hh"
+# include "TCPCallbackAccept.hh"
 # include "HelpCommand.hpp"
 # include "QuitCommand.hpp"
-# include "ConnectCommand.hpp"
+# include "CreateConnectionCommand.hpp"
 # include "DisconnectCommand.hpp"
 # include "MessageCommand.hpp"
 # include "StatusCommand.hpp"
-# include "CreateConnectionCommand.hpp"
-# include "GetUserCommand.hpp"
+# include "GetUserFromCommand.hpp"
 # include "IModel.hpp"
 
 namespace Model
@@ -35,19 +37,21 @@ namespace Model
   template <typename T>
   class UniSoulClient : public IModel<T>
   {
-  private :
     using MultiplexerPtr = std::unique_ptr<Network::IMultiplexer>;
-    using TCPSocketClientPtr = std::shared_ptr<Network::ITCPSocketClient<int>>;
+    
+    using TCPSocketServerPtr =
+      std::shared_ptr<Network::ITCPSocketServer
+		      <int, std::shared_ptr<Network::ITCPSocket<int>>>>;
+    
     using ParsedInputs = std::vector<Parser::ParsedInput>;
     using PacketFactory = Factory::UniSoulPacketFactory;
-
     using DataFileInteractor =
       Persistence::File::PersistentDataFileInteractor
       <std::vector<std::string>>;
 
   private :
     MultiplexerPtr		_multiplexerPtr;
-    TCPSocketClientPtr		_serverSocketPtr;
+    TCPSocketServerPtr		_socketServerPtr;
     DataFileInteractor		_dataFileInteractor;
     PacketFactory		_packetFactory;
 
@@ -55,7 +59,7 @@ namespace Model
     <std::string,
      App::State,
      MultiplexerPtr,
-     TCPSocketClientPtr,
+     TCPSocketServerPtr,
      DataFileInteractor,
      PacketFactory,
      ParsedInputs,
@@ -64,44 +68,49 @@ namespace Model
     Command::CommandExecutor
     <App::State,
      MultiplexerPtr,
-     TCPSocketClientPtr,
+     TCPSocketServerPtr,
      DataFileInteractor,
      PacketFactory,
      ParsedInputs,
      std::string>		_commandExecutor;
     
   public :
-    UniSoulClient(const std::string&, unsigned short);
+    UniSoulClient(const std::string&, unsigned short, const std::string&);
     virtual ~UniSoulClient() = default;
     virtual void execute(const ParsedInputs&);
   };
 
   template <typename T>
   UniSoulClient<T>::UniSoulClient(const std::string& hostname,
-				  unsigned short port) :
+				  unsigned short port,
+				  const std::string& filename) :
     _dataFileInteractor(std::make_shared
 			<Persistence::File::File<std::vector<std::string>>>
-			("common/user/user2.txt"))
-  {
+			("common/user/" + filename))
+  { 
 #if defined(linux) || defined(__linux)
     _multiplexerPtr = std::make_unique<Network::Epoll<400, 42>>
-      (std::bind(&Network::TCPCallbackRead::read, std::placeholders::_1),
-       std::bind(&Network::TCPCallbackWrite::write, std::placeholders::_1));
-    _serverSocketPtr =
-      std::make_shared<Network::TCPSocketClientLinux<>>(hostname, port);
-
+      (&Network::TCPCallbackRead::read, &Network::TCPCallbackWrite::write);
+    _socketServerPtr
+      = std::make_shared<Network::TCPSocketServerLinux<>>
+      (hostname, port, Network::RemoteConnectionInfo("Listening endpoint"));
+    
     /*_socketPtr["VoIP"] =
       std::make_unique<Network::UDPSocketClientLinux<128>>();*/
 #else
 # error "Can't config Client. Unknown operating system."
 #endif
 
-    _serverSocketPtr->setRecipient("Server");
+    _socketServerPtr->open();
+    _socketServerPtr->bind();
+    _socketServerPtr->listen();
+    _multiplexerPtr->addSocket(_socketServerPtr,
+			       &Network::TCPCallbackAccept::accept);
     _commandFactory.addCommand("Help",
 			       std::make_shared<Command::HelpCommand
 			       <App::State,
 			       MultiplexerPtr,
-			       TCPSocketClientPtr,
+			       TCPSocketServerPtr,
 			       DataFileInteractor,
 			       PacketFactory,
 			       ParsedInputs,
@@ -110,16 +119,7 @@ namespace Model
 			       std::make_shared<Command::QuitCommand
 			       <App::State,
 			       MultiplexerPtr,
-			       TCPSocketClientPtr,
-			       DataFileInteractor,
-			       PacketFactory,
-			       ParsedInputs,
-			       std::string>>());
-    _commandFactory.addCommand("Connect",
-			       std::make_shared<Command::ConnectCommand
-			       <App::State,
-			       MultiplexerPtr,
-			       TCPSocketClientPtr,
+			       TCPSocketServerPtr,
 			       DataFileInteractor,
 			       PacketFactory,
 			       ParsedInputs,
@@ -128,7 +128,7 @@ namespace Model
 			       std::make_shared<Command::DisconnectCommand
 			       <App::State,
 			       MultiplexerPtr,
-			       TCPSocketClientPtr,
+			       TCPSocketServerPtr,
 			       DataFileInteractor,
 			       PacketFactory,
 			       ParsedInputs,
@@ -137,7 +137,7 @@ namespace Model
 			       std::make_shared<Command::MessageCommand
 			       <App::State,
 			       MultiplexerPtr,
-			       TCPSocketClientPtr,
+			       TCPSocketServerPtr,
 			       DataFileInteractor,
 			       PacketFactory,
 			       ParsedInputs,
@@ -146,7 +146,7 @@ namespace Model
 			       std::make_shared<Command::StatusCommand
 			       <App::State,
 			       MultiplexerPtr,
-			       TCPSocketClientPtr,
+			       TCPSocketServerPtr,
 			       DataFileInteractor,
 			       PacketFactory,
 			       ParsedInputs,
@@ -156,17 +156,17 @@ namespace Model
 			       <Command::CreateConnectionCommand
 			       <App::State,
 			       MultiplexerPtr,
-			       TCPSocketClientPtr,
+			       TCPSocketServerPtr,
 			       DataFileInteractor,
 			       PacketFactory,
 			       ParsedInputs,
 			       std::string>>());
-    _commandFactory.addCommand("GetUser",
+    _commandFactory.addCommand("GetUserFrom",
 			       std::make_shared
-			       <Command::GetUserCommand
+			       <Command::GetUserFromCommand
 			       <App::State,
 			       MultiplexerPtr,
-			       TCPSocketClientPtr,
+			       TCPSocketServerPtr,
 			       DataFileInteractor,
 			       PacketFactory,
 			       ParsedInputs,
@@ -182,6 +182,8 @@ namespace Model
 
     try
       {
+	_multiplexerPtr->process();
+	_multiplexerPtr->execute();
 	try
 	  {
 	    std::string	retMsg;
@@ -192,7 +194,7 @@ namespace Model
 			     .getCommand(parsedInputArray[0].what));
 	    state = _commandExecutor
 	      .execute(_multiplexerPtr,
-		       _serverSocketPtr,
+		       _socketServerPtr,
 		       _dataFileInteractor,
 		       _packetFactory,
 		       const_cast<ParsedInputs&>(parsedInputArray),
@@ -204,6 +206,10 @@ namespace Model
 	    viewState.set(true, std::move(e.what()));
 	  }
 	catch (const Exception::Network::ErrorWithConnection& e)
+	  {
+	    viewState.set(true, std::move(e.what()));
+	  }
+	catch (const std::system_error& e)
 	  {
 	    viewState.set(true, std::move(e.what()));
 	  }

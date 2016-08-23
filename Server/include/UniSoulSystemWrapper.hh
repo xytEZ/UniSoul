@@ -31,13 +31,15 @@ namespace Wrapper
   using VariantMap = std::map<std::string, boost::any>;
 
   class UniSoulSystemWrapper : public IWrapper<VariantMap>
-  { 
+  {
+  private :
+    using TCPSocketPtr = std::shared_ptr
+      <Network::ITCPSocket<boost::asio::ip::tcp::socket>>;
+
   public :
     using ServerSocketPtr = std::shared_ptr
-      <Network::ITCPSocketServer
-       <boost::asio::ip::tcp::socket,
-	std::shared_ptr<Network::ITCPSocket<boost::asio::ip::tcp::socket>>>>;
-    
+      <Network::ITCPSocketServer<boost::asio::ip::tcp::socket, TCPSocketPtr>>;
+        
     using SocketManager = Network::Manager::SocketManager
       <boost::asio::ip::tcp::socket>;
     
@@ -48,14 +50,14 @@ namespace Wrapper
       <Command::Type,
        Network::ConnectionState,
        std::unique_ptr<IWrapper<VariantMap>>,
-       std::string,
+       TCPSocketPtr,
        std::string,
        std::string>;
     
     using CommandExecutor = Command::CommandExecutor
       <Network::ConnectionState,
        std::unique_ptr<IWrapper<VariantMap>>,
-       std::string,
+       TCPSocketPtr,
        std::string,
        std::string>;
     

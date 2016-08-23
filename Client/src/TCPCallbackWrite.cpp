@@ -2,5 +2,6 @@
 
 namespace Network
 {
-  void TCPCallbackWrite::write(const SocketPtr&) { }
+  void TCPCallbackWrite::write(const SocketPtr&,
+			       Network::IMultiplexer&) { }
 }

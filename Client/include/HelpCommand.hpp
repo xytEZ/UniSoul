@@ -26,12 +26,11 @@ namespace Command
       .append("Commands available :\n\n")
       .append("\t- Help\n")
       .append("\t- Quit\n")
-      .append("\t- Connect\n")
-      .append("\t- Diconnect\n")
+      .append("\t- CreateConnection [LOGIN] [ADDRESS] [PORT]\n")
+      .append("\t- Disconnect [LOGIN]\n")
       .append("\t- Message [LOGIN] [CONTENT]\n")
       .append("\t- Status\n")
-      .append("\t- CreateConnection [LOGIN] [ADDRESS] [PORT]\n")
-      .append("\t- GetUser [LOGIN]\n");
+      .append("\t- GetUserFrom [LOGIN] [LOGIN2]\n");
     return App::State::RUNNING;
   }
 }
