@@ -12,7 +12,7 @@
 namespace Network
 { 
   void TCPCallbackRead::read(const SocketPtr& socketPtr,
-			     Network::IMultiplexer& multiplexer)
+			     Network::IMultiplexer&)
   {
     try
       {
@@ -27,8 +27,6 @@ namespace Network
 	  std::cout << tcpSocketPtr->getRemoteConnectionInfo().login
 		    << " : "
 		    << packet.data << std::endl;
-	else if (packet.command == Command::Type::DISCONNECT)
-	  multiplexer.closeSocket(socketPtr);
 	delete[] packet.data;
       }
     catch (const Exception::Serialization::SerializationFail&)

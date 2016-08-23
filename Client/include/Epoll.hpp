@@ -48,7 +48,9 @@ namespace Network
     virtual int process();
     virtual void execute();
     virtual void clear();
-    virtual const IMultiplexer::SocketCallbacksPtr& getSocketCallbacksPtr() const;
+    
+    virtual const IMultiplexer::SocketCallbacksPtr&
+    getSocketCallbacksPtr() const;
   };
 
   template <int TIMEOUT, std::size_t N>
@@ -135,23 +137,26 @@ namespace Network
   template <int TIMEOUT, std::size_t N>
   void Epoll<TIMEOUT, N>::closeSocket(const SocketPtr& socketPtr)
   {
-    IMultiplexer::SocketCallbacksPtr::iterator	it;
+    IMultiplexer::SocketCallbacksPtr::iterator	begin;
+    IMultiplexer::SocketCallbacksPtr::iterator	end;
     
     if (::epoll_ctl(_epollFd,
 		    EPOLL_CTL_DEL,
 		    socketPtr->getDescriptor(),
 		    0) == -1)
       throw std::system_error(errno, std::system_category());
-    it = std::remove_if(_polled.begin(),
-			_polled.end(),
-			[&socketPtr]
-			(const IMultiplexer::SocketCallbackPtr&
-			 socketCallbackPtr) -> bool
-			{
-			  return socketCallbackPtr->socketPtr == socketPtr;
-			});
-    (*it)->socketPtr->close();
-    _polled.erase(it, _polled.end());
+    begin = _polled.begin();
+    end = _polled.end();
+    while (begin != end)
+      {
+	if ((*begin)->socketPtr == socketPtr)
+	  {
+	    socketPtr->close();
+	    _polled.erase(begin);
+	    break ;
+	  }
+	++begin;
+      }
   }
   
   template <int TIMEOUT, std::size_t N>

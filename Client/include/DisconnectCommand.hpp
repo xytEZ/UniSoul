@@ -44,13 +44,8 @@ namespace Command
 			       && tcpSocketPtr->getRemoteConnectionInfo().login
 			       == std::get<4>(tuple)[1].what)
 			     {
-			       tcpSocketPtr->send
-				 (Serialization::Tool::template serialize
-				  <Network::Protocol::UniSoulPacket>
-				  (std::get<3>(tuple).create
-				   (Network::Protocol::Communication::TCP,
-				    Command::Type::DISCONNECT,
-				    "")));
+			       std::get<0>(tuple)
+				 ->closeSocket(socketCallbackPtr->socketPtr);
 			       return true;
 			     }
 			   return false;

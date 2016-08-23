@@ -55,11 +55,7 @@ namespace Command
 			    == login;
 			})) ?
       Network::ConnectionState::ACCEPTED_CONNECTION :
-      Network::ConnectionState::REFUSED_CONNECTION;      
-    std::get<3>(tuple) = 
-      state == Network::ConnectionState::ACCEPTED_CONNECTION ?
-      Network::ServerMessage::ACCEPTED_CONNECTION :
-      Network::ServerMessage::REFUSED_CONNECTION;
+      Network::ConnectionState::REFUSED_CONNECTION;
     return state;
   }
 }

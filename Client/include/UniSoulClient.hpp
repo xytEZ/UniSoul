@@ -179,11 +179,11 @@ namespace Model
 			    parsedInputArray)
   {
     T	viewState;
-
+    
     try
       {
-	_multiplexerPtr->process();
-	_multiplexerPtr->execute();
+	while (_multiplexerPtr->process())
+	  _multiplexerPtr->execute();
 	try
 	  {
 	    std::string	retMsg;
@@ -213,8 +213,8 @@ namespace Model
 	  {
 	    viewState.set(true, std::move(e.what()));
 	  }
-	_multiplexerPtr->process();
-	_multiplexerPtr->execute();
+	while (_multiplexerPtr->process())
+	  _multiplexerPtr->execute();
       }
     catch (const std::system_error& e)
       {

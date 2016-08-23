@@ -1,7 +1,6 @@
 #include "PersistentDataFileInteractor.hpp"
 #include "File.hpp"
 #include "CreateConnectionCommand.hpp"
-#include "DisconnectCommand.hpp"
 #include "MessageCommand.hpp"
 #include "GetUserFromCommand.hpp"
 #include "UniSoulSystemWrapper.hh"
@@ -28,13 +27,6 @@ namespace Wrapper
     
     cf.addCommand(Command::Type::CREATE_CONNECTION,
 		  std::make_shared<Command::CreateConnectionCommand
-		  <Network::ConnectionState,
-		  std::unique_ptr<IWrapper<VariantMap>>,
-		  TCPSocketPtr,
-		  std::string,
-		  std::string>>());
-    cf.addCommand(Command::Type::DISCONNECT,
-		  std::make_shared<Command::DisconnectCommand
 		  <Network::ConnectionState,
 		  std::unique_ptr<IWrapper<VariantMap>>,
 		  TCPSocketPtr,
